@@ -13,7 +13,9 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
 	"nvim-lua/plenary.nvim",
+	{ "neoclide/coc.nvim", branch = "release" },
 	"nvim-telescope/telescope.nvim",
+	"fannheyward/telescope-coc.nvim",
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	"stevearc/conform.nvim",
 	"guns/vim-sexp",
@@ -45,7 +47,11 @@ require("lazy").setup({
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 	},
-	{ "neoclide/coc.nvim", branch = "release" },
+	{
+		"pablopunk/fixquick.nvim",
+		event = "BufEnter",
+		config = true,
+	},
 })
 
 vim.cmd.colorscheme("catppuccin-macchiato")
@@ -81,20 +87,84 @@ do
 end
 
 do
+	local telescope = require("telescope")
+
+	telescope.setup({
+		defaults = {
+			layout_strategy = "horizontal",
+			layout_config = {
+				horizontal = {
+					width = 1.0,
+					height = 0.4,
+				},
+			},
+		},
+		pickers = {
+			buffers = {
+				theme = "ivy",
+			},
+			find_files = {
+				theme = "ivy",
+			},
+			git_files = {
+				theme = "ivy",
+			},
+			live_grep = {
+				theme = "ivy",
+			},
+			oldfiles = {
+				theme = "ivy",
+			},
+			quickfix = {
+				theme = "ivy",
+			},
+			quickfixhistory = {
+				theme = "ivy",
+			},
+		},
+		extensions = {
+			coc = {
+				theme = "ivy",
+				layout_config = { height = 0.4 },
+				prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
+				push_cursor_on_edit = true, -- save the cursor position to jump back in the future
+				timeout = 3000, -- timeout for coc commands
+			},
+			fzf = {
+				fuzzy = true,
+				override_generic_sorter = true,
+				override_file_sorter = true,
+				case_mode = "smart_case",
+			},
+		},
+	})
+
+	telescope.load_extension("fzf")
+end
+
+do
 	local builtin = require("telescope.builtin")
+	local themes = require("telescope.themes")
 	local wk = require("which-key")
+
+	local function ivy(f)
+		return function()
+			f(themes.get_ivy({ layout_config = { height = 0.4 } }))
+		end
+	end
+
 	wk.register({
 		["<leader>"] = {
 			f = {
 				name = "+file",
 				f = { "<cmd>:Explore<cr>", "Explore" },
-				F = { builtin.find_files, "Find file" },
-				g = { builtin.git_files, "Git files" },
-				r = { builtin.oldfiles, "Recent files" },
+				F = { ivy(builtin.find_files), "Find file" },
+				g = { ivy(builtin.git_files), "Git files" },
+				r = { ivy(builtin.oldfiles), "Recent files" },
 			},
 			b = {
 				name = "+buffer",
-				b = { builtin.buffers, "buffers" },
+				b = { ivy(builtin.buffers), "buffers" },
 				d = { "<cmd>bd!<cr>", "Kill current buffer" },
 				D = { "<cmd>%bd!|e#|bd#<cr>|'\"", "Kill other buffers" },
 			},
@@ -104,8 +174,20 @@ do
 			},
 			s = {
 				name = "+search",
-				s = { builtin.live_grep, "Grep" },
+				s = { ivy(builtin.live_grep), "Grep" },
 			},
+			q = {
+				name = "+quickfix",
+				l = { ivy(builtin.quickfix), "list" },
+				h = { ivy(builtin.quickfixhistory), "history" },
+			},
+			c = {
+				name = "+CoC",
+				c = { ":Telescope coc commands<CR>", "commands" },
+				s = { ":Telescope coc document_symbols<CR>", "symbols" },
+				r = { ":Telescope coc references<CR>", "references" },
+			},
+			r = { builtin.resume, "resume last telescope picker" },
 		},
 	})
 end

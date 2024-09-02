@@ -11,9 +11,9 @@ return {
 			keymap = {
 				manual_complete = "<C-_>",
 			},
-			completion = {
-				replace_suffix_threshold = 1,
-			},
+			--completion = {
+			--	replace_suffix_threshold = 1,
+			--},
 			limits = {
 				completion_auto_timeout = 1,
 				completion_manual_timeout = 3,

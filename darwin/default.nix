@@ -20,7 +20,7 @@ let
            overlays = [
              darwin-emacs.overlays.emacs
              darwin-emacs-packages.overlays.package
-	     spacebar.overlay
+     	     spacebar.overlay
            ];
   };
 in
@@ -33,6 +33,20 @@ in
       nix-homebrew.darwinModules.nix-homebrew
       ./halo.nix
       ./link-apps.nix
+      {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+      }
+    ];
+  };
+
+  ampere = darwin.lib.darwinSystem rec {
+    inherit system;
+    specialArgs = { inherit pkgs homebrew-bundle homebrew-core homebrew-cask; };
+    modules = [
+      home-manager.darwinModules.home-manager
+      nix-homebrew.darwinModules.nix-homebrew
+      ./ampere.nix
       {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;

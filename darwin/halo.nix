@@ -36,10 +36,10 @@ in
 
   services.nix-daemon.enable = true;
 
-  services.link-apps = {
-    enable = true;
-    inherit userName userHome;
-  };
+  #services.link-apps = {
+  #  enable = true;
+  #  inherit userName userHome;
+  #};
 
   services.skhd.enable = false;
   services.yabai.enable = false;

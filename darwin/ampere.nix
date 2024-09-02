@@ -13,7 +13,6 @@ in {
       "conductorone/cone" = homebrew-conductorone;
       "hashicorp/tap" = homebrew-hashicorp;
     };
-    mutableTaps = true;
   };
 
   homebrew.brews = [

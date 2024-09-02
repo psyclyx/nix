@@ -60,7 +60,7 @@ in
   programs.zsh.enable = true;
   programs.direnv.enable = true;
 
-  environment.systemPackages = with pkgs; [ jq clojure freerdp xquartz neovim tmux racket ];
+  environment.systemPackages = with pkgs; [ jq clojure neovim tmux nodejs ];
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";

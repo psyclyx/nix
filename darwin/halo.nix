@@ -49,6 +49,11 @@ in
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
+    home.shellAliases = {
+      ls = "ls --color=auto";
+      gs = "git status";
+      gdh = "git diff HEAD";
+    };
     imports = [
       ../programs/zsh
       ../programs/kitty.nix

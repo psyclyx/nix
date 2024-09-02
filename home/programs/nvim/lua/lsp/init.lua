@@ -11,10 +11,8 @@ end
 local coq_status_ok, coq = pcall(require, "coq")
 
 local opt_modifier = function(opts)
-	local final_opts = { offset_encoding = "utf-8" }
-	for _, v in pairs(opts) do
-		table.insert(final_opts, v)
-	end
+	local final_opts = vim.tbl_extend("force", { offset_encoding = "utf-8" }, opts)
+
 	if coq_status_ok then
 		return coq.lsp_ensure_capabilities(final_opts)
 	else

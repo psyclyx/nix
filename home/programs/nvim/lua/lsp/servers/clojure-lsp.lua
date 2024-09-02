@@ -15,10 +15,11 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 return {
 	setup = function(opt_modifier, on_attach)
-		lspconfig.clojure_lsp.setup(opt_modifier({
+		local opts = opt_modifier({
 			on_attach = on_attach,
 			root_dir = lspconfig.util.find_git_ancestor,
 			init_options = { ["text-document-sync-kind"] = "incremental" },
-		}))
+		})
+		lspconfig.clojure_lsp.setup(opts)
 	end,
 }

@@ -9,6 +9,12 @@ config.font = wezterm.font("Source Code Pro")
 config.font_size = 14.0
 
 config.color_scheme = "Catppuccin Macchiato"
+config.window_padding = {
+	left = "1cell",
+	right = "1cell",
+	bottom = 0,
+	top = 0,
+}
 
 -- Appearance
 
@@ -19,6 +25,18 @@ config.tab_bar_at_bottom = true
 config.scrollback_lines = 3500
 config.enable_scroll_bar = true
 config.show_new_tab_button_in_tab_bar = false
+
+config.unzoom_on_switch_pane = true
+config.audible_bell = "Disabled"
+config.visual_bell = {
+	fade_in_function = "EaseIn",
+	fade_in_duration_ms = 150,
+	fade_out_function = "EaseOut",
+	fade_out_duration_ms = 150,
+}
+config.colors = {
+	visual_bell = "#202020",
+}
 
 wezterm.on("update-status", function(window, pane)
 	local function basename(s)
@@ -68,6 +86,7 @@ config.keys = {
 	{ key = "8", mods = "LEADER", action = act.ActivateTab(7) },
 	{ key = "9", mods = "LEADER", action = act.ActivateTab(8) },
 	{ key = "0", mods = "LEADER", action = act.ActivateTab(9) },
+	{ key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = false }) },
 
 	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "|", mods = "LEADER|SHIFT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },

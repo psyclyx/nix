@@ -38,11 +38,12 @@
 
   outputs = {nixpkgs, ...} @ inputs: let
     supportedSystems = ["aarch64-darwin"];
+    overlay = import ./pkgs;
     nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
       import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [import ./pkgs];
+        overlays = [overlay];
       });
     mkDarwinConfiguration = import ./darwin {
       inherit inputs nixpkgsFor;

@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{pkgs, ...}:
 
 {
   nix = {
@@ -19,11 +19,12 @@
   services.nix-daemon.enable = true;
 
   users.users.psyc = {
-    home =  "/Users/psyc";
+    name = "psyc";
+    home = "/Users/psyc";
   };
 
   home-manager.users.psyc = {
-    home = { stateVersion = "23.11"; };
+    home.stateVersion = "23.11";
     imports = [ ../modules/zsh ];
   };
 }

@@ -36,11 +36,6 @@ in
 
   services.nix-daemon.enable = true;
 
-  #services.link-apps = {
-  #  enable = true;
-  #  inherit userName userHome;
-  #};
-
   programs.direnv.enable = true;
 
   environment.systemPackages = with pkgs; [ jq clojure tmux ];
@@ -53,13 +48,9 @@ in
 
   home-manager.users.alice = {
     home.stateVersion = "23.11";
-    #home.shellAliases = {
-    #  ls = "ls --color=auto";
-    #  gs = "git status";
-    #  gdh = "git diff HEAD";
-    #};
     imports = [
-    #  ../programs/zsh
+      ../programs/zsh
+      ../programs/zsh/work.nix
       ../programs/nvim
     ];
   };

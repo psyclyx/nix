@@ -35,7 +35,6 @@ in
       ./link-apps.nix
       {
         home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
       }
     ];
   };
@@ -49,7 +48,6 @@ in
       ./ampere.nix
       {
         home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
       }
     ];
   };

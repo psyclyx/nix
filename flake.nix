@@ -11,11 +11,12 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, darwin, home-manager, nixpkgs }: {
+  outputs = inputs@{ self, darwin, home-manager, nixpkgs }: rec {
     darwinConfigurations = (
       import ./darwin {
         inherit inputs nixpkgs home-manager darwin;
       }
     );
+    halo = darwinConfigurations.halo.system;
   };
 }

@@ -4,3 +4,4 @@
 result
 .lsp/.cache
 .clj-kondo/.cache
+.DS_Store

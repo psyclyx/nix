@@ -94,6 +94,8 @@ do
 	o.relativenumber = true
 	o.signcolumn = "number"
 	o.pumblend = 30
+    o.exrc = true
+    o.secure = true
 
 	g.mapleader = " "
 	g.maplocalleader = ","

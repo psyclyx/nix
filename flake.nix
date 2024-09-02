@@ -46,32 +46,31 @@
     homebrew-cask,
     homebrew-core,
     homebrew-conductorone,
-  } @ inputs:
-    let
-      supportedSystems = ["aarch64-darwin"];
-      nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
-        import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-          overlays = [
-            (final: prev: {
-              cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
-            })
-          ];
-        });
+  } @ inputs: let
+    supportedSystems = ["aarch64-darwin"];
+    nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [
+          (final: prev: {
+            cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
+          })
+        ];
+      });
     mkDarwinConfiguration = import ./darwin {
-        inherit inputs nixpkgsFor;
+      inherit inputs nixpkgsFor;
     };
-    in rec
-    {
-      darwinConfigurations = {
-        halo = mkDarwinConfiguration {
-          system = "aarch64-darwin";
-          hostName = "halo";
-          module = ./darwin/halo.nix;
-        };
+  in rec
+  {
+    darwinConfigurations = {
+      halo = mkDarwinConfiguration {
+        system = "aarch64-darwin";
+        hostName = "halo";
+        module = ./darwin/halo.nix;
       };
-      halo = darwinConfigurations.halo.system;
-      #ampere = darwinConfigurations.ampere.system;
     };
+    halo = darwinConfigurations.halo.system;
+    #ampere = darwinConfigurations.ampere.system;
+  };
 }

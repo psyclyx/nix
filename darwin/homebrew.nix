@@ -2,11 +2,9 @@
   system,
   inputs,
   ...
-}: 
-let
-inherit (inputs) homebrew-bundle homebrew-core homebrew-cask;
-in
-{
+}: let
+  inherit (inputs) homebrew-bundle homebrew-core homebrew-cask;
+in {
   nix-homebrew = {
     enable = true;
     enableRosetta = system == "aarch64-darwin";

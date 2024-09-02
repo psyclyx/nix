@@ -42,11 +42,7 @@
       import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [
-          (final: prev: {
-            cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
-          })
-        ];
+        overlays = [import ./pkgs];
       });
     mkDarwinConfiguration = import ./darwin {
       inherit inputs nixpkgsFor;

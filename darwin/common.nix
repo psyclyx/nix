@@ -43,6 +43,7 @@
     enable = true;
     brews = [];
     casks = [
+      "orcaslicer"
       "signal"
       "firefox"
       "google-chrome"

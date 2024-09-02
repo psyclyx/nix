@@ -1,7 +1,3 @@
 {config, ...}: {
-  homebrew.taps = [
-    "homebrew/homebrew-core"
-    "homebrew/homebrew-bundle"
-    "homebrew/homebrew-cask"
-  ];
+  homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
 }

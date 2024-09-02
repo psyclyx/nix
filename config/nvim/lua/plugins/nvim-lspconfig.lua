@@ -1,6 +1,9 @@
 return {
 	{
 		"neovim/nvim-lspconfig",
+		dependencies = {
+			{ "ms-jpq/coq_nvim", optional = true },
+		},
 		lazy = false,
 		config = function()
 			require("lsp")

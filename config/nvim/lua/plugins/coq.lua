@@ -4,9 +4,13 @@ return {
 	dependencies = {
 		{ "ms-jpq/coq.artifacts", branch = "artifacts" },
 	},
-	init = {
-		keymap = {
-			manual_complete = "<S-space>",
-		},
-	},
+	build = ":COQdeps",
+	init = function()
+		vim.g.coq_settings = {
+			auto_start = "shut-up",
+			keymap = {
+				manual_complete = "<S-space>",
+			},
+		}
+	end,
 }

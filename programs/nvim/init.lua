@@ -138,6 +138,40 @@ do
 end
 
 do
+    local keyset = vim.keymap.set
+    function _G.show_docs()
+        local cw = vim.fn.expand('<cword>')
+        if vim.fn.index({'vim', 'help'}, vim.bo.filetype) >= 0 then
+            vim.api.nvim_command('h ' .. cw)
+        elseif vim.api.nvim_eval('coc#rpc#ready()') then
+            vim.fn.CocActionAsync('doHover')
+        else
+            vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+        end
+    end
+
+    keyset("n", "K", '<CMD>lua _G.show_docs()<CR>', {silent = true})
+    keyset("i", "<c-space>", "coc#refresh()", {silent = true, expr = true})
+    -- Use `[g` and `]g` to navigate diagnostics
+    -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+    keyset("n", "[g", "<Plug>(coc-diagnostic-prev)", {silent = true})
+    keyset("n", "]g", "<Plug>(coc-diagnostic-next)", {silent = true})
+
+    -- GoTo code navigation
+    keyset("n", "gd", "<Plug>(coc-definition)", {silent = true})
+    keyset("n", "gy", "<Plug>(coc-type-definition)", {silent = true})
+    keyset("n", "gi", "<Plug>(coc-implementation)", {silent = true})
+    keyset("n", "gr", "<Plug>(coc-references)", {silent = true})
+
+    vim.api.nvim_create_augroup("CocGroup", {})
+    vim.api.nvim_create_autocmd("CursorHold", {
+        group = "CocGroup",
+        command = "silent call CocActionAsync('highlight')",
+        desc = "Highlight symbol under cursor on CursorHold"
+    })
+end
+
+do
 	local builtin = require("telescope.builtin")
 	local wk = require("which-key")
 
@@ -155,8 +189,7 @@ do
 		{ "<leader>fe", "<cmd>:Explore<cr>", desc = "Explore" },
 		{ "<leader>fg", builtin.git_files, desc = "Git files" },
 		{ "<leader>fr", builtin.oldfiles, desc = "Recent files" },
-		{ "<leader>g", group = "git" },
-		{ "<leader>gg", "<cmd>vert Git<cr>", desc = "Status" },
+		{ "<leader>g", "<cmd>vert Git<cr>", desc = "Git status" },
 		{ "<leader>r", builtin.resume, desc = "resume last telescope picker" },
 		{ "<leader>s", group = "search" },
 		{ "<leader>ss", builtin.live_grep, desc = "Grep" },

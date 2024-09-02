@@ -11,5 +11,14 @@
     "signature.floatConfig": {
         "winblend": 30
     },
-    "signature.target": "echo"
+    "signature.target": "echo",
+
+    "inlayHint.enable": true,
+    "semanticTokens.enable": true,
+    "languageserver": {
+        "zls" : {
+            "command": "zls",
+            "filetypes": [ "zig", "zon" ]
+        }
+    }
 }

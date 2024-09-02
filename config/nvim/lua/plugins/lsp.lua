@@ -1,6 +1,10 @@
 return {
 	{
 		"neovim/nvim-lspconfig",
+		lazy = false,
+		config = function()
+			require("lsp")
+		end,
 		keys = {
 			{ "gd", vim.lsp.buf.definition, desc = "definition" },
 			{ "gt", vim.lsp.buf.type_definition, desc = "type definition" },

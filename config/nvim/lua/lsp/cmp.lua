@@ -65,7 +65,7 @@ cmp.setup({
 	},
 	sources = cmp.config.sources(
 		{ { name = "nvim_lsp_signature_help" }, { name = "diag-codes" } },
-		{ { name = "nvim_lsp" }, { name = "lazydev", group_index = 0 } },
+		{ { name = "nvim_lsp" }, { name = "conjure" }, { name = "lazydev", group_index = 0 } },
 		{ { name = "luasnip" }, { name = "buffer" } }
 	),
 })

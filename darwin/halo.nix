@@ -1,6 +1,6 @@
-{pkgs, ...}:
+{pkgs, homebrew-bundle, homebrew-core, homebrew-cask, ...}:
 
-{
+{ 
   nix = {
     package = pkgs.nix;
     gc = {
@@ -14,6 +14,27 @@
     '';
   };
 
+  nix-homebrew = {
+    enable = true;
+    enableRosetta = true;
+    user = "psyc";
+    mutableTaps = false;
+    taps = {
+      "homebrew/homebrew-bundle" = homebrew-bundle;
+      "homebrew/homebrew-core" = homebrew-core;
+      "homebrew/homebrew-cask" = homebrew-cask;
+    };
+  };
+
+  homebrew = {
+    enable = true;
+    onActivation.autoUpdate = true;
+    onActivation.upgrade = true;
+    casks = [
+      "alfred"
+    ];
+  };
+
   networking.hostName = "halo";
 
   services.nix-daemon.enable = true;
@@ -23,12 +44,13 @@
     home = "/Users/psyc";
     shell = "zsh";
   };
+
   programs.zsh.enable = true;
-  environment.systemPackages = with pkgs; [ htop ];
+  environment.systemPackages = with pkgs; [ htop kitty ];
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
-    imports = [ 
+    imports = [
       ../programs/zsh
       ../programs/kitty.nix 
     ];

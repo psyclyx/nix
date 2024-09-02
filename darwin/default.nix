@@ -1,4 +1,14 @@
-{ inputs, darwin, home-manager, nixpkgs, ... }:
+{ 
+  inputs, 
+  nixpkgs, 
+  darwin,
+  home-manager, 
+  nix-homebrew,
+  homebrew-bundle,
+  homebrew-core,
+  homebrew-cask, 
+  ... 
+}:
 
 let
   system = "aarch64-darwin";
@@ -7,9 +17,10 @@ in
 {
   halo = darwin.lib.darwinSystem rec {
     inherit system;
-    specialArgs = { inherit pkgs; };    
+    specialArgs = { inherit pkgs homebrew-bundle homebrew-core homebrew-cask; };
     modules = [
       home-manager.darwinModules.home-manager
+      nix-homebrew.darwinModules.nix-homebrew
       ./halo.nix
       {
         home-manager.useGlobalPkgs = true;

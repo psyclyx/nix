@@ -9,10 +9,19 @@ local on_attach = function(client)
 end
 
 local coq_status_ok, coq = pcall(require, "coq")
-local identity = function(x)
-	return x
+
+local opt_modifier = function(opts)
+	local final_opts = { offset_encoding = "utf-8" }
+	for _, v in pairs(opts) do
+		table.insert(final_opts, v)
+	end
+	if coq_status_ok then
+		return coq.lsp_ensure_capabilities(final_opts)
+	else
+		return final_opts
+	end
 end
-local opt_modifier = coq_status_ok and coq.ensure_capabilities or identity
+
 for _, s in pairs(servers) do
 	local server_config_ok, mod = pcall(require, "lsp.servers." .. s)
 	if not server_config_ok then

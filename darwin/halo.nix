@@ -35,9 +35,9 @@ in {
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
     imports = [
-      ../programs/zsh
-      ../programs/nvim
-      ../programs/tmux
+      ../config/tmux
+      ../config/zsh
+      ../config/nvim
     ];
   };
 }

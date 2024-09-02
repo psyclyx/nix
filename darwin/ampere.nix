@@ -39,10 +39,10 @@ in {
   home-manager.users.alice = {
     home.stateVersion = "23.11";
     imports = [
-      ../programs/tmux
-      ../programs/zsh
-      ../programs/zsh/work.nix
-      ../programs/nvim
+      ../config/tmux
+      ../config/zsh
+      ../config/zsh/work.nix
+      ../config/nvim
     ];
   };
 }

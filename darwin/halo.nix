@@ -16,6 +16,14 @@ in {
     shell = pkgs.zsh;
   };
 
+  homebrew.casks = [
+    "discord"
+    "gimp"
+    "orcaslicer"
+    "remarkable"
+    "signal"
+  ];
+
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
     imports = [

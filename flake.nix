@@ -35,6 +35,11 @@
       flake = false;
     };
 
+    homebrew-hashicorp = {
+      url = "github:hashicorp/homebrew-tap";
+      flake = false;
+    };
+
     homebrew-conductorone = {
       url = "github:conductorone/cone";
       flake = false;

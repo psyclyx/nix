@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   inputs,
   ...
@@ -9,7 +10,7 @@ in {
   nix-homebrew = {
     enable = true;
     enableRosetta = hostPlatform.isAarch64;
-    mutableTaps = false;
+    mutableTaps = lib.mkDefault false;
     autoMigrate = true;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;

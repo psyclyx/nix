@@ -1,11 +1,12 @@
 {
   inputs,
   pkgs,
+  lib,
   ...
 }: let
   userName = "alice";
   userHome = "/Users/alice";
-  inherit (inputs) homebrew-conductorone;
+  inherit (inputs) homebrew-conductorone homebrew-hashicorp;
 in {
   nix.envVars = {
     # Todo: use this + bin/setup-netskope to make a service that updates this file
@@ -15,15 +16,28 @@ in {
 
   nix-homebrew = {
     user = userName;
-    taps = {"condutorone/cone" = homebrew-conductorone;};
+    taps = {
+      "conductorone/cone" = homebrew-conductorone;
+      "hashicorp/tap" = homebrew-hashicorp;
+    };
+    mutableTaps = true;
   };
 
-  homebrew.casks = ["cone"];
+  homebrew.brews = [
+    "hashicorp/tap/vault"
+    "conductorone/cone/cone"
+  ];
+
+  homebrew.casks = [
+    "slack"
+    "docker"
+    "chromedriver"
+    "font-sauce-code-pro-nerd-font"
+  ];
 
   environment.systemPackages = with pkgs; [
     awscli2
     mkcert
-    vault
   ];
 
   users.users.alice = {
@@ -35,6 +49,7 @@ in {
   home-manager.users.alice = {
     home.stateVersion = "23.11";
     imports = [
+      ../home/modules/p10k-hm.nix
       ../config/tmux
       ../config/zsh
       ../config/zsh/work.nix

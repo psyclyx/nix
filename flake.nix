@@ -36,17 +36,7 @@
     };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    darwin,
-    home-manager,
-    nix-homebrew,
-    homebrew-bundle,
-    homebrew-cask,
-    homebrew-core,
-    homebrew-conductorone,
-  } @ inputs: let
+  outputs = {nixpkgs, ...} @ inputs: let
     supportedSystems = ["aarch64-darwin"];
     nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
       import nixpkgs {

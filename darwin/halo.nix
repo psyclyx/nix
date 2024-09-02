@@ -41,8 +41,8 @@ in
     inherit userName userHome;
   };
 
-  services.skhd.enable = true;
-  services.yabai.enable = true;
+  services.skhd.enable = false;
+  services.yabai.enable = false;
   services.spacebar = {
     package = pkgs.spacebar;
     enable = false;
@@ -66,10 +66,9 @@ in
       gs = "git status";
       gdh = "git diff HEAD";
     };
-    home.file.".skhdrc".source = ../config/psyc/skhdrc;
-    home.file.".yabairc".source = ../config/psyc/yabairc;
-    home.file.".yabairc".executable = true;
-    home.packages = [ pkgs.jq ];
+    #home.file.".skhdrc".source = ../config/psyc/skhdrc;
+    #home.file.".yabairc".source = ../config/psyc/yabairc;
+    #home.file.".yabairc".executable = true;
     imports = [
       ../programs/zsh
       ../programs/kitty.nix

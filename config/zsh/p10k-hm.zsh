@@ -5,15 +5,6 @@
   ...
 }:
 with lib;
-# Add enable option
-# If enabled, and direnv.enableZshIntegration is enabled,
-#  [x] do direnv wrapper bs in initExtra
-#  [x] suppress the direnv module's initExtra
-# If direnv is not enabled, skip the direnv wrapper stuff
-#   [x] do the regular p10k bs
-# TODO: warn if other themes are enabled (check home-manager built-in plugin managers)
-#  [ ] Config options for .p10k (autogenerate this?)
-#  [x] for now, just accept a p10k source, like what I do now
   let
     inherit (inputs) powerlevel10k;
 

@@ -2,6 +2,7 @@ return {
 	"guns/vim-sexp",
 	{
 		"tpope/vim-fugitive",
+		lazy = false,
 		keys = { { "<leader>g", "<cmd>vert Git<cr>", desc = "git status", silent = true } },
 	},
 	"tpope/vim-sensible",

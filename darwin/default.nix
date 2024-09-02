@@ -8,9 +8,11 @@
   ...
 } @ args: let
   inherit (inputs) darwin home-manager nix-homebrew;
+  pkgs = nixpkgsFor.${system};
 
   defaultModules = [
     {networking.hostName = hostName;}
+    {nixpkgs.pkgs = pkgs;}
     home-manager.darwinModules.home-manager
     nix-homebrew.darwinModules.nix-homebrew
     ./nix-homebrew.nix
@@ -18,8 +20,6 @@
   ];
 in
   darwin.lib.darwinSystem {
-    inherit system;
-
     modules =
       defaultModules
       ++ modules
@@ -31,7 +31,6 @@ in
     specialArgs =
       {
         inherit inputs system;
-        pkgs = nixpkgsFor.${system};
       }
       // args;
   }

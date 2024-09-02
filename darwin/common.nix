@@ -42,7 +42,10 @@
   homebrew = {
     enable = true;
     brews = [];
-    casks = ["firefox"];
+    casks = [
+      "firefox"
+      "google-chrome"
+    ];
     global = {
       autoUpdate = false;
     };

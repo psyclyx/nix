@@ -1,6 +1,6 @@
 {...}: {
   imports = [
     ./common.nix
-    ../config/zsh/work.nix
+    ./programs/zsh/work.nix
   ];
 }

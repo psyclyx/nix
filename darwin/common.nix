@@ -14,7 +14,16 @@
 
   home-manager.useGlobalPkgs = true;
 
-  environment.systemPackages = with pkgs; [alejandra jq clojure neovim tmux nodejs ripgrep fd];
+  environment.systemPackages = with pkgs; [
+    alejandra
+    clojure
+    fd
+    jq
+    neovim
+    nodejs
+    ripgrep
+    tmux
+  ];
 
   services.nix-daemon.enable = true;
 

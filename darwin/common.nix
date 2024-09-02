@@ -43,6 +43,7 @@
     enable = true;
     brews = [];
     casks = [
+      "signal"
       "firefox"
       "google-chrome"
     ];

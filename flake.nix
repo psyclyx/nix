@@ -71,7 +71,6 @@
             homebrew-core
             inputs
             nix-homebrew
-            overlays
             ;
         }
       );

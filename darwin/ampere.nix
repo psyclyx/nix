@@ -19,10 +19,12 @@ in {
   homebrew.brews = [
     "hashicorp/tap/vault"
     "conductorone/cone/cone"
+    "docker-compose"
   ];
 
   homebrew.casks = [
     "slack"
+    "google-chrome"
     "docker"
     "chromedriver"
     "font-sauce-code-pro-nerd-font"
@@ -30,6 +32,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     awscli2
+    kubelogin
     mkcert
   ];
 

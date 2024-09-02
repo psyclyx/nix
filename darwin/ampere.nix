@@ -20,6 +20,7 @@ in {
     "hashicorp/tap/vault"
     "conductorone/cone/cone"
     "docker-compose"
+    "tfenv"
   ];
 
   homebrew.casks = [

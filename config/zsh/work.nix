@@ -9,6 +9,8 @@
       path_append "''${HOME}/projects/app/bin"
       export NODE_OPTIONS=--openssl-legacy-provider
       export VAULT_ADDR="https://vault.amperity.top:8200"
+      export GODEBUG=asyncpreemptoff=1
+      export TFENV_ARCH=amd64
 
       web-ui () {
         # ShadowCLJS must be run from the `web-ui` directory

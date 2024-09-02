@@ -1,9 +1,7 @@
 {pkgs, ...}: {
   home.stateVersion = "23.11";
 
-  home.packages = with pkgs; [
-    (nerdfonts.override {fonts = ["SourceCodePro"];})
-  ];
+  home.packages = with pkgs; [source-code-pro];
 
   fonts.fontconfig.enable = true;
 

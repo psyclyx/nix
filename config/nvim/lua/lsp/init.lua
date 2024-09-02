@@ -5,7 +5,6 @@ local servers = {
 }
 
 local on_attach = function(client)
-	client.flags.debounce_text_changes = 300
 	client.server_capabilities.documentFormattingProvider = false
 end
 

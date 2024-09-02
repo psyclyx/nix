@@ -29,7 +29,7 @@ in {
   nix-homebrew = {
     enable = true;
     enableRosetta = hostPlatform.isAarch64;
-    mutableTaps = lib.mkDefault false;
+    mutableTaps = lib.mkDefault true;
     autoMigrate = true;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;

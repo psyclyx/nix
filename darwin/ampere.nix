@@ -5,13 +5,14 @@
 }: let
   userName = "alice";
   userHome = "/Users/alice";
-  inherit (inputs) homebrew-conductorone homebrew-hashicorp;
+  inherit (inputs) homebrew-conductorone homebrew-hashicorp homebrew-borkdude;
 in {
   nix-homebrew = {
     user = userName;
     taps = {
       "conductorone/cone" = homebrew-conductorone;
       "hashicorp/tap" = homebrew-hashicorp;
+      "borkdude/brew" = homebrew-borkdude;
     };
   };
 
@@ -20,6 +21,7 @@ in {
     "conductorone/cone/cone"
     "docker-compose"
     "tfenv"
+    "borkdude/brew/jet"
   ];
 
   homebrew.casks = [

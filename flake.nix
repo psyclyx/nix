@@ -46,6 +46,11 @@
       url = "github:conductorone/cone";
       flake = false;
     };
+
+    homebrew-borkdude = {
+      url = "github:borkdude/homebrew-brew";
+      flake = false;
+    };
   };
 
   outputs = inputs: let

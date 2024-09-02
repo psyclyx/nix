@@ -209,6 +209,22 @@
         "type": "github"
       }
     },
+    "powerlevel10k": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1724223745,
+        "narHash": "sha256-H7DYDLNANFnws3pCANnMJAQIMDXCf9S+ggUOGUy1oO0=",
+        "owner": "romkatv",
+        "repo": "powerlevel10k",
+        "rev": "a42e374e25226d2032a38b38fc544ec1d65b0d01",
+        "type": "github"
+      },
+      "original": {
+        "owner": "romkatv",
+        "repo": "powerlevel10k",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -218,7 +234,8 @@
         "homebrew-conductorone": "homebrew-conductorone",
         "homebrew-core": "homebrew-core",
         "nix-homebrew": "nix-homebrew",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "powerlevel10k": "powerlevel10k"
       }
     },
     "systems": {

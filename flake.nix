@@ -13,6 +13,11 @@
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
 
+    powerlevel10k = {
+      url = "github:romkatv/powerlevel10k";
+      flake = false;
+    };
+
     # Homebrew taps
 
     homebrew-core = {

@@ -10,6 +10,7 @@ in {
     enableRosetta = system == "aarch64-darwin";
     mutableTaps = false;
     autoMigrate = true;
+    caskArgs.no_quarantine = true;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;
       "homebrew/homebrew-core" = homebrew-core;

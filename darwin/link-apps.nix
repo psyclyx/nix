@@ -1,7 +1,7 @@
 { config, pkgs, ...}:
 
 {
-  imports = [ ../link-apps ];
+  imports = [ ../services/link-apps ];
 
   system.build.applications = pkgs.lib.mkForce (pkgs.buildEnv {
     name = "applications";

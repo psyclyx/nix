@@ -35,11 +35,11 @@ in
   networking.hostName = "halo";
 
   services.nix-daemon.enable = true;
+
   services.link-apps = {
     enable = true;
     inherit userName userHome;
   };
-
 
   users.users.psyc = {
     name = userName;

@@ -1,4 +1,4 @@
-{ pkgs ... }
+{ pkgs, ... }:
 
 {
   users.users.psyc = {
@@ -15,12 +15,7 @@
   };
 
   home-manager.users.psyc = {
-    home = { stateVersion = "23.11" };
+    home = { stateVersion = "23.11"; };
   };
 
-  programs = {
-    zsh = {
-      enable = true;
-    };
-  };
 }

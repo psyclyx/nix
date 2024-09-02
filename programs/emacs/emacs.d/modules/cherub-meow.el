@@ -2,7 +2,6 @@
 
 (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
 (setq meow-keypad-ctrl-meta-prefix nil)
-(setq meow-keypad-meta-prefix nil)
 (setq meow-keypad-leader-dispatch "C-c")
 
 (meow-motion-overwrite-define-key

@@ -24,6 +24,12 @@ in {
     };
   };
 
+  environment.systemPackages = with pkgs; [
+    awscli2
+    mkcert
+    vault
+  ];
+
   users.users.alice = {
     name = userName;
     home = userHome;

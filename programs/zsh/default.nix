@@ -45,6 +45,7 @@
       gdm = "git diff main";
       gdom = "git diff origin/main";
       gl = "git log --oneline";
+      ns = "nix search nixpkgs";
     };
     zplug = {
       enable = true;

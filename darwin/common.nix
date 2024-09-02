@@ -16,13 +16,25 @@
 
   environment.systemPackages = with pkgs; [
     alejandra
+    babashka
+    cargo
+    clj-kondo
     clojure
+    clojure-lsp
     fd
+    htop
     jq
+    leiningen
+    maven
     neovim
     nodejs
+    openjdk11
+    python3
     ripgrep
+    rustc
     tmux
+    tree
+    zoxide
   ];
 
   services.nix-daemon.enable = true;

@@ -12,6 +12,7 @@
   system = "aarch64-darwin";
   pkgs = import nixpkgs {
     inherit system;
+    config.allowUnfree = true;
   };
 in {
   halo = darwin.lib.darwinSystem rec {

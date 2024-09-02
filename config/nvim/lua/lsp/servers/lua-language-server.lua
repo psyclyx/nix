@@ -1,8 +1,7 @@
 return {
-	setup = function(on_attach, capabilities)
-		require("lspconfig").lua_ls.setup({
+	setup = function(opt_modifier, on_attach)
+		require("lspconfig").lua_ls.setup(opt_modifier({
 			on_attach = on_attach,
-			capabilities = capabilities,
 			settings = {
 				Lua = {
 					runtime = {
@@ -23,6 +22,6 @@ return {
 					},
 				},
 			},
-		})
+		}))
 	end,
 }

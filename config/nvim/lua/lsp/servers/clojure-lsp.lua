@@ -12,10 +12,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 return {
-	setup = function(on_attach, capabilities)
-		require("lspconfig").clojure_lsp.setup({
+	setup = function(opt_modifier, on_attach)
+		require("lspconfig").clojure_lsp.setup(opt_modifier({
 			on_attach = on_attach,
-			capabilities = capabilities,
-		})
+		}))
 	end,
 }

@@ -1,8 +1,7 @@
 return {
-	setup = function(on_attach, capabilities)
-		require("lspconfig").nixd.setup({
+	setup = function(opt_modifier, on_attach)
+		require("lspconfig").nixd.setup(opt_modifier({
 			on_attach = on_attach,
-			capabilities = capabilities,
-		})
+		}))
 	end,
 }

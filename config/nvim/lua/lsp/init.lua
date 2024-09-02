@@ -9,12 +9,17 @@ local on_attach = function(client)
 	client.server_capabilities.documentFormattingProvider = false
 end
 
+local coq_status_ok, coq = pcall(require, "coq")
+local identity = function(x)
+	return x
+end
+local opt_modifier = coq_status_ok and coq.ensure_capabilities or identity
 for _, s in pairs(servers) do
 	local server_config_ok, mod = pcall(require, "lsp.servers." .. s)
 	if not server_config_ok then
 		require("notify")("The LSP '" .. s .. "' does not have a config.", "warn")
 	else
-		mod.setup(on_attach, {})
+		mod.setup(opt_modifier, on_attach)
 	end
 end
 

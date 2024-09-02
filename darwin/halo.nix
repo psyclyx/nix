@@ -5,8 +5,6 @@ let
   userHome = "/Users/psyc";
 in
 {
-  environment.systemPackages = with pkgs; [ htop kitty ];
-
   nix = {
     package = pkgs.nix;
     gc = {
@@ -44,7 +42,7 @@ in
   users.users.psyc = {
     name = userName;
     home = userHome;
-    shell = "zsh";
+    shell = pkgs.zsh;
   };
 
   programs.zsh.enable = true;

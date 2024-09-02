@@ -22,7 +22,6 @@
       eval ''$(brew shellenv)
 
       path_append "$HOME/bin"
-      path_append "/run/current-system/sw/bin"
 
 
       typeset -U path

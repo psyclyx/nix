@@ -43,10 +43,10 @@ return {
 			{
 				"gsv",
 				function()
-					vim.cmd.split()
+					vim.cmd.vsplit()
 					vim.lsp.buf.definition()
 				end,
-				"vsplit definition",
+				desc = "vsplit definition",
 			},
 			{ "K", vim.lsp.buf.hover, desc = "hover" },
 			{ "<leader>lR", vim.lsp.buf.rename, desc = "rename symbol" },

@@ -18,6 +18,8 @@ in {
     taps = {"condutorone/cone" = homebrew-conductorone;};
   };
 
+  homebrew.casks = ["cone"];
+
   environment.systemPackages = with pkgs; [
     awscli2
     mkcert

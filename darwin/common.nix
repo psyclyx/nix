@@ -58,7 +58,7 @@
       "zoom"
     ];
     caskArgs.no_quarantine = true;
-    global. autoUpdate = false;
+    global.autoUpdate = false;
     onActivation = {
       autoUpdate = false;
       cleanup = "zap";

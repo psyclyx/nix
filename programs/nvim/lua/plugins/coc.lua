@@ -16,6 +16,7 @@ return {
 		init = function()
 			vim.g.coc_global_extensions = { "coc-clojure", "coc-json", "coc-zig" }
 		end,
+		lazy = false,
 		config = function()
 			vim.api.nvim_create_augroup("CocGroup", {})
 			vim.api.nvim_create_autocmd("CursorHold", {

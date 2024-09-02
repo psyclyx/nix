@@ -10,6 +10,7 @@
     initExtra = ''
       eval $(brew shellenv)
       eval "$(fzf --zsh)"
+      [[ -f ~/.anthropic_token ]] && export ANTHROPIC_API_KEY=$(cat ~/.anthropic_token)
     '';
     zplug = {
       enable = true;

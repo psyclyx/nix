@@ -32,6 +32,7 @@ return {
 			},
 		},
 		keys = {
+			{ "<leader>bb", "<cmd>Telescope buffers<cr>", desc = "buffers" },
 			{ "<leader>cc", "<cmd>Telescope coc commands<cr>", desc = "commands" },
 			{ "<leader>cr", "<cmd>Telescope coc references<cr>", desc = "references" },
 			{ "<leader>cs", "<cmd>Telescope coc document_symbols<cr>", desc = "symbols" },

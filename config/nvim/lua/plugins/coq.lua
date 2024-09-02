@@ -9,7 +9,11 @@ return {
 		vim.g.coq_settings = {
 			auto_start = "shut-up",
 			keymap = {
-				manual_complete = "<S-space>",
+				manual_complete = "<C-_>",
+			},
+			limits = {
+				completion_auto_timeout = 1,
+				completion_manual_timeout = 3,
 			},
 		}
 	end,

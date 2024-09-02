@@ -13,6 +13,8 @@
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
 
+    mac-app-util.url = "github:hraban/mac-app-util";
+
     powerlevel10k = {
       url = "github:romkatv/powerlevel10k";
       flake = false;

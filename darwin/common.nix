@@ -2,7 +2,9 @@
   inputs,
   pkgs,
   ...
-}: {
+}: let
+  inherit (inputs) mac-app-util;
+in {
   nix = {
     gc = {
       automatic = true;
@@ -24,6 +26,7 @@
     useGlobalPkgs = true;
     useUserPackages = true;
     extraSpecialArgs = {inherit inputs;};
+    sharedModules = [mac-app-util.homeManagerModules.default];
   };
 
   environment.systemPackages = with pkgs; [

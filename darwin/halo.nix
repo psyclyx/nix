@@ -37,6 +37,7 @@ in {
     imports = [
       ../programs/zsh
       ../programs/nvim
+      ../programs/tmux
     ];
   };
 }

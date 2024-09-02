@@ -6,3 +6,4 @@
 (use-package magit)
 (use-package meow)
 (use-package projectile)
+(use-package counsel)

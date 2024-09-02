@@ -1,17 +1,18 @@
 {
-  inputs,
-  nixpkgs,
   darwin,
   home-manager,
-  nix-homebrew,
   homebrew-bundle,
-  homebrew-core,
   homebrew-cask,
+  homebrew-core,
+  inputs,
+  nix-homebrew,
+  nixpkgs,
+  overlays,
   ...
 }: let
   system = "aarch64-darwin";
   pkgs = import nixpkgs {
-    inherit system;
+    inherit system overlays;
     config.allowUnfree = true;
   };
 in {

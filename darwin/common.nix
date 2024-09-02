@@ -19,6 +19,7 @@
     babashka
     cargo
     clj-kondo
+    cljstyle
     clojure
     clojure-lsp
     fd

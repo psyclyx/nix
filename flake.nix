@@ -31,26 +31,32 @@
   };
 
   outputs = inputs @ {
-    self,
-    nixpkgs,
     darwin,
     home-manager,
-    nix-homebrew,
     homebrew-bundle,
-    homebrew-core,
     homebrew-cask,
-  }: rec {
+    homebrew-core,
+    nix-homebrew,
+    nixpkgs,
+    self,
+  }: let
+    cljstyle-overlay = final: prev: {
+      cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
+    };
+    overlays = [cljstyle-overlay];
+  in rec {
     darwinConfigurations = (
       import ./darwin {
         inherit
-          inputs
-          nixpkgs
           darwin
           home-manager
-          nix-homebrew
           homebrew-bundle
-          homebrew-core
           homebrew-cask
+          homebrew-core
+          inputs
+          nix-homebrew
+          nixpkgs
+          overlays
           ;
       }
     );

@@ -14,7 +14,7 @@
   outputs = inputs@{ self, darwin, home-manager, nixpkgs }: rec {
     darwinConfigurations = (
       import ./darwin {
-        inherit inputs nixpkgs home-manager darwin;
+        inherit nixpkgs inputs home-manager darwin;
       }
     );
     halo = darwinConfigurations.halo.system;

@@ -21,10 +21,16 @@
   users.users.psyc = {
     name = "psyc";
     home = "/Users/psyc";
+    shell = "zsh";
   };
+  programs.zsh.enable = true;
+  environment.systemPackages = with pkgs; [ htop ];
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
-    imports = [ ../modules/zsh ];
+    imports = [ 
+      ../programs/zsh
+      ../programs/kitty.nix 
+    ];
   };
 }

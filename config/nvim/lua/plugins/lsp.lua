@@ -85,7 +85,8 @@ return {
 			},
 			{ "[d", vim.diagnostic.goto_prev, "prev diagnostic" },
 			{ "]d", vim.diagnostic.goto_next, desc = "next diagnostic" },
-			{ "<C-w>d", vim.diagnostic.float, mode = { "n", "i" }, desc = "show diagnostic" },
+			{ "<C-w>d", vim.diagnostic.open_float, mode = { "n", "i" }, desc = "show diagnostic" },
+			{ "<C-k>", vim.lsp.buf.signature_help, mode = { "n", "i" }, desc = "signature help" },
 		},
 	},
 	{

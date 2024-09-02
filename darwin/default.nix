@@ -4,17 +4,11 @@
   homebrew-bundle,
   homebrew-cask,
   homebrew-core,
-  inputs,
   nix-homebrew,
-  nixpkgs,
-  overlays,
+  pkgs,
   ...
 }: let
   system = "aarch64-darwin";
-  pkgs = import nixpkgs {
-    inherit system overlays;
-    config.allowUnfree = true;
-  };
 in {
   halo = darwin.lib.darwinSystem rec {
     inherit system;

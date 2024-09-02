@@ -11,16 +11,17 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
 
-    ## Homebrew
-
-    homebrew-bundle = {
-      url = "github:homebrew/homebrew-bundle";
-      flake = false;
-    };
+    # Homebrew taps
 
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+
+    homebrew-bundle = {
+      url = "github:homebrew/homebrew-bundle";
       flake = false;
     };
 
@@ -28,39 +29,53 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+
+    homebrew-conductorone = {
+      url = "github:conductorone/cone";
+      flake = false;
+    };
   };
 
-  outputs = inputs @ {
+  outputs = {
+    self,
+    nixpkgs,
     darwin,
     home-manager,
+    nix-homebrew,
     homebrew-bundle,
     homebrew-cask,
     homebrew-core,
-    nix-homebrew,
-    nixpkgs,
-    self,
-  }: let
-    cljstyle-overlay = final: prev: {
-      cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
+    homebrew-conductorone,
+  } @ inputs:
+    with nixpkgs.lib; let
+      supportedSystems = ["aarch64-darwin"];
+      pkgsFor = genAttrs supportedSystems (system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = [
+            (final: prev: {
+              cljstyle = final.callPackage ./pkgs/cljstyle.nix {};
+            })
+          ];
+        });
+    in rec {
+      darwinConfigurations = (
+        import ./darwin {
+          pkgs = pkgsFor."aarch64-darwin";
+          inherit
+            darwin
+            home-manager
+            homebrew-bundle
+            homebrew-cask
+            homebrew-core
+            inputs
+            nix-homebrew
+            overlays
+            ;
+        }
+      );
+      halo = darwinConfigurations.halo.system;
+      ampere = darwinConfigurations.ampere.system;
     };
-    overlays = [cljstyle-overlay];
-  in rec {
-    darwinConfigurations = (
-      import ./darwin {
-        inherit
-          darwin
-          home-manager
-          homebrew-bundle
-          homebrew-cask
-          homebrew-core
-          inputs
-          nix-homebrew
-          nixpkgs
-          overlays
-          ;
-      }
-    );
-    halo = darwinConfigurations.halo.system;
-    ampere = darwinConfigurations.ampere.system;
-  };
 }

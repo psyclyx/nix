@@ -32,6 +32,8 @@ in
 
   networking.hostName = "halo";
 
+  security.pam.enableSudoTouchIdAuth = true;
+
   services.nix-daemon.enable = true;
 
   services.link-apps = {

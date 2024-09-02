@@ -9,6 +9,12 @@
   userName = "alice";
   userHome = "/Users/alice";
 in {
+  nix.envVars = {
+    # Todo: use this + bin/setup-netskope to make a service that updates this file
+    # Todo: find and set the equivalent env var for git, too
+    #NIX_SSL_CERT_FILE = "/Library/Application Support/Netskope/STAgent/data/nscacert_combined.pem";
+  };
+
   networking.hostName = hostName;
   security.pam.enableSudoTouchIdAuth = true;
 

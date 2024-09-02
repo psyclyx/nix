@@ -1,17 +1,23 @@
 {pkgs, ...}: {
   home.packages = [pkgs.fzf];
-  home.file.".p10k.zsh".source = ./p10k.zsh;
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
   };
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = false;
+    silent = true;
+    nix-direnv.enable = true;
+  };
   programs.zsh = {
     enable = true;
-    initExtraFirst = ''
-      if [[ -r "''${XDG_CACHE_HOME:-''$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-        source "''${XDG_CACHE_HOME:-''$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-      fi'';
+    powerlevel10k = {
+      enable = true;
+      instantPrompt = true;
+      config.source = ./p10k.zsh;
+    };
     initExtra = ''
       path_append() {
         if [ -d "''$1" ] && [[ ":''$PATH:" != *":''$1:"* ]]; then
@@ -45,15 +51,6 @@
       gdom = "git diff origin/main";
       gl = "git log --oneline";
       ns = "nix search nixpkgs";
-    };
-    zplug = {
-      enable = true;
-      plugins = [
-        {
-          name = "romkatv/powerlevel10k";
-          tags = [as:theme depth:1];
-        }
-      ];
     };
   };
 }

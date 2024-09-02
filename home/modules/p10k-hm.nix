@@ -33,40 +33,39 @@ with lib;
     '';
   in {
     options.programs.zsh.powerlevel10k = {
-      enable = mkEnableOption "Whether to enable p10k integration";
+      enable = mkEnableOption "Powerlevel10k zsh theme";
 
       instantPrompt = mkEnableOption "Whether to enable p10k's instant prompt";
 
       config = mkOption {
-        type = types.attrsOf (types.submodule ({name, ...}: {
-          options = config.home.file.".p10k.zsh".options;
-        }));
-        default = null;
+        type = types.attrsOf types.anything;
+        default = {};
         example = "./path/to/your/.p10k.zsh";
         description = "Path to your Powerlevel10k configuration file (.p10k.zsh)";
       };
     };
 
-    config = mkIf cfg.enable {
-      # disable default direnv zsh integration
-      programs.direnv.enableZshIntegration = mkForce false;
+    config =
+      mkIf cfg.enable
+      {
+        # disable default direnv zsh integration
 
-      home.file.".p10k.zsh" = mkIf config config;
+        warnings = optional (direnvCfg.enable && direnvCfg.enableZshIntegration) [
+          ("programs.direnv.enable and programs.direnv.enableZshIntegration are both true. "
+            + "p10k-hm is providing custom direnv integration for zsh. You probably want to disable direnv's integration.")
+        ];
 
-      programs.zsh = {
-        initExtraFirst = mkBefore (
-          # p10k friendly direnvZshIntegration replacement
-          if direnvCfg.enableZshIntegration
-          then wrapDirenv instantPromptConfig
-          else instantPromptConfig
-        );
+        home.file.".p10k.zsh" = cfg.config;
 
-        initExtra = "source ${powerlevel10k}/powerlevel10k.zsh-theme";
+        programs.zsh = {
+          initExtraFirst = mkBefore (
+            # p10k friendly direnvZshIntegration replacement
+            if direnvCfg.enable
+            then wrapDirenv instantPromptConfig
+            else instantPromptConfig
+          );
+
+          initExtra = "source ${powerlevel10k}/powerlevel10k.zsh-theme";
+        };
       };
-
-      warnings = optional (direnvCfg.enable && !direnvCfg.enableZshIntegration) [
-        ("programs.direnv.enable is true, but programs.direnv.enableZshIntegration is false. "
-          + "p10k-hm is providing custom direnv integration for zsh.")
-      ];
-    };
   }

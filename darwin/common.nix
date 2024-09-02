@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  inputs,
+  pkgs,
+  ...
+}: {
   nix = {
     gc = {
       automatic = true;
@@ -16,8 +20,11 @@
 
   security.pam.enableSudoTouchIdAuth = true;
 
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    extraSpecialArgs = {inherit inputs;};
+  };
 
   environment.systemPackages = with pkgs; [
     alejandra
@@ -68,6 +75,5 @@
   };
   services.nix-daemon.enable = true;
 
-  programs.direnv.enable = true;
   programs.zsh.enable = true;
 }

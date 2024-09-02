@@ -1,14 +1,17 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   cfg = config.services.link-apps;
 
   createMacOSAlias = (
     (builtins.toString (
       pkgs.callPackage
-        ({ stdenv }:
-
+      (
+        {stdenv}:
           stdenv.mkDerivation rec {
             name = "create-macos-alias";
 
@@ -18,7 +21,7 @@ let
 
             dontConfigure = true;
 
-            buildInputs = [ ];
+            buildInputs = [];
 
             dontBuild = true;
 
@@ -29,14 +32,14 @@ let
             meta = with lib; {
               license = licenses.mit;
               platforms = platforms.darwin;
-              maintainers = with maintainers; [ landakram ];
+              maintainers = with maintainers; [landakram];
             };
           }
-        ) { }
-    )) + "/bin/create-macos-alias"
+      ) {}
+    ))
+    + "/bin/create-macos-alias"
   );
-in
-{
+in {
   options = {
     services.link-apps = {
       enable = mkEnableOption "create aliases (not symlinks) for macOS Apps at activation time";

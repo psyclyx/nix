@@ -1,6 +1,5 @@
-{ pkgs, ... }:
-{
-  home.packages = [ pkgs.fzf ];
+{pkgs, ...}: {
+  home.packages = [pkgs.fzf];
   home.file.".p10k.zsh".source = ./p10k.zsh;
   programs.zoxide.enable = true;
   programs.fzf = {
@@ -19,7 +18,7 @@
       export PATH="''${PATH:+"''$PATH:"}''$1"
         fi
       }
-      
+
       eval ''$(brew shellenv)
 
       path_append "$HOME/bin"
@@ -40,19 +39,21 @@
       [[ -f ~/.anthropic_token ]] && export ANTHROPIC_API_KEY=''$(cat ~/.anthropic_token)
     '';
     shellAliases = {
-        ls = "ls --color=auto";
-        gs = "git status";
-        gdh = "git diff HEAD";
-        gdm = "git diff main";
-        gdom = "git diff origin/main";
-        gl = "git log --oneline";
+      ls = "ls --color=auto";
+      gs = "git status";
+      gdh = "git diff HEAD";
+      gdm = "git diff main";
+      gdom = "git diff origin/main";
+      gl = "git log --oneline";
     };
     zplug = {
       enable = true;
       plugins = [
-      { name = "romkatv/powerlevel10k"; tags = [ as:theme depth:1 ]; }
+        {
+          name = "romkatv/powerlevel10k";
+          tags = [as:theme depth:1];
+        }
       ];
     };
   };
 }
-

@@ -12,7 +12,22 @@
 
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
 
-    # Homebrew taps
+    # Emacs
+
+    darwin-emacs = {
+      url = "github:c4710n/nix-darwin-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Homebrew
+
+    darwin-emacs-packages = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    ## Homebrew taps
+
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
       flake = false;
@@ -34,6 +49,8 @@
     nixpkgs,
     darwin,
     home-manager,
+    darwin-emacs,
+    darwin-emacs-packages,
     nix-homebrew,
     homebrew-bundle,
     homebrew-core,
@@ -42,7 +59,20 @@
   rec {
     darwinConfigurations = (
       import ./darwin {
-        inherit inputs nixpkgs darwin home-manager nix-homebrew homebrew-bundle homebrew-core homebrew-cask;
+        inherit
+          inputs
+          nixpkgs
+
+          darwin
+          home-manager
+
+          darwin-emacs
+          darwin-emacs-packages
+
+          nix-homebrew
+          homebrew-bundle
+          homebrew-core
+          homebrew-cask;
       }
     );
     halo = darwinConfigurations.halo.system;

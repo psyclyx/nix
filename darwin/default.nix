@@ -3,6 +3,8 @@
   nixpkgs,
   darwin,
   home-manager,
+  darwin-emacs,
+  darwin-emacs-packages,
   nix-homebrew,
   homebrew-bundle,
   homebrew-core,
@@ -12,7 +14,13 @@
 
 let
   system = "aarch64-darwin";
-  pkgs = import nixpkgs { inherit system; };
+  pkgs = import nixpkgs { 
+           inherit system;
+           overlays = [
+             darwin-emacs.overlays.emacs
+             darwin-emacs-packages.overlays.package
+           ];
+  };
 in
 {
   halo = darwin.lib.darwinSystem rec {

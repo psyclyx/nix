@@ -1,4 +1,4 @@
-{pkgs, homebrew-bundle, homebrew-core, homebrew-cask, ...}:
+{pkgs, darwin-emacs, darwin-emacs-packages, homebrew-bundle, homebrew-core, homebrew-cask, ...}:
 
 let
   userName = "psyc";
@@ -53,7 +53,8 @@ in
     home.stateVersion = "23.11";
     imports = [
       ../programs/zsh
-      ../programs/kitty.nix 
+      ../programs/kitty.nix
+      ../programs/emacs
     ];
   };
 }

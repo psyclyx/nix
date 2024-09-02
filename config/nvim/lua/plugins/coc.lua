@@ -12,6 +12,7 @@ end
 return {
 	{
 		"neoclide/coc.nvim",
+		enabled = false,
 		branch = "release",
 		init = function()
 			vim.g.coc_global_extensions = { "coc-clojure", "coc-json", "coc-zig" }

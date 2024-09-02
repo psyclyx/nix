@@ -6,12 +6,6 @@ in {
 
   nix-homebrew.user = userName;
 
-  users.users.psyc = {
-    name = userName;
-    home = userHome;
-    shell = pkgs.zsh;
-  };
-
   homebrew.casks = [
     "discord"
     "gimp"
@@ -20,5 +14,11 @@ in {
     "signal"
   ];
 
-  home-manager.users.psyc = import ../home/common.nix;
+  users.users.psyc = {
+    name = userName;
+    home = userHome;
+    shell = pkgs.zsh;
+  };
+
+  home-manager.users.psyc = ../home/common.nix;
 }

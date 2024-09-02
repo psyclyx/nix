@@ -42,5 +42,5 @@ in {
     shell = pkgs.zsh;
   };
 
-  home-manager.users.alice = import ../home/work.nix;
+  home-manager.users.alice = ../home/work.nix;
 }

@@ -48,7 +48,7 @@
     };
   };
 
-  outputs = {nixpkgs, ...} @ inputs: let
+  outputs = inputs: let
     overlays = [(import ./pkgs)];
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
   in rec

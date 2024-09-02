@@ -54,9 +54,7 @@ wezterm.on("update-status", function(window, pane)
 		{ Text = " | " },
 		{ Text = wezterm.nerdfonts.md_folder .. "  " .. cwd },
 		{ Text = " | " },
-		{ Foreground = { Color = "#e0af68" } },
 		{ Text = wezterm.nerdfonts.md_code_braces .. "  " .. cmd },
-		"ResetAttributes",
 		{ Text = " | " },
 		{ Text = wezterm.nerdfonts.md_clock_outline .. "  " .. time },
 		{ Text = "  " },
@@ -91,16 +89,16 @@ config.keys = {
 	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "|", mods = "LEADER|SHIFT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{ key = "g", mods = "LEADER", action = act.PaneSelect },
-	{ key = "G", mods = "SHIFT|LEADER", action = act.PaneSelect({ mode = "SwapWithActive" }) },
+	{ key = "G", mods = "LEADER", action = act.PaneSelect({ mode = "SwapWithActive" }) },
 
 	-- Font size
 	{ key = "0", mods = "SUPER", action = act.ResetFontSize },
 	{ key = "+", mods = "SUPER", action = act.IncreaseFontSize },
 	{ key = "-", mods = "SUPER", action = act.DecreaseFontSize },
 
-	{ key = "C", mods = "SUPER", action = act.CopyTo("Clipboard") },
-	{ key = "V", mods = "SUPER", action = act.PasteFrom("Clipboard") },
-	{ key = "F", mods = "SUPER", action = act.Search("CurrentSelectionOrEmptyString") },
+	{ key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
+	{ key = "v", mods = "SUPER", action = act.PasteFrom("Clipboard") },
+	{ key = "f", mods = "SUPER", action = act.Search("CurrentSelectionOrEmptyString") },
 	{ key = "[", mods = "LEADER", action = act.ActivateCopyMode },
 
 	{ key = "k", mods = "SUPER", action = act.ClearScrollback("ScrollbackOnly") },

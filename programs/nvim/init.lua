@@ -12,8 +12,15 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+	{ "echasnovski/mini.icons", version = false },
 	"nvim-lua/plenary.nvim",
-	{ "neoclide/coc.nvim", branch = "release" },
+	{
+		"neoclide/coc.nvim",
+		branch = "release",
+		init = function()
+			vim.g.coc_global_extensions = { "coc-clojure", "coc-json" }
+		end,
+	},
 	"nvim-telescope/telescope.nvim",
 	"fannheyward/telescope-coc.nvim",
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
@@ -42,6 +49,9 @@ require("lazy").setup({
 			vim.o.timeout = true
 			vim.o.timeoutlen = 300
 		end,
+		opts = {
+			icons = { mappings = false },
+		},
 	},
 	{
 		"nvim-lualine/lualine.nvim",
@@ -55,6 +65,8 @@ require("lazy").setup({
 })
 
 vim.cmd.colorscheme("catppuccin-macchiato")
+
+require("mini.icons").setup()
 
 require("lualine").setup()
 
@@ -81,6 +93,7 @@ do
 	o.number = true
 	o.relativenumber = true
 	o.signcolumn = "number"
+	o.pumblend = 30
 
 	g.mapleader = " "
 	g.maplocalleader = ","
@@ -91,41 +104,21 @@ do
 
 	telescope.setup({
 		defaults = {
-			layout_strategy = "horizontal",
+			border = true,
+			borderchars = {
+				prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
+				results = { " " },
+				preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+			},
+			sorting_strategy = "ascending",
+			layout_strategy = "bottom_pane",
 			layout_config = {
-				horizontal = {
-					width = 1.0,
-					height = 0.4,
-				},
+				height = 0.4,
 			},
-		},
-		pickers = {
-			buffers = {
-				theme = "ivy",
-			},
-			find_files = {
-				theme = "ivy",
-			},
-			git_files = {
-				theme = "ivy",
-			},
-			live_grep = {
-				theme = "ivy",
-			},
-			oldfiles = {
-				theme = "ivy",
-			},
-			quickfix = {
-				theme = "ivy",
-			},
-			quickfixhistory = {
-				theme = "ivy",
-			},
+			winblend = 30,
 		},
 		extensions = {
 			coc = {
-				theme = "ivy",
-				layout_config = { height = 0.4 },
 				prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
 				push_cursor_on_edit = true, -- save the cursor position to jump back in the future
 				timeout = 3000, -- timeout for coc commands
@@ -144,50 +137,26 @@ end
 
 do
 	local builtin = require("telescope.builtin")
-	local themes = require("telescope.themes")
 	local wk = require("which-key")
 
-	local function ivy(f)
-		return function()
-			f(themes.get_ivy({ layout_config = { height = 0.4 } }))
-		end
-	end
-
-	wk.register({
-		["<leader>"] = {
-			f = {
-				name = "+file",
-				f = { "<cmd>:Explore<cr>", "Explore" },
-				F = { ivy(builtin.find_files), "Find file" },
-				g = { ivy(builtin.git_files), "Git files" },
-				r = { ivy(builtin.oldfiles), "Recent files" },
-			},
-			b = {
-				name = "+buffer",
-				b = { ivy(builtin.buffers), "buffers" },
-				d = { "<cmd>bd!<cr>", "Kill current buffer" },
-				D = { "<cmd>%bd!|e#|bd#<cr>|'\"", "Kill other buffers" },
-			},
-			g = {
-				name = "+git",
-				g = { "<cmd>vert Git<cr>", "Status" },
-			},
-			s = {
-				name = "+search",
-				s = { ivy(builtin.live_grep), "Grep" },
-			},
-			q = {
-				name = "+quickfix",
-				l = { ivy(builtin.quickfix), "list" },
-				h = { ivy(builtin.quickfixhistory), "history" },
-			},
-			c = {
-				name = "+CoC",
-				c = { ":Telescope coc commands<CR>", "commands" },
-				s = { ":Telescope coc document_symbols<CR>", "symbols" },
-				r = { ":Telescope coc references<CR>", "references" },
-			},
-			r = { builtin.resume, "resume last telescope picker" },
-		},
+	wk.add({
+		{ "<leader>b", group = "buffer" },
+		{ "<leader>bD", "<cmd>%bd!|e#|bd#<cr>|'\"", desc = "Kill other buffers" },
+		{ "<leader>bb", builtin.buffers, desc = "buffers" },
+		{ "<leader>bd", "<cmd>bd!<cr>", desc = "Kill current buffer" },
+		{ "<leader>c", group = "CoC" },
+		{ "<leader>cc", ":Telescope coc commands<CR>", desc = "commands" },
+		{ "<leader>cr", ":Telescope coc references<CR>", desc = "references" },
+		{ "<leader>cs", ":Telescope coc document_symbols<CR>", desc = "symbols" },
+		{ "<leader>f", group = "file" },
+		{ "<leader>ff", builtin.find_files, desc = "Find file" },
+		{ "<leader>fe", "<cmd>:Explore<cr>", desc = "Explore" },
+		{ "<leader>fg", builtin.git_files, desc = "Git files" },
+		{ "<leader>fr", builtin.oldfiles, desc = "Recent files" },
+		{ "<leader>g", group = "git" },
+		{ "<leader>gg", "<cmd>vert Git<cr>", desc = "Status" },
+		{ "<leader>r", builtin.resume, desc = "resume last telescope picker" },
+		{ "<leader>s", group = "search" },
+		{ "<leader>ss", builtin.live_grep, desc = "Grep" },
 	})
 end

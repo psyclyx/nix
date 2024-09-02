@@ -19,3 +19,6 @@ vim.o.secure = true
 -- leader keys
 vim.g.mapleader = " "
 vim.g.maplocalleader = ","
+
+-- autocommands
+vim.api.nvim_create_autocmd("VimResized", { command = "wincmd =" })

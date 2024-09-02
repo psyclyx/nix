@@ -43,6 +43,10 @@
     enable = true;
     brews = [];
     casks = [
+      "rectangle"
+      "zoom"
+      "spotify"
+      "remarkable"
       "obsidian"
       "gimp"
       "discord"

@@ -19,6 +19,7 @@ in {
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
     imports = [
+      ../home/modules/p10k-hm.nix
       ../config/tmux
       ../config/zsh
       ../config/nvim

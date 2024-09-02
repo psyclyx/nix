@@ -1,5 +1,5 @@
 return {
-	"guns/vim-sexp",
+	{ "guns/vim-sexp", ft = { "clojure" } },
 	{
 		"tpope/vim-fugitive",
 		lazy = false,

@@ -1,23 +1,15 @@
--- https://github.com/harrisoncramer/nvim/blob/main/lua/lsp/init.lua
---
---
-local cmp_nvim_lsp = require("cmp_nvim_lsp")
-require("cmp_nvim_lsp_document_symbol")
-require("cmp_cmdline")
-require("lsp.cmp")
+local servers = {
+	"clojure-lsp",
+	"lua-language-server",
+	"nixd",
+}
 
 local keyset = function(mode, lhs, rhs, desc)
 	local opts = { noremap = true, silent = true, nowait = true, desc = desc }
 	vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-local on_attach = function(client, bufnr)
-	local function buf_set_option(name, value)
-		vim.api.nvim_set_option_value(name, value, { buf = bufnr })
-	end
-
-	--buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
-
+local on_attach = function(client)
 	client.flags.debounce_text_changes = 300
 	client.server_capabilities.documentFormattingProvider = false
 
@@ -58,19 +50,12 @@ local on_attach = function(client, bufnr)
 	end, "prev warn")
 end
 
-local servers = {
-	"clojure-lsp",
-	"lua-language-server",
-	"nixd",
-}
-
-local capabilities = cmp_nvim_lsp.default_capabilities({ dynamicRegistration = true })
 for _, s in pairs(servers) do
 	local server_config_ok, mod = pcall(require, "lsp.servers." .. s)
 	if not server_config_ok then
 		require("notify")("The LSP '" .. s .. "' does not have a config.", "warn")
 	else
-		mod.setup(on_attach, capabilities)
+		mod.setup(on_attach, {})
 	end
 end
 
@@ -81,7 +66,6 @@ vim.diagnostic.config({
 	float = {
 		header = "",
 		source = true,
-		border = "solid",
 		focusable = true,
 	},
 })
@@ -91,11 +75,3 @@ for type, icon in pairs(signs) do
 	local hl = "DiagnosticSign" .. type
 	vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 end
-
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-	border = "solid",
-})
-
-vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-	border = "solid",
-})

@@ -3,6 +3,17 @@ return {
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			{ "ms-jpq/coq_nvim", optional = true },
+			{
+				"ray-x/lsp_signature.nvim",
+				opts = {
+
+					hint_prefix = {
+						above = "↙ ",
+						current = "← ",
+						below = "↖ ",
+					},
+				},
+			},
 		},
 		lazy = false,
 		config = function()
@@ -29,7 +40,6 @@ return {
 				"vsplit definition",
 			},
 			{ "K", vim.lsp.buf.hover, desc = "hover" },
-			{ "<C-k>", vim.lsp.buf.signature_help, mode = { "n", "i" }, desc = "signature help" },
 			{ "<leader>lR", vim.lsp.buf.rename, desc = "rename symbol" },
 			{ "<leader>lq", vim.diagnostic.setqflist, desc = "quickfix diagnostics" },
 			{ "<leader>li", vim.lsp.buf.implementation, desc = "implementation" },

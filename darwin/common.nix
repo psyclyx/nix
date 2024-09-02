@@ -39,6 +39,19 @@
     zoxide
   ];
 
+  homebrew = {
+    enable = true;
+    brews = [];
+    casks = ["firefox"];
+    global = {
+      autoUpdate = false;
+    };
+    onActivation = {
+      autoUpdate = true;
+      cleanup = "zap";
+      upgrade = true;
+    };
+  };
   services.nix-daemon.enable = true;
 
   programs.direnv.enable = true;

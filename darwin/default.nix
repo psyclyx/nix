@@ -18,12 +18,13 @@ in
       nix-homebrew.darwinModules.nix-homebrew
       ./common.nix
       module
-      ./homebrew.nix
+      ./nix-homebrew.nix
+      ./homebrew-taps.nix
     ];
 
     specialArgs =
       {
-        inherit inputs;
+        inherit inputs system;
         pkgs = nixpkgsFor.${system};
       }
       // args;

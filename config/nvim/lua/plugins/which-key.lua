@@ -9,7 +9,6 @@ return {
 			icons = { mappings = false },
 			spec = {
 				{ "<leader>b", group = "buffer" },
-				-- { "<leader>c", group = "CoC" },
 				{ "<leader>f", group = "file" },
 
 				{ "<leader>s", group = "search" },

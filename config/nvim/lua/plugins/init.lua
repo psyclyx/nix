@@ -17,11 +17,6 @@ return {
 		end,
 	},
 	{
-		"pablopunk/fixquick.nvim",
-		event = "BufEnter",
-		config = true,
-	},
-	{
 		"nvim-lualine/lualine.nvim",
 		opts = {},
 		dependencies = { "nvim-tree/nvim-web-devicons" },

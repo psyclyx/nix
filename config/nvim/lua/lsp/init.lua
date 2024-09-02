@@ -1,17 +1,14 @@
 -- https://github.com/harrisoncramer/nvim/blob/main/lua/lsp/init.lua
 --
-local cmp_nvim_lsp_status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-local cmp_nvim_lsp_document_symbol_status_ok, _ = pcall(require, "cmp_nvim_lsp_document_symbol")
-local cmp_cmdline_status_ok, _ = pcall(require, "cmp_cmdline")
+--
+local cmp_nvim_lsp = require("cmp_nvim_lsp")
+require("cmp_nvim_lsp_document_symbol")
+require("cmp_cmdline")
+require("lsp.cmp")
 
 local keyset = function(mode, lhs, rhs, desc)
 	local opts = { noremap = true, silent = true, nowait = true, desc = desc }
 	vim.keymap.set(mode, lhs, rhs, opts)
-end
-
-if not (cmp_nvim_lsp_status_ok and cmp_nvim_lsp_document_symbol_status_ok and cmp_cmdline_status_ok) then
-	vim.api.nvim_err_writeln("some cmp sources are not installed")
-	return
 end
 
 local on_attach = function(client, bufnr)
@@ -67,9 +64,7 @@ local servers = {
 	"nixd",
 }
 
-require("lsp.cmp")
-
-local capabilities = cmp_nvim_lsp.default_capabilities()
+local capabilities = cmp_nvim_lsp.default_capabilities({ dynamicRegistration = true })
 for _, s in pairs(servers) do
 	local server_config_ok, mod = pcall(require, "lsp.servers." .. s)
 	if not server_config_ok then

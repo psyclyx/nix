@@ -59,6 +59,11 @@
             })
           ];
         });
+      mkDarwinConfiguration = system: hostName: {
+          networking.hostName = hostName;
+          security.pam.enableSudoTouchIdAuth = true;
+          modules = [import ./darwin/homebrew.nix {inherit system; userName = ];
+      }
     in rec {
       darwinConfigurations = (
         import ./darwin {

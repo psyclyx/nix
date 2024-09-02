@@ -33,15 +33,7 @@ return {
 			{ "gt", vim.lsp.buf.type_definition, desc = "type definition" },
 			{ "gr", vim.lsp.buf.references, desc = "references" },
 			{
-				"gss",
-				function()
-					vim.cmd.split()
-					vim.lsp.buf.definition()
-				end,
-				desc = "split definition",
-			},
-			{
-				"gsv",
+				"gD",
 				function()
 					vim.cmd.vsplit()
 					vim.lsp.buf.definition()
@@ -49,6 +41,7 @@ return {
 				desc = "vsplit definition",
 			},
 			{ "K", vim.lsp.buf.hover, desc = "hover" },
+			{ "<leader>ld", vim.lsp.buf.definition, desc = "definition" },
 			{ "<leader>lR", vim.lsp.buf.rename, desc = "rename symbol" },
 			{ "<leader>lq", vim.diagnostic.setqflist, desc = "quickfix diagnostics" },
 			{ "<leader>li", vim.lsp.buf.implementation, desc = "implementation" },

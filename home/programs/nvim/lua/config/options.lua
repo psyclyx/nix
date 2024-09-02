@@ -18,3 +18,6 @@ vim.o.secure = true
 
 -- autocommands
 vim.api.nvim_create_autocmd("VimResized", { command = "wincmd =" })
+
+-- :h 'shada'
+vim.o.shada = "'1000,<50,s10,h"

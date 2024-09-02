@@ -1,14 +1,16 @@
 -- https://github.com/harrisoncramer/nvim/blob/main/lua/lsp/init.lua
 --
 local cmp_nvim_lsp_status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+local cmp_nvim_lsp_document_symbol_status_ok, _ = pcall(require, "cmp_nvim_lsp_document_symbol")
+local cmp_cmdline_status_ok, _ = pcall(require, "cmp_cmdline")
 
 local keyset = function(mode, lhs, rhs, desc)
 	local opts = { noremap = true, silent = true, nowait = true, desc = desc }
 	vim.keymap.set(mode, lhs, rhs, opts)
 end
 
-if not cmp_nvim_lsp_status_ok then
-	vim.api.nvim_err_writeln("cmp_nvim_lsp not installed!")
+if not (cmp_nvim_lsp_status_ok and cmp_nvim_lsp_document_symbol_status_ok and cmp_cmdline_status_ok) then
+	vim.api.nvim_err_writeln("some cmp sources are not installed")
 	return
 end
 
@@ -17,7 +19,7 @@ local on_attach = function(client, bufnr)
 		vim.api.nvim_set_option_value(name, value, { buf = bufnr })
 	end
 
-	buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
+	--buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
 
 	client.flags.debounce_text_changes = 300
 	client.server_capabilities.documentFormattingProvider = false

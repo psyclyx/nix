@@ -1,7 +1,6 @@
 return {
 	{
 		"folke/which-key.nvim",
-		event = "VeryLazy",
 		init = function()
 			vim.o.timeout = true
 			vim.o.timeoutlen = 300
@@ -14,6 +13,7 @@ return {
 				{ "<leader>f", group = "file" },
 
 				{ "<leader>s", group = "search" },
+				{ "<leader>l", group = "lsp" },
 			},
 		},
 		keys = {

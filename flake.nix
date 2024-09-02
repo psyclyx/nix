@@ -67,12 +67,12 @@
       halo = mkDarwinConfiguration {
         system = "aarch64-darwin";
         hostName = "halo";
-        module = ./darwin/halo.nix;
+        modules = [./darwin/halo.nix];
       };
       ampere = mkDarwinConfiguration {
         system = "aarch64-darwin";
         hostName = "ampere";
-        module = ./darwin/ampere.nix;
+        modules = [./darwin/ampere.nix];
       };
     };
     halo = darwinConfigurations.halo.system;

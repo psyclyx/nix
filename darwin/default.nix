@@ -1,13 +1,13 @@
-{ 
-  inputs, 
-  nixpkgs, 
+{
+  inputs,
+  nixpkgs,
   darwin,
-  home-manager, 
+  home-manager,
   nix-homebrew,
   homebrew-bundle,
   homebrew-core,
-  homebrew-cask, 
-  ... 
+  homebrew-cask,
+  ...
 }:
 
 let
@@ -22,6 +22,7 @@ in
       home-manager.darwinModules.home-manager
       nix-homebrew.darwinModules.nix-homebrew
       ./halo.nix
+      ./link-apps.nix
       {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;

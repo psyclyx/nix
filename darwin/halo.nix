@@ -1,6 +1,12 @@
 {pkgs, homebrew-bundle, homebrew-core, homebrew-cask, ...}:
 
-{ 
+let
+  userName = "psyc";
+  userHome = "/Users/psyc";
+in
+{
+  environment.systemPackages = with pkgs; [ htop kitty ];
+
   nix = {
     package = pkgs.nix;
     gc = {
@@ -17,7 +23,7 @@
   nix-homebrew = {
     enable = true;
     enableRosetta = true;
-    user = "psyc";
+    user = userName;
     mutableTaps = false;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;
@@ -29,15 +35,19 @@
   networking.hostName = "halo";
 
   services.nix-daemon.enable = true;
+  services.link-apps = {
+    enable = true;
+    inherit userName userHome;
+  };
+
 
   users.users.psyc = {
-    name = "psyc";
-    home = "/Users/psyc";
+    name = userName;
+    home = userHome;
     shell = "zsh";
   };
 
   programs.zsh.enable = true;
-  environment.systemPackages = with pkgs; [ htop kitty ];
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";

@@ -29,11 +29,11 @@
     };
   };
 
-  outputs = inputs@{ 
-    self, 
-    nixpkgs, 
-    darwin, 
-    home-manager, 
+  outputs = inputs@{
+    self,
+    nixpkgs,
+    darwin,
+    home-manager,
     nix-homebrew,
     homebrew-bundle,
     homebrew-core,

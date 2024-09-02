@@ -40,6 +40,7 @@
     leiningen
     maven
     neovim
+    nixd
     nodejs
     openjdk11
     python3

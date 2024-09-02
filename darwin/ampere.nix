@@ -1,13 +1,11 @@
 {
+  inputs,
   pkgs,
-  homebrew-bundle,
-  homebrew-core,
-  homebrew-cask,
   ...
 }: let
-  hostName = "ampere";
   userName = "alice";
   userHome = "/Users/alice";
+  inherit (inputs) homebrew-conductorone;
 in {
   nix.envVars = {
     # Todo: use this + bin/setup-netskope to make a service that updates this file
@@ -15,20 +13,9 @@ in {
     #NIX_SSL_CERT_FILE = "/Library/Application Support/Netskope/STAgent/data/nscacert_combined.pem";
   };
 
-  networking.hostName = hostName;
-  security.pam.enableSudoTouchIdAuth = true;
-
   nix-homebrew = {
-    enable = true;
-    enableRosetta = true;
     user = userName;
-    mutableTaps = true;
-    autoMigrate = true;
-    taps = {
-      "homebrew/homebrew-bundle" = homebrew-bundle;
-      "homebrew/homebrew-core" = homebrew-core;
-      "homebrew/homebrew-cask" = homebrew-cask;
-    };
+    taps = {"condutorone/cone" = homebrew-conductorone;};
   };
 
   environment.systemPackages = with pkgs; [

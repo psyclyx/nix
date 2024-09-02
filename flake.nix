@@ -69,8 +69,13 @@
         hostName = "halo";
         module = ./darwin/halo.nix;
       };
+      ampere = mkDarwinConfiguration {
+        system = "aarch64-darwin";
+        hostName = "ampere";
+        module = ./darwin/ampere.nix;
+      };
     };
     halo = darwinConfigurations.halo.system;
-    #ampere = darwinConfigurations.ampere.system;
+    ampere = darwinConfigurations.ampere.system;
   };
 }

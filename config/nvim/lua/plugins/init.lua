@@ -1,4 +1,5 @@
 return {
+	"rcarriga/nvim-notify",
 	{ "guns/vim-sexp", ft = { "clojure" } },
 	{
 		"tpope/vim-fugitive",

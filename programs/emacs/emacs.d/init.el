@@ -1,8 +1,9 @@
 (setq comp-deferred-compilation nil)
 
-(package-initialize)
+(load (expand-file-name "packages.el" user-emacs-directory)
 
 (push (expand-file-name "lisp" user-emacs-directory) load-path)
+
 (push (expand-file-name "modules" user-emacs-directory) load-path)
 
 (require 'cherub-vars)

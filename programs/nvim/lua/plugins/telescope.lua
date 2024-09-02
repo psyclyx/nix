@@ -40,7 +40,7 @@ return {
 			{ "<leader>fg", "<cmd>Telescope git_files<cr>", desc = "git files" },
 			{ "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "recent files" },
 			{ "<leader>r", "<cmd>Telescope resume<cr>", desc = "resume telescope" },
-			{ "<leader>ss", "<cmd>Telescope live_grep", desc = "grep" },
+			{ "<leader>ss", "<cmd>Telescope live_grep<cr>", desc = "grep" },
 		},
 	},
 	"fannheyward/telescope-coc.nvim",

@@ -22,7 +22,7 @@ in
     enable = true;
     enableRosetta = true;
     user = userName;
-    mutableTaps = false;
+    mutableTaps = true;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;
       "homebrew/homebrew-core" = homebrew-core;
@@ -57,10 +57,13 @@ in
     shell = pkgs.zsh;
   };
 
-  programs.zsh.enable = true;
+  programs.zsh = {
+      enable = true;
+  };
+
   programs.direnv.enable = true;
 
-  environment.systemPackages = with pkgs; [ jq clojure neovim tmux nodejs ];
+  environment.systemPackages = with pkgs; [ jq clojure neovim tmux nodejs ripgrep fd];
 
   home-manager.users.psyc = {
     home.stateVersion = "23.11";
@@ -75,6 +78,7 @@ in
     imports = [
       ../programs/zsh
       ../programs/kitty.nix
+      ../programs/nvim
       ../programs/emacs
     ];
   };

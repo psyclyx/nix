@@ -26,15 +26,6 @@
     };
   };
 
-  homebrew = {
-    enable = true;
-    onActivation.autoUpdate = true;
-    onActivation.upgrade = true;
-    casks = [
-      "alfred"
-    ];
-  };
-
   networking.hostName = "halo";
 
   services.nix-daemon.enable = true;

@@ -36,6 +36,7 @@
     clojure-lsp
     fd
     htop
+    git
     jq
     leiningen
     lua-language-server
@@ -60,6 +61,7 @@
       "obsidian"
       "rectangle"
       "spotify"
+      "iterm2"
       "zoom"
     ];
     caskArgs.no_quarantine = true;

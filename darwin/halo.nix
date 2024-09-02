@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   nix = {
@@ -24,5 +24,6 @@
 
   home-manager.users.psyc = {
     home = { stateVersion = "23.11"; };
+    imports = [ ../modules/zsh ];
   };
 }

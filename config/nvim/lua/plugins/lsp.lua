@@ -6,6 +6,7 @@ return {
 			{
 				"ray-x/lsp_signature.nvim",
 				opts = {
+					floating_window = false,
 					hint_prefix = {
 						above = "↙ ",
 						current = "← ",

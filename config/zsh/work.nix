@@ -14,9 +14,6 @@
         # ShadowCLJS must be run from the `web-ui` directory
         cd `git rev-parse --show-toplevel`/service/web/web-ui
 
-        # Our `web-ui` depends on Java 11
-        switch-java 11
-
         # The browser can only connect to ShadowCLJS through our proxy container
         docker-compose up -d web-proxy &
 

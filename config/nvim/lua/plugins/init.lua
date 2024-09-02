@@ -15,7 +15,6 @@ return {
 			vim.cmd.colorscheme("catppuccin-macchiato")
 		end,
 	},
-	"Olical/conjure",
 	{
 		"pablopunk/fixquick.nvim",
 		event = "BufEnter",

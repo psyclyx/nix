@@ -47,9 +47,8 @@
       "firefox"
       "google-chrome"
     ];
-    global = {
-      autoUpdate = false;
-    };
+    caskArgs.no_quarantine = true;
+    global. autoUpdate = false;
     onActivation = {
       autoUpdate = false;
       cleanup = "zap";

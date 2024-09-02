@@ -88,4 +88,4 @@
 
 (meow-setup)
 
-(meow-global-mode 1))
+(meow-global-mode 1)

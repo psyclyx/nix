@@ -1,6 +1,6 @@
 (setq comp-deferred-compilation nil)
 
-(load (expand-file-name "packages.el" user-emacs-directory)
+(load (expand-file-name "packages.el" user-emacs-directory))
 
 (push (expand-file-name "lisp" user-emacs-directory) load-path)
 

@@ -41,6 +41,9 @@ in
     inherit userName userHome;
   };
 
+  services.skhd.enable = true;
+  services.yabai = import ../config/psyc/yabai.nix;
+  
   users.users.psyc = {
     name = userName;
     home = userHome;
@@ -56,6 +59,7 @@ in
       gs = "git status";
       gdh = "git diff HEAD";
     };
+    home.file.".skhdrc".source = ../config/psyc/skhdrc;
     imports = [
       ../programs/zsh
       ../programs/kitty.nix

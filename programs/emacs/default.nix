@@ -2,12 +2,12 @@
 
 let
   emacs-pkg = (pkgs.emacsWithPackagesFromUsePackage {
-                config = ./config.el;
-                defaultInitFile = true;
+                config = .emacs.d/init.el;
                 package = pkgs.emacs-29;
                 alwaysEnsure = true;
   });
 in
 {
   home.packages = [ emacs-pkg ];
+  home.file.".emacs.d" = ./emacs.d
 }

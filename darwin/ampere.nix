@@ -28,7 +28,6 @@ in {
     "google-chrome"
     "docker"
     "chromedriver"
-    "font-sauce-code-pro-nerd-font"
   ];
 
   environment.systemPackages = with pkgs; [

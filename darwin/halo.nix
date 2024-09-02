@@ -20,12 +20,5 @@ in {
     "signal"
   ];
 
-  home-manager.users.psyc = {
-    home.stateVersion = "23.11";
-    imports = [
-      ../config/tmux
-      ../config/zsh
-      ../config/nvim
-    ];
-  };
+  home-manager.users.psyc = import ../home/common.nix;
 }

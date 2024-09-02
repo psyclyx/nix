@@ -44,13 +44,5 @@ in {
     shell = pkgs.zsh;
   };
 
-  home-manager.users.alice = {
-    home.stateVersion = "23.11";
-    imports = [
-      ../config/tmux
-      ../config/zsh
-      ../config/zsh/work.nix
-      ../config/nvim
-    ];
-  };
+  home-manager.users.alice = import ../home/work.nix;
 }

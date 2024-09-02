@@ -37,27 +37,18 @@
   };
 
   outputs = {nixpkgs, ...} @ inputs: let
-    supportedSystems = ["aarch64-darwin"];
-    overlay = import ./pkgs;
-    nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = [overlay];
-      });
-    mkDarwinConfiguration = import ./darwin {
-      inherit inputs nixpkgsFor;
-    };
+    overlays = [(import ./pkgs)];
+    mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
   in rec
   {
     darwinConfigurations = {
       halo = mkDarwinConfiguration {
-        system = "aarch64-darwin";
+        hostPlatform = "aarch64-darwin";
         hostName = "halo";
         modules = [./darwin/halo.nix];
       };
       ampere = mkDarwinConfiguration {
-        system = "aarch64-darwin";
+        hostPlatform = "aarch64-darwin";
         hostName = "ampere";
         modules = [./darwin/ampere.nix];
       };

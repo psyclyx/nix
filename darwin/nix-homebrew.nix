@@ -1,13 +1,14 @@
 {
-  system,
+  pkgs,
   inputs,
   ...
 }: let
   inherit (inputs) homebrew-bundle homebrew-core homebrew-cask;
+  inherit (pkgs.stdenv) hostPlatform;
 in {
   nix-homebrew = {
     enable = true;
-    enableRosetta = system == "aarch64-darwin";
+    enableRosetta = hostPlatform.isAarch64;
     mutableTaps = false;
     autoMigrate = true;
     taps = {

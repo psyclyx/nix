@@ -1,18 +1,22 @@
 {
   inputs,
-  nixpkgsFor,
+  overlays ? [],
 }: {
   hostName,
-  system,
+  hostPlatform,
   modules ? [],
   ...
 } @ args: let
   inherit (inputs) darwin home-manager nix-homebrew;
-  pkgs = nixpkgsFor.${system};
 
   defaultModules = [
-    {networking.hostName = hostName;}
-    {nixpkgs.pkgs = pkgs;}
+    {
+      networking.hostName = hostName;
+      nixpkgs = {
+        inherit overlays hostPlatform;
+        config.allowUnfree = true;
+      };
+    }
     home-manager.darwinModules.home-manager
     nix-homebrew.darwinModules.nix-homebrew
     ./nix-homebrew.nix
@@ -29,8 +33,5 @@ in
       ];
 
     specialArgs =
-      {
-        inherit inputs system;
-      }
-      // args;
+      {inherit inputs;} // args;
   }

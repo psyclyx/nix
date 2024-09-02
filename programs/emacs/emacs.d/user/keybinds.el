@@ -1,6 +1,23 @@
 (require 'bind-key)
 
 (bind-keys
+ :prefix-map cherub/file
+ :prefix "C-c f"
+ ("f" . counsel-find-file)
+ ("r" . counsel-recentf)
+ ("R" . rename-file)
+ ("s" . save-buffer)
+ ("d" . dired-jump)
+ ("D" . dired))
+
+
+(bind-keys
+ :prefix-map cherub/help
+ :prefix "C-c h"
+ ("a" . apropos-command)
+ ("i" . emacs-index-search))
+
+(bind-keys
  :prefix-map cherub/window
  :prefix "C-c w"
  ("d" . delete-window)

@@ -3,7 +3,7 @@ return {
 	dependencies = {
 		-- todo: set up cmp-git
 		"neovim/nvim-lspconfig",
-		"cmp-nvim-lsp-document-symbol",
+		"hrsh7th/cmp-nvim-lsp-document-symbol",
 		"hrsh7th/cmp-nvim-lsp",
 		"hrsh7th/cmp-buffer",
 		"hrsh7th/cmp-path",
@@ -12,6 +12,7 @@ return {
 		"JMarkin/cmp-diag-codes",
 		{
 			"L3MON4D3/LuaSnip",
+			lazy = true,
 			dependencies = {
 				{
 					"rafamadriz/friendly-snippets",
@@ -69,10 +70,11 @@ return {
 			matching = { disallow_symbol_nonprefix_matching = false },
 		})
 		local capabilities = require("cmp_nvim_lsp").default_capabilities()
-        local lspconfig = require("lspconfig")
-        lspconfig.clojure-lsp.setup {
-            capabilities = capabilities
-        }
+		local lspconfig = require("lspconfig")
+		lspconfig.clojure_lsp.setup({})
+		lspconfig.nixd.setup({
+			capabilities = capabilities,
+		})
 	end,
 	event = "InsertEnter",
 }

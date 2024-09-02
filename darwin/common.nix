@@ -43,6 +43,7 @@
     enable = true;
     brews = [];
     casks = [
+      "gimp"
       "discord"
       "orcaslicer"
       "signal"

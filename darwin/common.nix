@@ -38,6 +38,7 @@
     htop
     jq
     leiningen
+    lua-language-server
     maven
     neovim
     nixd

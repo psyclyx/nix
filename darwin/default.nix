@@ -5,6 +5,7 @@
   home-manager,
   darwin-emacs,
   darwin-emacs-packages,
+  spacebar,
   nix-homebrew,
   homebrew-bundle,
   homebrew-core,
@@ -19,6 +20,7 @@ let
            overlays = [
              darwin-emacs.overlays.emacs
              darwin-emacs-packages.overlays.package
+	     spacebar.overlay
            ];
   };
 in

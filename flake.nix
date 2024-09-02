@@ -19,6 +19,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Spacebar
+    spacebar.url = "github:cmacrae/spacebar";
+
     # Homebrew
 
     darwin-emacs-packages = {
@@ -51,6 +54,7 @@
     home-manager,
     darwin-emacs,
     darwin-emacs-packages,
+    spacebar,
     nix-homebrew,
     homebrew-bundle,
     homebrew-core,
@@ -68,6 +72,8 @@
 
           darwin-emacs
           darwin-emacs-packages
+
+          spacebar
 
           nix-homebrew
           homebrew-bundle

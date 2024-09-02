@@ -43,6 +43,13 @@ in
 
   services.skhd.enable = true;
   services.yabai.enable = true;
+  services.spacebar = {
+    package = pkgs.spacebar;
+    enable = false;
+    config = {
+      position = "top";
+    };
+  };
   
   users.users.psyc = {
     name = userName;

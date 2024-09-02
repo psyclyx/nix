@@ -1,0 +1,15 @@
+{
+    "hover.floatConfig": {
+        "winblend": 30
+    },
+    "suggest.floatConfig": {
+        "winblend": 30
+    },
+    "diagnostic.floatConfig": {
+        "winblend": 30
+    },
+    "signature.floatConfig": {
+        "winblend": 30
+    },
+    "signature.target": "echo"
+}

@@ -43,17 +43,16 @@
     enable = true;
     brews = [];
     casks = [
-      "rectangle"
-      "zoom"
-      "spotify"
-      "remarkable"
-      "obsidian"
-      "gimp"
       "discord"
-      "orcaslicer"
-      "signal"
       "firefox"
-      "google-chrome"
+      "gimp"
+      "obsidian"
+      "orcaslicer"
+      "rectangle"
+      "remarkable"
+      "signal"
+      "spotify"
+      "zoom"
     ];
     caskArgs.no_quarantine = true;
     global. autoUpdate = false;

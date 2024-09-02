@@ -6,11 +6,19 @@ return {
 			{
 				"ray-x/lsp_signature.nvim",
 				opts = {
-
 					hint_prefix = {
 						above = "↙ ",
 						current = "← ",
 						below = "↖ ",
+					},
+				},
+				keys = {
+					{
+						"<M-/>",
+						function()
+							require("lsp_signature").toggle_float_win()
+						end,
+						mode = { "n", "i" },
 					},
 				},
 			},

@@ -20,6 +20,24 @@
         # Finally, start ShadowCLJS
         shadow-cljs watch app revl
       }
+
+      # Default AWS profile to use from ~/.aws/config
+      export AWS_PROFILE=dev
+
+      aws-profile () {
+        export AWS_PROFILE="$1"
+        aws sso login
+        aws configure list
+      }
+
+      aws-sts () {
+        aws sts get-caller-identity > /dev/null
+        if [ $? -ne 0 ]; then
+          aws sso login
+        fi
+        eval "$(aws2-wrap --export)"
+        aws configure list
+      }
     '';
   };
 }

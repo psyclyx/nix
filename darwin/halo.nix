@@ -42,7 +42,7 @@ in
   };
 
   services.skhd.enable = true;
-  services.yabai = import ../config/psyc/yabai.nix;
+  services.yabai.enable = true;
   
   users.users.psyc = {
     name = userName;
@@ -60,6 +60,9 @@ in
       gdh = "git diff HEAD";
     };
     home.file.".skhdrc".source = ../config/psyc/skhdrc;
+    home.file.".yabairc".source = ../config/psyc/yabairc;
+    home.file.".yabairc".executable = true;
+    home.packages = [ pkgs.jq ];
     imports = [
       ../programs/zsh
       ../programs/kitty.nix

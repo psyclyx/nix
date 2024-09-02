@@ -1,14 +1,10 @@
 { inputs, nixpkgs, darwin, home-manager, ... }:
-
 let
-  hostPlatform = "aarch64-darwin";
-  pkgs = import nixpkgs {
-    inherit hostPlatform;
-  };
+  pkgs = import nixpkgs;
 in
 {
   halo = darwin.lib.darwinSystem {
-    inherit hostPlatform;
+    hostPlatform = "aarch64-darwin";
     specialArgs = { inherit pkgs; };
     modules = [
       home-manager.darwinModules.home-manager

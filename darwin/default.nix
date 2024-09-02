@@ -19,6 +19,7 @@ in
       ./common.nix
       module
       ./nix-homebrew.nix
+      # Workaround for https://github.com/zhaofengli/nix-homebrew/issues/16
       ./homebrew-taps.nix
     ];
 

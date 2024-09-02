@@ -8,7 +8,7 @@ in {
   nix-homebrew = {
     enable = true;
     enableRosetta = system == "aarch64-darwin";
-    mutableTaps = true;
+    mutableTaps = false;
     autoMigrate = true;
     taps = {
       "homebrew/homebrew-bundle" = homebrew-bundle;

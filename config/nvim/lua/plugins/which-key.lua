@@ -8,11 +8,10 @@ return {
 		opts = {
 			icons = { mappings = false },
 			spec = {
-				{ "<leader>b", group = "buffer" },
-				{ "<leader>f", group = "file" },
+				{ "<leader>b", group = "+buffer" },
+				{ "<leader>f", group = "+file" },
 
-				{ "<leader>s", group = "search" },
-				{ "<leader>l", group = "lsp" },
+				{ "<leader>s", group = "+search" },
 			},
 		},
 		keys = {

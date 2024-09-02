@@ -1,3 +1,75 @@
 return {
-	"neovim/nvim-lspconfig",
+	{
+		"neovim/nvim-lspconfig",
+		keys = {
+			{ "gd", vim.lsp.buf.definition, desc = "definition" },
+			{ "gt", vim.lsp.buf.type_definition, desc = "type definition" },
+			{ "gr", vim.lsp.buf.references, desc = "references" },
+			{
+				"gss",
+				function()
+					vim.cmd.split()
+					vim.lsp.buf.definition()
+				end,
+				desc = "split definition",
+			},
+			{
+				"gsv",
+				function()
+					vim.cmd.split()
+					vim.lsp.buf.definition()
+				end,
+				"vsplit definition",
+			},
+			{ "K", vim.lsp.buf.hover, desc = "hover" },
+			{ "<C-k>", vim.lsp.buf.signature_help, mode = { "n", "i" }, desc = "signature help" },
+			{ "<leader>lR", vim.lsp.buf.rename, desc = "rename symbol" },
+			{ "<leader>lq", vim.diagnostic.setqflist, desc = "quickfix diagnostics" },
+			{ "<leader>li", vim.lsp.buf.implementation, desc = "implementation" },
+			{ "<leader>lt", vim.lsp.buf.type_definition, desc = "type definition" },
+			{ "<leader>lr", vim.lsp.buf.references, desc = "references" },
+			{ "<leader>lc", vim.lsp.buf.incoming_calls, desc = "incoming calls" },
+			{
+				"]W",
+				function()
+					vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })
+				end,
+				desc = "next error",
+			},
+			{
+				"[W",
+				function()
+					vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })
+				end,
+				desc = "prev error",
+			},
+			{
+				"]w",
+				function()
+					vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.WARN })
+				end,
+				desc = "next warn",
+			},
+			{
+				"[w",
+				function()
+					vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.WARN })
+				end,
+				desc = "prev warn",
+			},
+			{ "[d", vim.diagnostic.goto_prev, "prev diagnostic" },
+			{ "]d", vim.diagnostic.goto_next, desc = "next diagnostic" },
+			{ "<C-w>d", vim.diagnostic.float, mode = { "n", "i" }, desc = "show diagnostic" },
+		},
+	},
+	{
+		"folke/which-key.nvim",
+		optional = true,
+		opts_extend = { "spec" },
+		opts = {
+			spec = {
+				{ "<leader>l", group = "+lsp" },
+			},
+		},
+	},
 }

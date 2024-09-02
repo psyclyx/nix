@@ -18,20 +18,12 @@
       };
     }
     home-manager.darwinModules.home-manager
-    nix-homebrew.darwinModules.nix-homebrew
-    ./nix-homebrew.nix
+    ./homebrew.nix
     ./common.nix
   ];
 in
   darwin.lib.darwinSystem {
-    modules =
-      defaultModules
-      ++ modules
-      ++ [
-        # Workaround for https://github.com/zhaofengli/nix-homebrew/issues/16
-        ./homebrew-taps.nix
-      ];
+    modules = defaultModules ++ modules;
 
-    specialArgs =
-      {inherit inputs;} // args;
+    specialArgs = {inherit inputs;} // args;
   }

@@ -56,25 +56,14 @@ in {
     zoxide
   ];
 
-  homebrew = {
-    enable = true;
-    brews = [];
-    casks = [
-      "firefox"
-      "obsidian"
-      "rectangle"
-      "spotify"
-      "iterm2"
-      "zoom"
-    ];
-    caskArgs.no_quarantine = true;
-    global.autoUpdate = false;
-    onActivation = {
-      autoUpdate = false;
-      cleanup = "zap";
-      upgrade = true;
-    };
-  };
+  homebrew.casks = [
+    "firefox"
+    "obsidian"
+    "rectangle"
+    "spotify"
+    "iterm2"
+    "zoom"
+  ];
 
   services.nix-daemon.enable = true;
 

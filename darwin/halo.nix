@@ -1,6 +1,8 @@
 { ... }:
 
 {
+  networking.hostName = "halo";
+
   services.nix-daemon.enable = true;
 
   users.users.psyc = {

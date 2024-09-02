@@ -1,35 +1,23 @@
-{
-  darwin,
-  home-manager,
-  homebrew-bundle,
-  homebrew-cask,
-  homebrew-core,
-  nix-homebrew,
-  pkgs,
-  ...
-}: let
-  system = "aarch64-darwin";
-in {
-  halo = darwin.lib.darwinSystem rec {
+{ inputs, nixpkgsFor }:
+{ hostName, system, module, ... }@args:
+let 
+inherit (inputs) darwin home-manager nix-homebrew;
+in
+darwin.lib.darwinSystem {
     inherit system;
-    specialArgs = {inherit pkgs homebrew-bundle homebrew-core homebrew-cask;};
-    modules = [
-      home-manager.darwinModules.home-manager
-      nix-homebrew.darwinModules.nix-homebrew
-      ./common.nix
-      ./halo.nix
-      ./link-apps.nix
-    ];
-  };
 
-  ampere = darwin.lib.darwinSystem rec {
-    inherit system;
-    specialArgs = {inherit pkgs homebrew-bundle homebrew-core homebrew-cask;};
     modules = [
-      home-manager.darwinModules.home-manager
-      nix-homebrew.darwinModules.nix-homebrew
-      ./common.nix
-      ./ampere.nix
+    { networking.hostName = hostName; }
+    home-manager.darwinModules.home-manager
+    nix-homebrew.darwinModules.nix-homebrew
+    ./common.nix
+    module
+    ./homebrew.nix
     ];
-  };
+
+    specialArgs = { 
+        inherit inputs;
+        pkgs = nixpkgsFor.${system};
+    } // args;
 }
+

@@ -1,6 +1,5 @@
 {pkgs, ...}: {
   nix = {
-    package = pkgs.nix;
     gc = {
       automatic = true;
       interval.Day = 7;
@@ -11,6 +10,8 @@
       experimental-features = nix-command flakes
     '';
   };
+
+  security.pam.enableSudoTouchIdAuth = true;
 
   home-manager.useGlobalPkgs = true;
 

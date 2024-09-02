@@ -1,11 +1,15 @@
 {
   system,
-  userName,
-}: {
+  inputs,
+  ...
+}: 
+let
+inherit (inputs) homebrew-bundle homebrew-core homebrew-cask;
+in
+{
   nix-homebrew = {
     enable = true;
     enableRosetta = system == "aarch64-darwin";
-    user = userName;
     mutableTaps = true;
     autoMigrate = true;
     taps = {

@@ -47,9 +47,9 @@
     homebrew-core,
     homebrew-conductorone,
   } @ inputs:
-    with nixpkgs.lib; let
+    let
       supportedSystems = ["aarch64-darwin"];
-      pkgsFor = genAttrs supportedSystems (system:
+      nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
         import nixpkgs {
           inherit system;
           config.allowUnfree = true;
@@ -59,27 +59,19 @@
             })
           ];
         });
-      mkDarwinConfiguration = system: hostName: {
-          networking.hostName = hostName;
-          security.pam.enableSudoTouchIdAuth = true;
-          modules = [import ./darwin/homebrew.nix {inherit system; userName = ];
-      }
-    in rec {
-      darwinConfigurations = (
-        import ./darwin {
-          pkgs = pkgsFor."aarch64-darwin";
-          inherit
-            darwin
-            home-manager
-            homebrew-bundle
-            homebrew-cask
-            homebrew-core
-            inputs
-            nix-homebrew
-            ;
-        }
-      );
+    mkDarwinConfiguration = import ./darwin {
+        inherit inputs nixpkgsFor;
+    };
+    in rec
+    {
+      darwinConfigurations = {
+        halo = mkDarwinConfiguration {
+          system = "aarch64-darwin";
+          hostName = "halo";
+          module = ./darwin/halo.nix;
+        };
+      };
       halo = darwinConfigurations.halo.system;
-      ampere = darwinConfigurations.ampere.system;
+      #ampere = darwinConfigurations.ampere.system;
     };
 }

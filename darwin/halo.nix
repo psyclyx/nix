@@ -1,30 +1,14 @@
 {
-  pkgs,
-  darwin-emacs,
-  darwin-emacs-packages,
-  homebrew-bundle,
-  homebrew-core,
-  homebrew-cask,
+    inputs,
+    pkgs,
   ...
 }: let
-  hostName = "halo";
   userName = "psyc";
   userHome = "/Users/psyc";
 in {
-  networking.hostName = "halo";
   security.pam.enableSudoTouchIdAuth = true;
 
-  nix-homebrew = {
-    enable = true;
-    enableRosetta = true;
-    user = userName;
-    mutableTaps = true;
-    taps = {
-      "homebrew/homebrew-bundle" = homebrew-bundle;
-      "homebrew/homebrew-core" = homebrew-core;
-      "homebrew/homebrew-cask" = homebrew-cask;
-    };
-  };
+  nix-homebrew.user = userName;
 
   users.users.psyc = {
     name = userName;

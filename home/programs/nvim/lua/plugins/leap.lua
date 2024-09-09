@@ -2,9 +2,14 @@ return {
 	{
 		"ggandor/leap.nvim",
 		config = function()
-			require("leap").create_default_mappings()
+			local l = require("leap")
+			local lts = require("leap.treesitter")
+
+			l.create_default_mappings()
+			l.opts.equivalence_classes = { " \t\r\n", "([{", ")]}", "'\"`" }
+
 			vim.keymap.set({ "n", "x", "o" }, "ga", function()
-				require("leap.treesitter").select()
+				lts.select()
 			end)
 		end,
 	},

@@ -8,5 +8,19 @@ return {
 			vim.g["conjure#filetypes"] = ft
 			vim.g["conjure#extract#tree_sitter#enabled"] = true
 		end,
+		keys = {
+			{ "<localleader>csa", ":ConjureShadowSelect app<cr>", desc = "shadow select app", ft = "clojure" },
+
+			{ "<localleader>csr", ":ConjureShadowSelect app<cr>", desc = "shadow select revl", ft = "clojure" },
+
+			{ "<localleader>css", ":ConjureShadowSelect app<cr>", desc = "shadow select stories", ft = "clojure" },
+		},
+	},
+	{
+		"PaterJason/nvim-treesitter-sexp",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		opts = {
+			set_cursor = true,
+		},
 	},
 }

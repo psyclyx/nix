@@ -17,8 +17,11 @@ return {
 	setup = function(opt_modifier, on_attach)
 		local opts = opt_modifier({
 			on_attach = on_attach,
-			root_dir = lspconfig.util.find_git_ancestor,
-			init_options = { ["text-document-sync-kind"] = "incremental" },
+			root_dir = lspconfig.util.root_pattern("project.clj"),
+			init_options = {
+				["text-document-sync-kind"] = "incremental",
+				["source-aliases"] = { "dev", "repl", "base" },
+			},
 		})
 		lspconfig.clojure_lsp.setup(opts)
 	end,

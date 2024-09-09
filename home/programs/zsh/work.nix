@@ -40,6 +40,14 @@
         eval "$(aws2-wrap --export)"
         aws configure list
       }
+
+      arcopy () {
+        admin-repl $1 start && admin-repl $1 addr | sed 's/ /:/' | notify-copy "arcopy $1"
+      }
+
+      arkill () {
+        admin-repl $1 kill
+      }
     '';
   };
 }

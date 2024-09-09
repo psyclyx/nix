@@ -1,6 +1,6 @@
 return {
 	"rcarriga/nvim-notify",
-	{ "guns/vim-sexp", ft = { "clojure" } },
+	--{ "guns/vim-sexp", ft = { "clojure" } },
 	{
 		"tpope/vim-fugitive",
 		lazy = false,

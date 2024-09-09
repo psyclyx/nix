@@ -7,7 +7,7 @@
   modules ? [],
   ...
 } @ args: let
-  inherit (inputs) darwin home-manager nix-homebrew;
+  inherit (inputs) darwin home-manager;
 
   defaultModules = [
     {

@@ -11,6 +11,7 @@
 
   defaultModules = [
     {
+      system.stateVersion = 4;
       networking.hostName = hostName;
       nixpkgs = {
         inherit overlays hostPlatform;

@@ -7,7 +7,7 @@
       menu = "${pkgs.rofi-wayland}/bin/rofi -show drun -modi drun";
     };
     extraConfig = ''
-      output * scale 2
+      output * scale 1
     '';
   };
 }

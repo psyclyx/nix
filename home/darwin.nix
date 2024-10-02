@@ -1,6 +1,6 @@
 {...}: {
   imports = [
+    ./common.nix
     ./programs/zsh/darwin.nix
-    ./programs/zsh/work.nix
   ];
 }

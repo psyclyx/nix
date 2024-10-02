@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
     darwin.url = "github:LnL7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -54,8 +56,10 @@
   };
 
   outputs = inputs: let
+    inherit (inputs) nixpkgs;
     overlays = [(import ./pkgs)];
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
+    mkNixosConfiguration = import ./nixos {inherit inputs overlays;};
   in rec
   {
     darwinConfigurations = {
@@ -70,7 +74,15 @@
         modules = [./darwin/ampere.nix];
       };
     };
+    nixosConfigurations = {
+      omen = mkNixosConfiguration {
+        hostPlatform = "x86_64-linux";
+        hostName = "omen";
+        modules = [./nixos/omen];
+      };
+    };
     halo = darwinConfigurations.halo.system;
     ampere = darwinConfigurations.ampere.system;
+    omen = nixosConfigurations.omen.system;
   };
 }

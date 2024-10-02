@@ -26,8 +26,6 @@
         fi
       }
 
-      eval ''$(brew shellenv)
-
       path_append "$HOME/bin"
 
 
@@ -43,16 +41,8 @@
       export EDITOR=nvim
 
       [[ -f ~/.anthropic_token ]] && export ANTHROPIC_API_KEY=''$(cat ~/.anthropic_token)
-
-      notify-copy () {
-        local content=''$(cat)
-        echo "''$content" | pbcopy
-        osascript -e "
-          display notification \"Copied ''${content:0:50}\" with title \"''$1\" subtitle \"notify-copy\"
-          beep
-        "
-      }
     '';
+
     shellAliases = {
       ls = "ls --color=auto";
       gs = "git status";

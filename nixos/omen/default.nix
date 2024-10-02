@@ -30,16 +30,24 @@ in {
 
   services.printing.enable = true;
   services.libinput.enable = true;
-  services.interception-tools.enable = true;
   services.fwupd.enable = true;
   programs.light.enable = true;
   hardware.pulseaudio.enable = true;
-
+  services.interception-tools = {
+    enable = true;
+    plugins = [pkgs.interception-tools-plugins.caps2esc];
+    udevmonConfig = lib.mkDefault ''
+      - JOB: "${pkgs.interception-tools}/bin/intercept -g $DEVNODE | ${pkgs.interception-tools-plugins.caps2esc}/bin/caps2esc -m 1 | ${pkgs.interception-tools}/bin/uinput -d $DEVNODE"
+        DEVICE:
+          EVENTS:
+            EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
+    '';
+  };
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet -- time --cmd sway";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --user-menu --remember --asterisks --cmd sway";
       };
       user = "greeter";
     };

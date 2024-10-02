@@ -31,6 +31,20 @@ confirm() {
     esac
 }
 
+rebuild_command=""
+is_darwin=false
+
+if [ "$(uname -s)" = "Darwin" ]; then
+    rebuild_command="darwin-rebuild"
+    is_darwin=true
+elif [ -e /etc/NIXOS ]; then
+    rebuild_command="sudo nixos-rebuild"
+else
+    error "Invalid operating system $(uname -s)"
+    exit 1
+fi
+
+
 while getopts h opt; do
     case $opt in
         h) usage ;;
@@ -47,6 +61,10 @@ system="${2:-$(get_hostname)}"
 
 case "$cmd" in
     bootstrap)
+        if ! $is_darwin; then
+            error "bootstrap only works on Darwin"
+        fi
+
         [ $# -eq 2 ] || error "bootstrap command requires a system name"
         if confirm "Are you sure you want to bootstrap system '$system'?"; then
             nix run nix-darwin -- switch --flake ".#$system"
@@ -61,7 +79,7 @@ case "$cmd" in
             error "Switch cancelled"
         fi
         echo "Switching to '$system'"
-        darwin-rebuild switch --flake ".#$system"
+        $rebuild_command switch --flake ".#$system"
         ;;
     build)
         nix build ".#darwinConfigurations.$system.system"

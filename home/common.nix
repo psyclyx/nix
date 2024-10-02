@@ -1,7 +1,10 @@
 {pkgs, ...}: {
   home.stateVersion = "23.11";
 
-  home.packages = with pkgs; [source-code-pro];
+  home.packages = with pkgs; [
+    source-code-pro
+    firefox
+  ];
 
   fonts.fontconfig.enable = true;
 

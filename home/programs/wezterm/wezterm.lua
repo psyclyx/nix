@@ -84,7 +84,7 @@ config.keys = {
 	{ key = "8", mods = "LEADER", action = act.ActivateTab(7) },
 	{ key = "9", mods = "LEADER", action = act.ActivateTab(8) },
 	{ key = "0", mods = "LEADER", action = act.ActivateTab(9) },
-	{ key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = false }) },
+	{ key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = false }) },
 
 	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "|", mods = "LEADER|SHIFT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
@@ -92,20 +92,19 @@ config.keys = {
 	{ key = "G", mods = "LEADER", action = act.PaneSelect({ mode = "SwapWithActive" }) },
 
 	-- Font size
-	{ key = "0", mods = "SUPER", action = act.ResetFontSize },
-	{ key = "+", mods = "SUPER", action = act.IncreaseFontSize },
-	{ key = "-", mods = "SUPER", action = act.DecreaseFontSize },
+	{ key = "LeftArrow", mods = "CTRL", action = act.ResetFontSize },
+	{ key = "UpArrow", mods = "CTRL", action = act.IncreaseFontSize },
+	{ key = "DownArrow", mods = "CTRL", action = act.DecreaseFontSize },
 
-	{ key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
-	{ key = "v", mods = "SUPER", action = act.PasteFrom("Clipboard") },
-	{ key = "f", mods = "SUPER", action = act.Search("CurrentSelectionOrEmptyString") },
+	{ key = "y", mods = "LEADER", action = act.CopyTo("Clipboard") },
+	{ key = "p", mods = "LEADER", action = act.PasteFrom("Clipboard") },
+	{ key = "/", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
 	{ key = "[", mods = "LEADER", action = act.ActivateCopyMode },
 
-	{ key = "k", mods = "SUPER", action = act.ClearScrollback("ScrollbackOnly") },
-	{ key = "l", mods = "SUPER", action = act.ShowDebugOverlay },
-	{ key = "n", mods = "SUPER", action = act.SpawnWindow },
+	{ key = "k", mods = "LEADER", action = act.ClearScrollback("ScrollbackOnly") },
+	{ key = "?", mods = "LEADER", action = act.ShowDebugOverlay },
 
-	{ key = "p", mods = "LEADER", action = act.ActivateCommandPalette },
+	{ key = "P", mods = "LEADER", action = act.ActivateCommandPalette },
 	{ key = "L", mods = "LEADER", action = act.ShowLauncher },
 	{ key = "w", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
 	{
@@ -129,17 +128,14 @@ config.keys = {
 			end),
 		}),
 	},
-	{ key = "q", mods = "SUPER", action = act.QuitApplication },
-	{ key = "r", mods = "LEADER", action = act.ReloadConfiguration },
-
 	{ key = "LeftArrow", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
 	{ key = "DownArrow", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
 	{ key = "UpArrow", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
 	{ key = "RightArrow", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
-	{ key = "LeftArrow", mods = "SHIFT|LEADER", action = act.AdjustPaneSize({ "Left", 1 }) },
-	{ key = "DownArrow", mods = "SHIFT|LEADER", action = act.AdjustPaneSize({ "Down", 1 }) },
-	{ key = "UpArrow", mods = "SHIFT|LEADER", action = act.AdjustPaneSize({ "Up", 1 }) },
-	{ key = "RightArrow", mods = "SHIFT|LEADER", action = act.AdjustPaneSize({ "Right", 1 }) },
+	{ key = "LeftArrow", mods = "SHIFT|CTRL", action = act.AdjustPaneSize({ "Left", 1 }) },
+	{ key = "DownArrow", mods = "SHIFT|CTRL", action = act.AdjustPaneSize({ "Down", 1 }) },
+	{ key = "UpArrow", mods = "SHIFT|CTRL", action = act.AdjustPaneSize({ "Up", 1 }) },
+	{ key = "RightArrow", mods = "SHIFT|CTRL", action = act.AdjustPaneSize({ "Right", 1 }) },
 }
 
 config.key_tables = {

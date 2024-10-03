@@ -17,4 +17,5 @@ require("config.keymaps")
 require("lazy").setup({
 	spec = { { import = "plugins" } },
 	change_detection = { enabled = false },
+	performance = { rtp = { reset = false } },
 })

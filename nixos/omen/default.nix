@@ -15,6 +15,8 @@ in {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  boot.kernelPackages = pkgs.linuxPackages-rt_latest;
+
   networking.hostName = "omen";
   networking.networkmanager.enable = true;
 
@@ -33,6 +35,7 @@ in {
   services.fwupd.enable = true;
   programs.light.enable = true;
   hardware.pulseaudio.enable = true;
+  services.hardware.bolt.enable = true;
   services.interception-tools = {
     enable = true;
     plugins = [pkgs.interception-tools-plugins.caps2esc];
@@ -46,6 +49,7 @@ in {
   services.greetd = {
     enable = true;
     settings = {
+      vt = 2;
       default_session = {
         command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --user-menu --remember --asterisks --cmd sway";
       };

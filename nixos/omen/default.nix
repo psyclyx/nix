@@ -38,7 +38,7 @@ in {
   services.gnome.gnome-keyring.enable = true;
   programs.light.enable = true;
   hardware.pulseaudio.enable = true;
-  hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
 
   services.hardware.bolt.enable = true;
   services.interception-tools = {

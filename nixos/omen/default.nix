@@ -31,6 +31,14 @@ in {
 
   security.polkit.enable = true;
   security.pam.services.swaylock = {};
+  security.pam.loginLimits = [
+    {
+      domain = "@users";
+      item = "rtprio";
+      type = "-";
+      value = 1;
+    }
+  ];
 
   services.printing.enable = true;
   services.libinput.enable = true;

@@ -5,8 +5,8 @@
     wl-clipboard
     mako
   ];
+  programs.swaylock.enable = true;
   wayland.windowManager.sway = {
-    services.gnome.gnome-keyring.enable = true;
     enable = true;
     config = {
       modifier = "Mod4";

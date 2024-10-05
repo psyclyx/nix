@@ -30,6 +30,7 @@ in {
   time.timeZone = "America/Los_Angeles";
 
   security.polkit.enable = true;
+  security.pam.services.swaylock = {};
 
   services.printing.enable = true;
   services.libinput.enable = true;

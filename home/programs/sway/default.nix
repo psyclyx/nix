@@ -6,6 +6,7 @@
     mako
   ];
   wayland.windowManager.sway = {
+    services.gnome.gnome-keyring.enable = true;
     enable = true;
     config = {
       modifier = "Mod4";

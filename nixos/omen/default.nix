@@ -34,6 +34,7 @@ in {
   services.printing.enable = true;
   services.libinput.enable = true;
   services.fwupd.enable = true;
+  services.gnome.gnome-keyring.enable = true;
   programs.light.enable = true;
   hardware.pulseaudio.enable = true;
   services.hardware.bolt.enable = true;

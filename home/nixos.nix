@@ -15,6 +15,7 @@ in {
   imports = [
     inputs.nix-colors.homeManagerModules.default
     ./common.nix
+    ./xdg.nix
     ./programs/sway
     ./programs/waybar.nix
     ./programs/rofi.nix

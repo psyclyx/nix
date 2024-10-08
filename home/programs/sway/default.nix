@@ -6,6 +6,7 @@ in {
     grim
     slurp
     wl-clipboard
+    pulseaudio
     mako
     wtype
   ];

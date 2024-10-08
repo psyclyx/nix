@@ -22,7 +22,6 @@ in {
     config = {
       floating.modifier = mod;
       modifier = mod;
-      menu = "${pkgs.wofi}/bin/wofi --show run";
       bars = [
         {command = "${pkgs.waybar}/bin/waybar";}
       ];
@@ -31,6 +30,7 @@ in {
         {command = "${pkgs.wezterm}/bin/wezterm";}
         {command = "${pkgs.firefox}/bin/firefox";}
         {command = "${pkgs.obsidian}/bin/obsidian";}
+        {command = "${pkgs.signal-desktop}/bin/signal-desktop";}
       ];
 
       assigns = {
@@ -45,6 +45,10 @@ in {
         "3" = [
           # notes
           {instance = "obsidian";}
+        ];
+        "4" = [
+          # chat
+          {instance = "signal";}
         ];
       };
       gaps = {

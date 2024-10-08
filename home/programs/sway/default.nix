@@ -7,6 +7,7 @@ in {
     slurp
     wl-clipboard
     mako
+    wtype
   ];
   programs.swaylock.enable = true;
 
@@ -137,7 +138,9 @@ in {
 
         "${mod}+Shift+q" = "kill";
 
-        "${mod}+d" = "exec ${pkgs.wofi}/bin/wofi --show run";
+        "${mod}+d" = "exec ${pkgs.rofi}/bin/rofi -show drun";
+        "${mod}+g" = "exec ${pkgs.rofi}/bin/rofi -show filebrowser";
+        "${mod}+m" = "exec ${pkgs.bemoji}/bin/bemoji -t";
         "${mod}+Return" = "exec ${pkgs.wezterm}/bin/wezterm";
         "${mod}+Shift+c" = "reload";
 

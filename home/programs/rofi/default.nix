@@ -3,8 +3,13 @@
   config,
   ...
 }: let
-  c = import ../colors.nix;
+  c = import ../../colors.nix;
 in {
+  home.file."bin/rofi-session".source = ./rofi-session.sh;
+  home.file."bin/rofi-session".executable = true;
+  home.file."bin/rofi-prompt".source = ./rofi-prompt.sh;
+  home.file."bin/rofi-prompt".executable = true;
+
   programs.rofi = {
     enable = true;
     font = "NotoMono Nerd Font 12";

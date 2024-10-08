@@ -18,6 +18,6 @@ in {
     ./xdg.nix
     ./programs/sway
     ./programs/waybar.nix
-    ./programs/rofi.nix
+    ./programs/rofi
   ];
 }

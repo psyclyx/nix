@@ -142,6 +142,7 @@ in {
         "${mod}+g" = "exec ${pkgs.rofi}/bin/rofi -show filebrowser";
         "${mod}+m" = "exec ${pkgs.bemoji}/bin/bemoji -t";
         "${mod}+Return" = "exec ${pkgs.wezterm}/bin/wezterm";
+        "${mod}+Shift+e" = "exec ~/bin/rofi-session";
         "${mod}+Shift+c" = "reload";
 
         "${mod}+r" = "mode resize";

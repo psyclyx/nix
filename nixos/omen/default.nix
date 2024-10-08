@@ -40,6 +40,11 @@ in {
     }
   ];
 
+  fonts.enableDefaultPackages = true;
+  fonts.packages = with pkgs; [
+    (nerdfonts.override {fonts = ["FiraCode" "DroidSansMono"];})
+  ];
+
   services.printing.enable = true;
   services.libinput.enable = true;
   services.fwupd.enable = true;
@@ -83,5 +88,5 @@ in {
     extraGroups = ["wheel" "video" "networkmanager"]; # Enable ‘sudo’ for the user.
   };
 
-  home-manager.users.psyc = ../../home/nixos.nix;
+  home-manager.users.psyc.imports = [../../home/nixos.nix];
 }

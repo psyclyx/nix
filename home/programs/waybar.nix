@@ -10,11 +10,11 @@ in {
     style = ''
       * {
           font-family: Fira Code Nerd Font;
-          font-size: 16px;
+          font-size: 14px;
       }
 
       window#waybar {
-          background-color: ${c.bg};
+          background-color: ${c.bg-alt};
           color: ${c.fg};
       }
 
@@ -38,37 +38,57 @@ in {
       button:hover {
           background: inherit;
           text-shadow: inherit;
-          box-shadow: inset 0 -3px ${c.fg};
+          box-shadow: inset 0 -3px ${c.base-light};
       }
 
       #workspaces button {
           color: ${c.fg-dark};
           background-color: transparent;
-          padding: 0 5px;
+          padding: 0 8px;
       }
 
       #workspaces button.focused {
           color: ${c.fg-light};
-          box-shadow: inset 0 -3px ${c.fg-light};
+          box-shadow: inset 0 -3px ${c.base-light};
       }
 
+      #scratchpad,
+      #mode,
+      #clock,
       #pulseaudio,
       #network,
       #backlight,
       #cpu,
       #memory,
-      #battery,
-      #clock
+      #battery
       {
           padding: 0 16px;
+      }
+
+      #workspaces
+      {
+          padding-right: 16px;
+      }
+
+      #workspaces,
+      #scratchpad,
+      #clock,
+      #pulseaudio,
+      #network,
+      #backlight,
+      #cpu,
+      #memory,
+      #battery
+      {
           color: ${c.fg};
       }
 
-      .modules-right > widget:nth-child(2n) {
-          background-color: ${c.bg-dark};
+      #mode {
+          color: ${c.urgent};
       }
 
-      .modules-right > widget:nth-child(2n+1) {
+      #scratchpad,
+      .modules-right > widget:nth-child(2n) {
           background-color: ${c.bg};
       }
 
@@ -82,6 +102,7 @@ in {
         #spacing = 16;
         modules-left = [
           "sway/workspaces"
+          "sway/scratchpad"
           "sway/mode"
         ];
         modules-center = [
@@ -104,17 +125,20 @@ in {
           sort-by-number = true;
           format = "{icon}";
           format-icons = {
-            "1" = "i";
-            "2" = "ii";
-            "3" = "iii";
-            "4" = "iv";
-            "5" = "v";
-            "6" = "vi";
-            "7" = "vii";
-            "8" = "viii";
-            "9" = "ix";
-            "10" = "x";
+            "1" = "1.term";
+            "2" = "2.web";
+            "3" = "3.notes";
+            "4" = "4";
+            "5" = "5";
+            "6" = "6";
+            "7" = "7";
+            "8" = "8";
+            "9" = "9";
+            "10" = "0";
           };
+        };
+        "sway/scratchpad" = {
+          format-icons = ["" "󰼜"];
         };
         "pulseaudio" = {
           format = "{volume}% {icon}";

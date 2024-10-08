@@ -1,9 +1,9 @@
 rec {
-  slate0 = "#0A292E";
-  slate1 = "#173A41";
-  slate2 = "#274449";
-  slate3 = "#3C5F65";
-  slate4 = "#58787D";
+  slate0 = "#041315";
+  slate1 = "#133c44";
+  slate2 = "#295e66";
+  slate3 = "#488993";
+  slate4 = "#5fbfce";
 
   coffee0 = "#4B2C0E";
   coffee1 = "#694624";
@@ -29,20 +29,17 @@ rec {
   cream1 = "#a59e8d";
   cream0 = "#888172";
 
-  bg = slate1;
-  bg-dark = slate0;
-  bg-light = slate2;
+  bg = blue1;
+  bg-alt = blue0;
 
-  fg = cream3;
+  fg = cream2;
   fg-light = cream4;
-  fg-dark = cream2;
+  fg-dark = cream0;
 
-  base-darker = blue0;
-  base-dark = blue1;
-  base = blue2;
-  base-light = blue3;
-  base-lighter = blue2;
+  base-dark = blue2;
+  base = blue3;
+  base-light = blue4;
 
-  accent = coffee3;
+  accent = slate3;
   urgent = red2;
 }

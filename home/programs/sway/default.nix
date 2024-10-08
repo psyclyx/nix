@@ -20,33 +20,63 @@ in {
       bars = [
         {command = "${pkgs.waybar}/bin/waybar";}
       ];
+
+      startup = [
+        {command = "${pkgs.wezterm}/bin/wezterm";}
+        {command = "${pkgs.firefox}/bin/firefox";}
+        {command = "${pkgs.obsidian}/bin/obsidian";}
+      ];
+
+      assigns = {
+        "1" = [
+          # term
+          {app_id = "org.wezfurlong.wezterm";}
+        ];
+        "2" = [
+          # web
+          {app_id = "firefox";}
+        ];
+        "3" = [
+          # notes
+          {instance = "obsidian";}
+        ];
+      };
       gaps = {
         inner = 8;
         outer = 4;
       };
 
+      window = {
+        border = 2;
+      };
+
+      fonts = {
+        names = ["Fira Code Nerd Font"];
+        size = 10.0;
+      };
+
       colors = {
         background = c.bg;
         focused = {
+          border = c.base;
+          background = c.base;
+          text = c.fg-light;
+          indicator = c.accent;
+          childBorder = c.base;
+        };
+        focusedInactive = {
+          border = c.base-dark;
+          background = c.base;
+          text = c.fg;
+          indicator = c.accent;
+          childBorder = c.base-dark;
+        };
+        unfocused = {
           border = c.base-dark;
           background = c.base-dark;
           text = c.fg;
           indicator = c.accent;
           childBorder = c.base-dark;
-        };
-        focusedInactive = {
-          border = c.base-dark;
-          background = c.base;
-          text = c.fg-light;
-          indicator = c.accent;
-          childBorder = c.base-dark;
-        };
-        unfocused = {
-          border = c.base-light;
-          background = c.base-light;
-          text = c.fg-light;
-          indicator = c.accent;
-          childBorder = c.base-light;
         };
         urgent = {
           border = c.red2;
@@ -96,6 +126,7 @@ in {
         "${mod}+v" = "splitv";
         "${mod}+f" = "fullscreen toggle";
         "${mod}+a" = "focus parent";
+        "${mod}+c" = "focus child";
 
         "${mod}+s" = "layout stacking";
         "${mod}+w" = "layout tabbed";
@@ -109,9 +140,8 @@ in {
         "${mod}+d" = "exec ${pkgs.wofi}/bin/wofi --show run";
         "${mod}+Return" = "exec ${pkgs.wezterm}/bin/wezterm";
         "${mod}+Shift+c" = "reload";
-        "${mod}+Shift+e" = "exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'";
 
-        "${mod}+r" = "resize";
+        "${mod}+r" = "mode resize";
 
         "${mod}+1" = "workspace number 1";
         "${mod}+2" = "workspace number 2";
@@ -124,6 +154,9 @@ in {
         "${mod}+9" = "workspace number 9";
         "${mod}+0" = "workspace number 10";
 
+        "${mod}+period" = "workspace next";
+        "${mod}+comma" = "workspace prev";
+
         "${mod}+Shift+1" = "move container to workspace number 1";
         "${mod}+Shift+2" = "move container to workspace number 2";
         "${mod}+Shift+3" = "move container to workspace number 3";
@@ -133,14 +166,35 @@ in {
         "${mod}+Shift+7" = "move container to workspace number 7";
         "${mod}+Shift+8" = "move container to workspace number 8";
         "${mod}+Shift+9" = "move container to workspace number 9";
-        "${mod}+Shift+0" = "move container to workspace number 10";
+        "${mod}+Shift+0" = "move container to workspace number 0";
+
+        "${mod}+Shift+period" = "move container to workspace next; workspace-next";
+        "${mod}+Shift+comma" = "move container to workspace prev; workspace-prev";
+
+        "${mod}+Shift+minus" = "move scratchpad";
+        "${mod}+minus" = "scratchpad show";
+      };
+      modes = {
+        resize = {
+          Escape = "mode default";
+          Return = "mode default";
+          "h" = "resize shrink width 10 px or 10 ppt";
+          "j" = "resize grow height 10 px or 10 ppt";
+          "k" = "resize shrink height 10 px or 10 ppt";
+          "l" = "resize grow width 10 px or 10 ppt";
+          "Shift+h" = "resize shrink width 50 px or 50 ppt";
+          "Shift+j" = "resize grow height 50 px or 50 ppt";
+          "Shift+k" = "resize shrink height 50 px or 50 ppt";
+          "Shift+l" = "resize grow width 50 px or 50 ppt";
+        };
       };
     };
 
     extraConfig = ''
       output * scale 1
-      output * bg ${c.bg-dark} solid_color
+      output * bg ${c.bg} solid_color
       workspace 1
+      smart_gaps inverse_outer
     '';
   };
 }

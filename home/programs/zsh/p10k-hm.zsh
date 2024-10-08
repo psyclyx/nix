@@ -46,7 +46,7 @@ with lib;
             + "p10k-hm is providing custom direnv integration for zsh. You probably want to disable direnv's integration.")
         ];
 
-        home.file.".p10k.zsh" = cfg.config;
+        home.file.".p10k-config.zsh" = cfg.config;
 
         programs.zsh = {
           initExtraFirst = mkBefore (
@@ -56,7 +56,11 @@ with lib;
             else instantPromptConfig
           );
 
-          initExtra = "source ${powerlevel10k}/powerlevel10k.zsh-theme";
+          initExtra = ''
+            source ${powerlevel10k}/powerlevel10k.zsh-theme
+            source ~/.p10k-config.zsh
+          '';
+
         };
       };
   }

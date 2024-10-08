@@ -8,6 +8,7 @@
 in {
   imports = [
     ./hardware.nix
+    ../plymouth.nix
   ];
 
   system.stateVersion = "24.05"; # Likely don't want to ever change this

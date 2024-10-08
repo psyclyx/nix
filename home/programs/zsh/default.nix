@@ -16,7 +16,7 @@
     enable = true;
     powerlevel10k = {
       enable = true;
-      instantPrompt = true;
+      instantPrompt = false;
       config.source = ./p10k.zsh;
     };
     initExtra = ''
@@ -52,6 +52,7 @@
       gl = "git log --oneline";
       ns = "nix search nixpkgs";
       rn = "wezterm cli rename-workspace";
+      nsp = "nix-shell --run $SHELL -p";
     };
   };
 }

@@ -4,6 +4,7 @@
   ...
 }: let
   inherit (config.colorScheme) palette;
+  c = import ../colors.nix;
 in {
   programs.waybar = {
     style = ''
@@ -13,9 +14,8 @@ in {
       }
 
       window#waybar {
-          background-color: #${palette.base00};
-          color: #${palette.base06};
-
+          background-color: ${c.bg};
+          color: ${c.fg};
       }
 
       .modules-left > widget:first-child > #workspaces {
@@ -38,18 +38,18 @@ in {
       button:hover {
           background: inherit;
           text-shadow: inherit;
-          box-shadow: inset 0 -3px #${palette.base05};
+          box-shadow: inset 0 -3px ${c.fg};
       }
 
       #workspaces button {
-          color: #${palette.base05};
+          color: ${c.fg-dark};
           background-color: transparent;
           padding: 0 5px;
       }
 
       #workspaces button.focused {
-          color: #${palette.base06};
-          box-shadow: inset 0 -3px #${palette.base06};
+          color: ${c.fg-light};
+          box-shadow: inset 0 -3px ${c.fg-light};
       }
 
       #pulseaudio,
@@ -61,15 +61,15 @@ in {
       #clock
       {
           padding: 0 16px;
-          color: #${palette.base06};
+          color: ${c.fg};
       }
 
       .modules-right > widget:nth-child(2n) {
-          background-color: #${palette.base02};
+          background-color: ${c.bg-dark};
       }
 
       .modules-right > widget:nth-child(2n+1) {
-          background-color: #${palette.base03};
+          background-color: ${c.bg};
       }
 
     '';
@@ -79,7 +79,7 @@ in {
         layer = "bottom";
         position = "top";
         height = 24;
-        spacing = 16;
+        #spacing = 16;
         modules-left = [
           "sway/workspaces"
           "sway/mode"

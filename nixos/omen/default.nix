@@ -52,6 +52,11 @@ in {
   programs.light.enable = true;
   hardware.pulseaudio.enable = true;
   hardware.graphics.enable = true;
+  programs.adb.enable = true;
+
+  security.sudo.extraConfig = ''
+    Defaults        timestamp_timeout=30
+  '';
 
   services.hardware.bolt.enable = true;
   services.interception-tools = {
@@ -66,8 +71,8 @@ in {
   };
   services.greetd = {
     enable = true;
+    vt = 2;
     settings = {
-      vt = 2;
       default_session = {
         command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --user-menu --remember --asterisks --cmd sway";
       };
@@ -78,6 +83,7 @@ in {
   environment.systemPackages = with pkgs; [
     neovim
     wget
+    quickemu
   ];
 
   users.users.psyc = {
@@ -85,7 +91,7 @@ in {
     home = userHome;
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = ["wheel" "video" "networkmanager"]; # Enable ‘sudo’ for the user.
+    extraGroups = ["wheel" "video" "networkmanager" "adbusers"];
   };
 
   home-manager.users.psyc.imports = [../../home/nixos.nix];

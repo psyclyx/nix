@@ -55,4 +55,8 @@
     enable = true;
     enableGlobalCompInit = false;
   };
+
+  imports = [
+    ./fonts.nix
+  ];
 }

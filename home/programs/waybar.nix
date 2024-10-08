@@ -9,7 +9,7 @@ in {
   programs.waybar = {
     style = ''
       * {
-          font-family: Fira Code Nerd Font;
+          font-family: NotoMono Nerd Font;
           font-size: 14px;
       }
 

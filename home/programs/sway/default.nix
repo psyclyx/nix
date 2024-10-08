@@ -52,7 +52,7 @@ in {
       };
 
       fonts = {
-        names = ["Fira Code Nerd Font"];
+        names = ["NotoMono Nerd Font"];
         size = 10.0;
       };
 

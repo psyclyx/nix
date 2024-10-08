@@ -5,7 +5,7 @@ local config = wezterm.config_builder()
 -- github.com/NixOS/nixpkgs/issues/336069#issuecomment-2299008280
 config.front_end = "WebGpu"
 
-config.font = wezterm.font("Source Code Pro")
+config.font = wezterm.font("NotoMono Nerd Font")
 config.font_size = 14.0
 
 config.color_scheme = "Catppuccin Macchiato"

@@ -7,7 +7,7 @@
 in {
   programs.rofi = {
     enable = true;
-    font = "Fira Code Nerd Font 12";
+    font = "NotoMono Nerd Font 12";
     package = pkgs.rofi-wayland;
     extraConfig = {
       case-sensitive = false;

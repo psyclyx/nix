@@ -40,11 +40,6 @@ in {
     }
   ];
 
-  fonts.enableDefaultPackages = true;
-  fonts.packages = with pkgs; [
-    (nerdfonts.override {fonts = ["FiraCode" "DroidSansMono"];})
-  ];
-
   services.printing.enable = true;
   services.libinput.enable = true;
   services.fwupd.enable = true;

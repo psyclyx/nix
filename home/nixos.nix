@@ -17,6 +17,7 @@ in {
     ./common.nix
     ./xdg.nix
     ./programs/sway
+    ./programs/swayidle.nix
     ./programs/waybar.nix
     ./programs/rofi
   ];

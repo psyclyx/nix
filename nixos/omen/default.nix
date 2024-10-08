@@ -16,6 +16,7 @@ in {
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.kernelPackages = pkgs.linuxPackages-rt_latest;
+  boot.kernelParams = ["snd-intel-dspcfg.dsp_driver=1"];
 
   networking.hostName = "omen";
   networking.networkmanager.enable = true;
@@ -44,10 +45,15 @@ in {
   services.libinput.enable = true;
   services.fwupd.enable = true;
   services.gnome.gnome-keyring.enable = true;
+  services.pipewire = {
+    enable = true;
+    audio.enable = true;
+    pulse.enable = true;
+  };
   programs.light.enable = true;
-  hardware.pulseaudio.enable = true;
   hardware.graphics.enable = true;
   programs.adb.enable = true;
+  security.rtkit.enable = true;
 
   security.sudo.extraConfig = ''
     Defaults        timestamp_timeout=30
@@ -79,6 +85,7 @@ in {
     neovim
     wget
     quickemu
+    qt5.qtwayland
   ];
 
   users.users.psyc = {

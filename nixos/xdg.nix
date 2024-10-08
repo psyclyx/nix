@@ -1,5 +1,6 @@
 {pkgs, ...}:
 with pkgs; {
+  services.pipewire.enable = true;
   xdg = {
     portal = {
       enable = true;

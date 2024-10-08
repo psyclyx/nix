@@ -6,7 +6,7 @@
 lock='Lock'
 log_out='Log out'
 
-chosen=$(printf '%s;%s;\n' "$lock" "$log_out" \
+chosen=$(printf '%s;%s\n' "$lock" "$log_out" \
     | rofi \
            -dmenu \
            -sep ';' )
@@ -17,7 +17,7 @@ case "$chosen" in
         ;;
 
     "$log_out")
-        ~/bin/rofi-prompt --query "Log out?" && swaymsg '[class=".*"]' kill && swaymsg exit
+        ~/bin/rofi-prompt --query "Log out?" && ~/bin/sway-logout
         ;;
 
     *) exit 1 ;;

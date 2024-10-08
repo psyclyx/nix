@@ -20,5 +20,6 @@ in {
     ./programs/swayidle.nix
     ./programs/waybar.nix
     ./programs/rofi
+    ./programs/signal.nix
   ];
 }

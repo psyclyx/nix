@@ -21,5 +21,6 @@ in {
     ./programs/waybar.nix
     ./programs/rofi
     ./programs/signal.nix
+    ./themes/gtk.nix
   ];
 }

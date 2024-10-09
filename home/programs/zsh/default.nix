@@ -16,7 +16,7 @@
     enable = true;
     powerlevel10k = {
       enable = true;
-      instantPrompt = false;
+      instantPrompt = true;
       config.source = ./p10k.zsh;
     };
     initExtra = ''

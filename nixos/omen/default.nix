@@ -54,6 +54,7 @@ in {
   programs.light.enable = true;
   hardware.graphics.enable = true;
   programs.adb.enable = true;
+  programs.dconf.enable = true;
   security.rtkit.enable = true;
 
   security.sudo.extraConfig = ''

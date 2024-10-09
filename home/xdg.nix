@@ -9,6 +9,8 @@
       music = "\$HOME/music";
       pictures = "\$HOME/pictures";
       videos = "\$HOME/videos";
+      templates = "\$HOME/templates";
+      publicShare = "\$HOME/public";
     };
     configFile = {
       "mimeapps.list".force = true;

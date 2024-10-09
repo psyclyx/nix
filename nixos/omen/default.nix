@@ -17,7 +17,7 @@ in {
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.kernelPackages = pkgs.linuxPackages-rt_latest;
-  boot.kernelParams = ["snd-intel-dspcfg.dsp_driver=1"];
+  boot.kernelParams = ["snd-intel-dspcfg.dsp_driver=1" "i915.enable_psr=0"];
 
   networking.hostName = "omen";
   networking.networkmanager.enable = true;

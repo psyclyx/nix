@@ -82,7 +82,7 @@ case "$cmd" in
         $rebuild_command switch --flake ".#$system"
         ;;
     build)
-        nix build ".#darwinConfigurations.$system.system"
+        nix build ".#$system"
         echo "Build completed for system '$system'. The result is available in ./result"
         ;;
     *)

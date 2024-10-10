@@ -61,7 +61,7 @@
     inherit (inputs) nixpkgs;
     overlays = [(import ./pkgs)];
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
-    mkNixosConfiguration = import ./nixos {inherit inputs overlays;};
+    mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
   in rec
   {
     darwinConfigurations = {
@@ -80,7 +80,7 @@
       omen = mkNixosConfiguration {
         hostPlatform = "x86_64-linux";
         hostName = "omen";
-        modules = [./nixos/omen];
+        modules = [./hosts/omen];
       };
     };
     halo = darwinConfigurations.halo.system;

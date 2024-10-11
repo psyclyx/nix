@@ -10,6 +10,7 @@ in {
     firefox
     neofetch
     obsidian
+    git
   ];
 
   imports = [

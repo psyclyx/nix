@@ -77,7 +77,7 @@ in {
         "clock" = {
           interval = 60;
           tooltip = false;
-          format = "{:%R %a %d/%m/%y}";
+          format = "{:%R %a %d/%m/%y} 󰥔";
         };
         "cpu" = {
           format = "{usage}% ";

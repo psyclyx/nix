@@ -10,6 +10,10 @@
       sqlite
       stylua
       (tree-sitter.withPlugins (plugins: tree-sitter.allGrammars))
+      nixd
+      ripgrep
+      alejandra
+      lua-language-server
     ];
   };
 }

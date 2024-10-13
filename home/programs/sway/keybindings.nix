@@ -62,10 +62,10 @@ in {
 
         "${mod}+Shift+q" = "kill";
 
-        "${mod}+d" = "exec ${rofi}/bin/rofi -show drun";
-        "${mod}+g" = "exec ${rofi}/bin/rofi -show filebrowser";
-        "${mod}+m" = "exec ${bemoji}/bin/bemoji -t";
-        "${mod}+Return" = "exec ${wezterm}/bin/wezterm";
+        "${mod}+d" = "exec ${rofi} -show drun";
+        "${mod}+g" = "exec ${rofi} -show filebrowser";
+        "${mod}+m" = "exec ${bemoji} -t";
+        "${mod}+Return" = "exec ${wezterm}";
         "${mod}+Shift+e" = "exec ~/bin/rofi-session";
         "${mod}+Shift+c" = "reload";
 

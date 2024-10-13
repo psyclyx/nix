@@ -19,11 +19,12 @@ config.window_padding = {
 -- Appearance
 
 config.use_fancy_tab_bar = false
-config.hide_tab_bar_if_only_one_tab = false
+config.hide_tab_bar_if_only_one_tab = true
+config.hide_mouse_cursor_when_typing = true
 config.use_resize_increments = true
 config.tab_bar_at_bottom = true
 config.scrollback_lines = 3500
-config.enable_scroll_bar = true
+config.enable_scroll_bar = false
 config.show_new_tab_button_in_tab_bar = false
 
 config.unzoom_on_switch_pane = true

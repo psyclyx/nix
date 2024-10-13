@@ -47,24 +47,24 @@ in {
         ];
       };
       gaps = {
-        inner = 8;
-        outer = 4;
+        inner = 2;
+        outer = 0;
       };
 
       window = {
-        border = 2;
+        border = 1;
       };
 
       fonts = {
         names = ["NotoMono Nerd Font"];
-        size = 10.0;
+        size = 8.0;
       };
 
       colors = {
         background = c.bg;
         focused = {
           border = c.base;
-          background = c.base;
+          background = c.base-light;
           text = c.fg-light;
           indicator = c.accent;
           childBorder = c.base;
@@ -103,8 +103,8 @@ in {
         "XF86MonBrightnessDown" = "exec light -U 10";
         "XF86MonBrightnessUp" = "exec light -A 10";
 
-        "XF86AudioRaiseVolume" = "exec 'pactl set-sink-volume @DEFAULT_SINK@ +1%'";
-        "XF86AudioLowerVolume" = "exec 'pactl set-sink-volume @DEFAULT_SINK@ -1%'";
+        "XF86AudioRaiseVolume" = "exec 'pactl set-sink-volume @DEFAULT_SINK@ +5%'";
+        "XF86AudioLowerVolume" = "exec 'pactl set-sink-volume @DEFAULT_SINK@ -5%'";
         "XF86AudioMute" = "exec 'pactl set-sink-mute @DEFAULT_SINK@ toggle'";
 
         "${mod}+h" = "focus left";
@@ -202,7 +202,6 @@ in {
       output * scale 1
       output * bg ${c.bg} solid_color
       workspace 1
-      smart_gaps inverse_outer
     '';
   };
 }

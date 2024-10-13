@@ -19,7 +19,6 @@ in {
     ./xdg.nix
     ./programs/sway
     ./programs/swayidle.nix
-    ./programs/waybar.nix
     ./programs/rofi
     ./programs/signal.nix
     ./programs/vscodium.nix

@@ -1,10 +1,15 @@
-{...}: {
+{pkgs, ...}: {
   programs = {
     sway = {
       enable = true;
       wrapperFeatures = {
         gtk = true;
       };
+
+      extraPackages = [
+        pkgs.wl-clipboard
+        pkgs.wtype
+      ];
 
       extraSessionCommands = ''
         export SDL_VIDEODRIVER=wayland

@@ -4,6 +4,7 @@ in {
   imports = [
     ./theme.nix
     ./keybindings.nix
+    ./waybar
   ];
 
   home.packages = with pkgs; [

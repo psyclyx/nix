@@ -1,8 +1,4 @@
-{
-  pkgs,
-  config,
-  ...
-}: let
+{pkgs, ...}: let
   mod = "Mod4";
 
   left = "h";
@@ -29,6 +25,7 @@
 in {
   wayland.windowManager.sway = {
     config = {
+      modifier = mod;
       keybindings = {
         "XF86MonBrightnessDown" = "exec ${light} -U 10";
         "XF86MonBrightnessUp" = "exec ${light} -A 10";

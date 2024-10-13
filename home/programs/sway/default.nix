@@ -28,6 +28,7 @@ in {
       defaultWorkspace = "workspace number 1";
 
       startup = [
+        {command = "${pkgs.wezterm}/bin/wezterm";}
         {command = "${pkgs.firefox}/bin/firefox";}
         {command = "${pkgs.obsidian}/bin/obsidian";}
         {command = "${pkgs.signal-desktop}/bin/signal-desktop";}

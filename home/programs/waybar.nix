@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  ...
-}: let
-  inherit (config.colorScheme) palette;
+{...}: let
   c = import ../colors.nix;
 in {
   programs.waybar = {
@@ -125,7 +120,7 @@ in {
           sort-by-number = true;
           format = "{icon}";
           format-icons = {
-            "1" = "1.term";
+            "1" = "1.code";
             "2" = "2.web";
             "3" = "3.notes";
             "4" = "4.chat";

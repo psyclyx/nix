@@ -22,6 +22,7 @@ in {
     ./programs/waybar.nix
     ./programs/rofi
     ./programs/signal.nix
+    ./programs/vscodium.nix
     ./themes/gtk.nix
   ];
 }

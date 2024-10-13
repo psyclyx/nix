@@ -48,7 +48,7 @@ in {
       }
 
       #workspaces button.focused {
-          color: ${c.fg-light};
+          color: ${c.fg};
           box-shadow: inset 0 -3px ${c.base-light};
       }
 

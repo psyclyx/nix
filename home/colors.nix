@@ -32,9 +32,9 @@ rec {
   bg = blue1;
   bg-alt = blue0;
 
-  fg = cream2;
-  fg-light = cream4;
-  fg-dark = cream0;
+  fg = cream4;
+  fg-dark = cream2;
+  fg-darker = cream0;
 
   base-dark = blue2;
   base = blue3;

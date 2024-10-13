@@ -111,10 +111,10 @@ in {
           "${down}" = "resize grow height 10 px or 10 ppt";
           "${up}" = "resize shrink height 10 px or 10 ppt";
           "${right}" = "resize grow width 10 px or 10 ppt";
-          "Shift+${left}" = "resize shrink width 50 px or 50 ppt";
-          "Shift+${down}" = "resize grow height 50 px or 50 ppt";
-          "Shift+${up}" = "resize shrink height 50 px or 50 ppt";
-          "Shift+${right}" = "resize grow width 50 px or 50 ppt";
+          "Shift+${left}" = "resize shrink width 20 px or 20 ppt";
+          "Shift+${down}" = "resize grow height 20 px or 20 ppt";
+          "Shift+${up}" = "resize shrink height 20 px or 20 ppt";
+          "Shift+${right}" = "resize grow width 20 px or 20 ppt";
         };
       };
     };

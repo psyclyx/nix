@@ -23,7 +23,7 @@ in {
           {app_id = "xdg-desktop-portal-gtk";}
           {
             app_id = "firefox";
-            name = "Library";
+            title = "Library";
           }
         ];
       };

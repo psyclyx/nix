@@ -15,24 +15,30 @@ in {
     package = null;
 
     config = {
-      floating.modifier = mod;
+      floating = {
+        modifier = mod;
+        criteria = [{app_id = "xdg-desktop-portal-gtk";}];
+      };
+
       modifier = mod;
       bars = [
         {command = "${pkgs.waybar}/bin/waybar";}
       ];
 
       startup = [
-        {command = "${pkgs.wezterm}/bin/wezterm";}
         {command = "${pkgs.firefox}/bin/firefox";}
         {command = "${pkgs.obsidian}/bin/obsidian";}
         {command = "${pkgs.signal-desktop}/bin/signal-desktop";}
       ];
 
+      focus = {
+        wrapping = "force";
+        newWindow = "urgent";
+      };
+
+      workspaceAutoBackAndForth = true;
+
       assigns = {
-        "1" = [
-          # term
-          {app_id = "org.wezfurlong.wezterm";}
-        ];
         "2" = [
           # web
           {app_id = "firefox";}
@@ -46,9 +52,9 @@ in {
           {instance = "signal";}
         ];
       };
+
       gaps = {
         inner = 2;
-        outer = 0;
       };
 
       window = {
@@ -201,6 +207,7 @@ in {
     extraConfig = ''
       output * scale 1
       output * bg ${c.bg} solid_color
+      titlebar_padding 4 2
       workspace 1
     '';
   };

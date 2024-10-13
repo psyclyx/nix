@@ -19,7 +19,13 @@ in {
 
     config = {
       floating = {
-        criteria = [{app_id = "xdg-desktop-portal-gtk";}];
+        criteria = [
+          {app_id = "xdg-desktop-portal-gtk";}
+          {
+            app_id = "firefox";
+            name = "Library";
+          }
+        ];
       };
 
       bars = [

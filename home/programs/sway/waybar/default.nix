@@ -74,6 +74,22 @@ in {
           format-disconnected = "Disconnected ";
           format-alt = "{ifname} = {ipaddr}/{cidr} ";
         };
+        "backlight" = {
+          format = "{percent}% {icon}";
+          format-icons = [
+            "󰹐"
+            "󱩎"
+            "󱩏"
+            "󱩐"
+            "󱩑"
+            "󱩒"
+            "󱩓"
+            "󱩔"
+            "󱩕"
+            "󱩖"
+            "󰛨"
+          ];
+        };
         "clock" = {
           interval = 60;
           tooltip = false;

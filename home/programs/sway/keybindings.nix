@@ -6,21 +6,10 @@
   up = "k";
   right = "l";
 
-  bemoji-pkg = pkgs.bemoji.overrideAttrs (
-    prev: {
-      buildInputs =
-        (prev.buildInputs or [])
-        ++ [
-          pkgs.wl-clipboard
-          pkgs.wtype
-        ];
-    }
-  );
-
   light = "${pkgs.light}/bin/light";
   pactl = "${pkgs.pulseaudio}/bin/pactl";
   rofi = "${pkgs.rofi}/bin/rofi";
-  bemoji = "${bemoji-pkg}/bin/bemoji";
+  bemoji = "${pkgs.bemoji}/bin/bemoji";
   wezterm = "${pkgs.wezterm}/bin/wezterm";
 in {
   wayland.windowManager.sway = {

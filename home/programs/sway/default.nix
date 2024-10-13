@@ -40,6 +40,10 @@ in {
       };
 
       assigns = {
+        "1" = [
+          # code
+          {instance = "vscodium";}
+        ];
         "2" = [
           # web
           {app_id = "firefox";}

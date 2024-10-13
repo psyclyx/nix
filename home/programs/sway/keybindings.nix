@@ -13,7 +13,7 @@
   bemoji-pkg = pkgs.bemoji.overrideAttrs (
     prev: {
       buildInputs =
-        prev.buildInputs
+        (prev.buildInputs or [])
         ++ [
           pkgs.wl-clipboard
           pkgs.wtype

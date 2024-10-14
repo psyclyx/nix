@@ -1,6 +1,8 @@
 {pkgs, ...}: {
   imports = [./p10k-hm.zsh];
-  home.packages = [pkgs.fzf];
+  home.packages = with pkgs; [
+    jq
+  ];
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;

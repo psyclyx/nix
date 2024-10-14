@@ -195,6 +195,7 @@ config.key_tables = {
 		-- # actions
 		{ key = "Escape", mods = "NONE", action = act.CopyMode("Close") },
 		{ key = "c", mods = "CTRL", action = act.CopyMode("Close") },
+		{ key = "q", mods = "CTRL", action = act.CopyMode("Close") },
 		{ key = "v", mods = "NONE", action = act.CopyMode({ SetSelectionMode = "Cell" }) },
 		{ key = "v", mods = "CTRL", action = act.CopyMode({ SetSelectionMode = "Block" }) },
 		{ key = "V", mods = "NONE", action = act.CopyMode({ SetSelectionMode = "Line" }) },

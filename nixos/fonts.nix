@@ -15,7 +15,7 @@
 
     fontconfig = {
       defaultFonts = {
-        monospace = ["NotoMono Nerd Font"];
+        monospace = ["NotoMono Nerd Font Mono"];
         serif = ["NotoSerif Nerd Font"];
         sansSerif = ["NotoSans Nerd Font"];
         emoji = ["Twitter Color Emoji"];

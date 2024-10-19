@@ -3,7 +3,6 @@
 
   home.packages = with pkgs; [
     source-code-pro
-    firefox
   ];
 
   fonts.fontconfig.enable = true;

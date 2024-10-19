@@ -4,6 +4,13 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    nur.url = "github:nix-community/NUR";
+
+    rycee-nurpkgs = {
+      url = gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons;
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     darwin.url = "github:LnL7/nix-darwin";
@@ -11,8 +18,6 @@
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    nix-colors.url = "github:misterio77/nix-colors";
 
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
@@ -58,8 +63,11 @@
   };
 
   outputs = inputs: let
-    inherit (inputs) nixpkgs;
-    overlays = [(import ./pkgs)];
+    overlays = [
+      (import ./pkgs)
+      inputs.nur.overlay
+    ];
+
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
     mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
   in rec

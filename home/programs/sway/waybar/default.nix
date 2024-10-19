@@ -1,5 +1,5 @@
 {...}: let
-  c = import ../colors.nix;
+  c = import ../../../colors.nix;
 in {
   imports = [./style.nix];
   programs.waybar = {
@@ -8,7 +8,7 @@ in {
       mainBar = {
         layer = "bottom";
         position = "top";
-        height = 24;
+        margin = "0px 0px";
         modules-left = [
           "sway/workspaces"
           "sway/scratchpad"
@@ -54,7 +54,7 @@ in {
           format-alt = "{volume}% {icon} {format_source}";
           format-bluetooth = "{volume}% {icon} {format_source}";
           format-bluetooth-muted = " {icon} {format_source}";
-          format-muted = "{volume}%  {format_source}";
+          format-muted = "{volume}%   {format_source}";
           format-source = "{volume}% ";
           format-source-muted = "{volume}% ";
           format-icons = {
@@ -68,14 +68,15 @@ in {
         };
         "network" = {
           format-wifi = "{signalStrength}% ";
-          format-ethernet = "{ipaddr}/{cidr} ";
-          tooltip-format = "{ifname} via {gwaddr} ";
-          format-linked = "{ifname} (No IP) ";
-          format-disconnected = "Disconnected ";
+          format-ethernet = "{ipaddr}/{cidr} 󰈁";
+          tooltip-format = "{ifname} via {gwaddr}";
+          format-linked = "{ifname} (No IP) 󰲚";
+          format-disconnected = "Disconnected ";
           format-alt = "{ifname} = {ipaddr}/{cidr} ";
         };
         "backlight" = {
           format = "{percent}% {icon}";
+          format-full = "{icon}";
           format-icons = [
             "󰹐"
             "󱩎"
@@ -96,30 +97,44 @@ in {
           format = "{:%R %a %d/%m/%y} 󰥔";
         };
         "cpu" = {
-          format = "{usage}% ";
+          interval = 8;
+          format = "{icon0}{icon1}{icon2}{icon3}";
+          format-icons = [
+            "<span color='${c.slate1}'>▁</span>"
+            "<span color='${c.slate2}'>▂</span>"
+            "<span color='${c.slate3}'>▃</span>"
+            "<span color='${c.blue3}'>▄</span>"
+            "<span color='${c.blue4}'>▅</span>"
+            "<span color='${c.red2}'>▆</span>"
+            "<span color='${c.red3}'>▇</span>"
+            "<span color='${c.red4}'>█</span>"
+          ];
           tooltip = false;
         };
         "memory" = {
-          format = "{}% ";
+          interval = 8;
+          format = "{}% ";
         };
         "battery" = {
           states = {
-            good = 97;
+            good = 100;
+            normal = 80;
             warning = 30;
             critical = 10;
           };
-          interval = 2;
-          format = "{capacity}% {icon}";
-          format-charging = "{capacity}% ";
-          format-plugged = "{capacity}% ";
+          interval = 30;
+          tooltip = "{capacity}%";
           format-alt = "{time} {icon}";
-          # "format-good": ""; # An empty format will hide the module
-          # "format-full": "";
+          format = "{icon}";
+          format-warning = "{icon}{capacity}%";
+          format-charging = "󱐥 {capacity}%";
+          format-charging-alt = "󱐥 {capacity}% {time}";
+          format-plugged = "󰚥 {capacity}% ";
           format-icons = [
             ""
-            ""
-            ""
-            ""
+            ""
+            ""
+            ""
             ""
           ];
         };

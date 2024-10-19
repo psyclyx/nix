@@ -8,6 +8,7 @@
   ...
 } @ args: let
   inherit (inputs) nixpkgs home-manager;
+  inherit (inputs.rycee-nurpkgs.lib.${hostPlatform}) buildFirefoxXpiAddon;
 in
   nixpkgs.lib.nixosSystem {
     modules =
@@ -26,5 +27,5 @@ in
       ]
       ++ modules;
 
-    specialArgs = {inherit inputs;} // args;
+    specialArgs = {inherit inputs buildFirefoxXpiAddon;} // args;
   }

@@ -1,20 +1,12 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: let
+{pkgs, ...}: let
 in {
-  colorScheme = inputs.nix-colors.colorSchemes.solarized-dark;
-
   home.packages = with pkgs; [
-    firefox
     neofetch
     obsidian
     git
   ];
 
   imports = [
-    inputs.nix-colors.homeManagerModules.default
     ./common.nix
     ./xdg.nix
     ./programs/sway
@@ -22,6 +14,7 @@ in {
     ./programs/rofi
     ./programs/signal.nix
     ./programs/vscodium.nix
+    ./programs/firefox
     ./themes/gtk.nix
   ];
 }

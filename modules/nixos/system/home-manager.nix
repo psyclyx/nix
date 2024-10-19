@@ -1,4 +1,8 @@
-{inputs, ...}: {
+{
+  inputs,
+  buildFirefoxXpiAddon,
+  ...
+}: {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;

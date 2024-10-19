@@ -7,7 +7,7 @@
     nur.url = "github:nix-community/NUR";
 
     rycee-nurpkgs = {
-      url = gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons;
+      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -23,6 +23,17 @@
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
 
     mac-app-util.url = "github:hraban/mac-app-util";
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    wezterm = {
+      url = "github:wez/wezterm/main?dir=nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-overlay.follows = "rust-overlay";
+    };
 
     powerlevel10k = {
       url = "github:romkatv/powerlevel10k";
@@ -65,6 +76,7 @@
   outputs = inputs: let
     overlays = [
       (import ./pkgs)
+      (import ./overlays/wezterm.nix inputs.wezterm)
       inputs.nur.overlay
     ];
 

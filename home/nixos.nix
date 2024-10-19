@@ -4,6 +4,7 @@ in {
     neofetch
     obsidian
     git
+    kitty
   ];
 
   imports = [

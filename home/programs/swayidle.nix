@@ -1,22 +1,24 @@
-{pkgs, ...}: {
-  home.packages = [pkgs.swaylock-effects];
+{pkgs, ...}: let
+  swaylock = pkgs.swaylock;
+in {
+  home.packages = [swaylock];
   services = {
     swayidle = {
       enable = true;
       events = [
         {
           event = "before-sleep";
-          command = "${pkgs.swaylock-effects}/bin/swaylock";
+          command = "${swaylock}/bin/swaylock";
         }
         {
           event = "lock";
-          command = "${pkgs.swaylock-effects}/bin/swaylock";
+          command = "${swaylock}/bin/swaylock";
         }
       ];
       timeouts = [
         {
           timeout = 300;
-          command = "${pkgs.swaylock-effects}/bin/swaylock -fF";
+          command = "${swaylock}/bin/swaylock -fF";
         }
       ];
     };

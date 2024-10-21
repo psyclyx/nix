@@ -49,14 +49,16 @@ in {
         "sway/scratchpad" = {
           format-icons = ["" "󰼜"];
         };
+
         "pulseaudio" = {
-          format = "{volume}% {icon}";
-          format-alt = "{volume}% {icon} {format_source}";
-          format-bluetooth = "{volume}% {icon} {format_source}";
-          format-bluetooth-muted = " {icon} {format_source}";
-          format-muted = "{volume}%   {format_source}";
-          format-source = "{volume}% ";
-          format-source-muted = "{volume}% ";
+          format = "{icon} {volume}%";
+          format-alt = "{icon} {volume}% {format_source}";
+          format-bluetooth = "{icon} {volume}%";
+          format-bluetooth-alt = "{icon} {volume}% {format_source}";
+          format-bluetooth-muted = " {volume}% {format_source}";
+          format-muted = " {volume}% {format_source}";
+          format-source = " {volume}%";
+          format-source-muted = " {volume}%";
           format-icons = {
             headphone = "";
             default = [
@@ -67,16 +69,13 @@ in {
           };
         };
         "network" = {
-          format-wifi = "{signalStrength}% ";
-          format-ethernet = "{ipaddr}/{cidr} 󰈁";
-          tooltip-format = "{ifname} via {gwaddr}";
-          format-linked = "{ifname} (No IP) 󰲚";
-          format-disconnected = "Disconnected ";
-          format-alt = "{ifname} = {ipaddr}/{cidr} ";
+          format-wifi = " {signalStrength}% {ifname} {ipaddr}/{cidr}";
+          format-ethernet = "󰈁 {ipaddr}/{cidr}";
+          format-linked = "󰲚 {ifname} (No IP)";
+          format-disconnected = " Disconnected ";
         };
         "backlight" = {
-          format = "{percent}% {icon}";
-          format-full = "{icon}";
+          format = "{icon} {percent}%";
           format-icons = [
             "󰹐"
             "󱩎"
@@ -94,11 +93,11 @@ in {
         "clock" = {
           interval = 60;
           tooltip = false;
-          format = "{:%R %a %d/%m/%y} 󰥔";
+          format = "󰥔 {:%R %a %d/%m/%y}";
         };
         "cpu" = {
-          interval = 8;
-          format = "{icon0}{icon1}{icon2}{icon3}";
+          interval = 4;
+          format = " {icon0}{icon1}{icon2}{icon3}";
           format-icons = [
             "<span color='${c.slate1}'>▁</span>"
             "<span color='${c.slate2}'>▂</span>"
@@ -112,8 +111,8 @@ in {
           tooltip = false;
         };
         "memory" = {
-          interval = 8;
-          format = "{}% ";
+          interval = 4;
+          format = " {}%";
         };
         "battery" = {
           states = {
@@ -122,14 +121,12 @@ in {
             warning = 30;
             critical = 10;
           };
-          interval = 30;
-          tooltip = "{capacity}%";
-          format-alt = "{time} {icon}";
-          format = "{icon}";
-          format-warning = "{icon}{capacity}%";
-          format-charging = "󱐥 {capacity}%";
-          format-charging-alt = "󱐥 {capacity}% {time}";
-          format-plugged = "󰚥 {capacity}% ";
+          interval = 15;
+          tooltip = "{time}";
+          format = "{icon} {capacity}% ";
+          format-alt = "{icon} {capacity}% {time}";
+          format-charging = "󱐥 {capacity}% {time}";
+          format-plugged = "󰚥 {capacity}%";
           format-icons = [
             ""
             ""

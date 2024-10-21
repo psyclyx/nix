@@ -8,27 +8,26 @@ in {
       mainBar = {
         layer = "bottom";
         position = "top";
-        margin = "0px 0px";
         modules-left = [
           "sway/workspaces"
           "sway/scratchpad"
           "sway/mode"
-        ];
-        modules-center = [
           "sway/window"
         ];
         modules-right = [
-          "clock"
-          "pulseaudio"
           "network"
           "backlight"
-          "cpu"
+          "pulseaudio"
           "memory"
+          "cpu"
+          "clock"
           "battery"
         ];
+
         "sway/window" = {
-          max-length = 64;
+          max-length = 128;
         };
+
         "sway/workspaces" = {
           on-click = "activate";
           sort-by-number = true;
@@ -62,17 +61,20 @@ in {
           format-icons = {
             headphone = "";
             default = [
-              ""
-              ""
-              ""
+              "󰕿"
+              "󰖀"
+              "󰕾"
             ];
           };
         };
-        "network" = {
-          format-wifi = " {signalStrength}% {ifname} {ipaddr}/{cidr}";
-          format-ethernet = "󰈁 {ipaddr}/{cidr}";
-          format-linked = "󰲚 {ifname} (No IP)";
-          format-disconnected = " Disconnected ";
+        "network" = let
+          format_speed = "󰶡 {bandwidthDownBytes} 󰶣 {bandwidthUpBytes}";
+        in {
+          format-wifi = "󰖩  {signalStrength}% ${format_speed}";
+          tooltip = "{essid} {ifname} {ipaddr}/{cidr}";
+          format-ethernet = "󰈁 ${format_speed}";
+          format-linked = "󰲚 {ifname} (No IP) ${format_speed}";
+          format-disconnected = "";
         };
         "backlight" = {
           format = "{icon} {percent}%";
@@ -93,17 +95,19 @@ in {
         "clock" = {
           interval = 60;
           tooltip = false;
-          format = "󰥔 {:%R %a %d/%m/%y}";
+          format = "󰥔  {:%I:%M %m/%d/%y}";
         };
-        "cpu" = {
+        "cpu" = let
+          cpuIcon = " ";
+        in {
           interval = 4;
-          format = " {icon0}{icon1}{icon2}{icon3}";
+          format = "${cpuIcon} {icon0}{icon1}{icon2}{icon3}";
           format-icons = [
-            "<span color='${c.slate1}'>▁</span>"
-            "<span color='${c.slate2}'>▂</span>"
-            "<span color='${c.slate3}'>▃</span>"
-            "<span color='${c.blue3}'>▄</span>"
-            "<span color='${c.blue4}'>▅</span>"
+            "<span color='${c.blue2}'>▁</span>"
+            "<span color='${c.blue3}'>▂</span>"
+            "<span color='${c.slate1}'>▃</span>"
+            "<span color='${c.slate2}'>▄</span>"
+            "<span color='${c.slate3}'>▅</span>"
             "<span color='${c.red2}'>▆</span>"
             "<span color='${c.red3}'>▇</span>"
             "<span color='${c.red4}'>█</span>"
@@ -112,7 +116,18 @@ in {
         };
         "memory" = {
           interval = 4;
-          format = " {}%";
+          format = "  {icon}";
+          tooltip = "{used:0.1f}G / {total:0.1f}G";
+          format-icons = [
+            "<span color='${c.blue2}'>▏</span>"
+            "<span color='${c.blue3}'>▎</span>"
+            "<span color='${c.slate1}'>▍</span>"
+            "<span color='${c.slate2}'>▌</span>"
+            "<span color='${c.slate3}'>▋</span>"
+            "<span color='${c.red2}'>▊</span>"
+            "<span color='${c.red3}'>▉</span>"
+            "<span color='${c.red4}'>█</span>"
+          ];
         };
         "battery" = {
           states = {
@@ -128,11 +143,17 @@ in {
           format-charging = "󱐥 {capacity}% {time}";
           format-plugged = "󰚥 {capacity}%";
           format-icons = [
-            ""
-            ""
-            ""
-            ""
-            ""
+            "󰂎"
+            "󰁺"
+            "󰁻"
+            "󰁼"
+            "󰁽"
+            "󰁾"
+            "󰁿"
+            "󰂀"
+            "󰂁"
+            "󰂂"
+            "󰁹"
           ];
         };
       };

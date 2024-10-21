@@ -4,7 +4,7 @@ in {
   programs.waybar = {
     style = ''
       * {
-          font-family: NotoMono Nerd Font;
+          font-family: NotoMono Nerd Font Propo;
           font-size: 18px;
       }
 

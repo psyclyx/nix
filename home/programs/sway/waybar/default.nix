@@ -25,6 +25,7 @@ in {
         ];
 
         "sway/window" = {
+          format = " {}";
           max-length = 128;
         };
 
@@ -33,10 +34,10 @@ in {
           sort-by-number = true;
           format = "{icon}";
           format-icons = {
-            "1" = "1.code";
-            "2" = "2.web";
-            "3" = "3.notes";
-            "4" = "4.chat";
+            "1" = "1. code";
+            "2" = "2. web";
+            "3" = "3. notes";
+            "4" = "4. chat";
             "5" = "5";
             "6" = "6";
             "7" = "7";
@@ -70,7 +71,7 @@ in {
         "network" = let
           format_speed = "󰶡 {bandwidthDownBytes} 󰶣 {bandwidthUpBytes}";
         in {
-          format-wifi = "󰖩  {signalStrength}% ${format_speed}";
+          format-wifi = "󰖩 {signalStrength}% ${format_speed}";
           tooltip = "{essid} {ifname} {ipaddr}/{cidr}";
           format-ethernet = "󰈁 ${format_speed}";
           format-linked = "󰲚 {ifname} (No IP) ${format_speed}";
@@ -95,10 +96,10 @@ in {
         "clock" = {
           interval = 60;
           tooltip = false;
-          format = "󰥔  {:%I:%M %m/%d/%y}";
+          format = "󰥔 {:%I:%M %m/%d/%y}";
         };
         "cpu" = let
-          cpuIcon = " ";
+          cpuIcon = "";
         in {
           interval = 4;
           format = "${cpuIcon} {icon0}{icon1}{icon2}{icon3}";
@@ -116,7 +117,7 @@ in {
         };
         "memory" = {
           interval = 4;
-          format = "  {icon}";
+          format = " {icon}";
           tooltip = "{used:0.1f}G / {total:0.1f}G";
           format-icons = [
             "<span color='${c.blue2}'>▏</span>"

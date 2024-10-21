@@ -13,14 +13,24 @@ in {
           background-color: ${c.bg-alt};
       }
 
+
       widget > * {
           padding: 0px 16px;
+      }
+
+      .modules-left widget:first-child > * {
+          padding-left: 4px;
+      }
+
+      .modules-right widget:last-child > * {
+          padding-right: 4px;
       }
 
       widget:nth-child(2n+1) {
           background-color: ${c.bg};
           color: ${c.fg};
       }
+
 
       window, #workspaces {
           margin-bottom: 0;

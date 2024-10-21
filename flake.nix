@@ -77,6 +77,7 @@
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
+      (import ./overlays/tlp.nix)
       inputs.nur.overlay
     ];
 

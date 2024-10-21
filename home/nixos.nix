@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  inputs,
+  pkgs,
+  ...
+}: let
 in {
   home.packages = with pkgs; [
     neofetch
@@ -8,6 +12,7 @@ in {
   ];
 
   imports = [
+    sops-nix.homeManagerModules.sops
     ./common.nix
     ./xdg.nix
     ./programs/sway
@@ -16,6 +21,7 @@ in {
     ./programs/signal.nix
     ./programs/vscodium.nix
     ./programs/firefox
+    ./services/ssh-agent.nix
     ./themes/gtk.nix
   ];
 }

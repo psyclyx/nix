@@ -8,6 +8,9 @@ in {
       mainBar = {
         layer = "bottom";
         position = "top";
+        height = 20;
+        margin = "0px 0px";
+        padding = "0px 0px";
         modules-left = [
           "sway/workspaces"
           "sway/scratchpad"

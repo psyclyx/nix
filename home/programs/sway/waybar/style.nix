@@ -4,11 +4,16 @@ in {
   programs.waybar = {
     style = ''
       * {
-          font-family: NotoMono Nerd Font Propo;
-          font-size: 18px;
+          padding: 0;
+          margin: 0;
+          border: none;
+          min-height: 0;
+          box-shadow: none;
+          border-radius: 0;
       }
 
       window#waybar {
+          font-family: NotoMono Nerd Font Propo;
           color: ${c.fg-dark};
           background-color: ${c.bg-alt};
       }
@@ -18,11 +23,11 @@ in {
           padding: 0px 16px;
       }
 
-      .modules-left widget:first-child > * {
+      widget:first-child > * {
           padding-left: 4px;
       }
 
-      .modules-right widget:last-child > * {
+      widget:last-child > * {
           padding-right: 4px;
       }
 
@@ -31,42 +36,29 @@ in {
           color: ${c.fg};
       }
 
-
       window, #workspaces {
           margin-bottom: 0;
           padding-bottom: 0;
       }
 
-      button {
-          box-shadow: inset 0 -3px transparent;
-          margin-bottom: -3px;
-          border: none;
-          border-radius: 0;
-          transition:
-            background-color 0.3s,
-            box-shadow 0.3s,
-            color 0.3s;
-      }
-
       button:hover {
+          box-shadow: none;
+          text-shadow: none;
           background: inherit;
-          text-shadow: inherit;
-          box-shadow: inset 0 -3px ${c.base-light};
+          transition: none;
+          color: inherit;
       }
 
-      #workspaces button.flat {
-          border: none;
-          color: ${c.fg-dark};
-          border: none;
-          border-radius: 0px;
-          background-color: transparent;
-          padding: 0 8px;
+      #workspaces button:not(:first-child) {
+          margin-left: 16px;
+      }
+
+      #workspaces button {
+          color: ${c.fg-darker};
       }
 
       #workspaces button.focused {
           color: ${c.fg};
-          border: none;
-          box-shadow: inset 0 -3px ${c.base-light};
       }
 
       #mode {

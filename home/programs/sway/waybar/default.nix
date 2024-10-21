@@ -12,7 +12,6 @@ in {
           "sway/workspaces"
           "sway/scratchpad"
           "sway/mode"
-          "sway/window"
         ];
         modules-right = [
           "network"
@@ -23,11 +22,6 @@ in {
           "clock"
           "battery"
         ];
-
-        "sway/window" = {
-          format = " {}";
-          max-length = 128;
-        };
 
         "sway/workspaces" = {
           on-click = "activate";

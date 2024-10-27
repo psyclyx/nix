@@ -21,7 +21,7 @@ in {
     ./programs/sway
     ./programs/swayidle.nix
     ./programs/vscodium.nix
-    ./services/sops.nix
+    ./secrets/sops.nix
     ./services/ssh-agent.nix
     ./themes/gtk.nix
     ./xdg.nix

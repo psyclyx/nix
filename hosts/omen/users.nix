@@ -19,7 +19,7 @@
   home-manager = {
     users = {
       psyc = {
-        imports = [../../home/nixos.nix];
+        imports = [../../modules/home/nixos.nix];
       };
     };
   };

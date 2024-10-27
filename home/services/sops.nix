@@ -1,14 +1,18 @@
-{config, ...}: {
+{config, ...}: let
+  configHome = config.xdg.configHome;
+  home = config.home.homeDirectory;
+in {
   sops = {
-    age.keyFile = config.xdg.configFile."sops/age/keys.txt";
-    defaultSopsFile = ../../.sops.yaml;
-    secrets = let
-      home = config.home.homeDirectory;
-    in {
-      "ssh/psyclyx.json" = {
+    age.keyFile = "${configHome}/sops/age/keys.txt";
+    secrets = {
+      ".ssh/id_psyclyx" = {
+        sopsFile = ../secrets/ssh/psyclyx.json;
+        key = "private_key";
         path = "${home}/.ssh/id_psyclyx";
       };
-      "ssh/alice157.json" = {
+      ".ssh/id_alice157" = {
+        sopsFile = ../secrets/ssh/alice157.json;
+        key = "private_key";
         path = "${home}/.ssh/id_alice157";
       };
     };

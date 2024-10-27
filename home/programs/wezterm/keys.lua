@@ -1,6 +1,6 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
-local merge_all = require("util").merge_all
+local concat_arrays = require("util").concat_arrays
 
 local leader = { key = "Space", mods = "CTRL" }
 
@@ -166,7 +166,7 @@ local search = {
 	{ key = "u", mods = "CTRL", action = act.CopyMode("ClearPattern") },
 }
 
-local keys = merge_all(table.unpack({
+local keys = concat_arrays(table.unpack({
 	normal_window,
 	normal_tabs,
 	normal_panes,
@@ -175,7 +175,7 @@ local keys = merge_all(table.unpack({
 	normal_launchers,
 }))
 
-local copy_mode = merge_all(table.unpack({
+local copy_mode = concat_arrays(table.unpack({
 	copy_movement,
 	copy_actions,
 }))

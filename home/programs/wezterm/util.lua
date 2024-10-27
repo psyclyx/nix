@@ -10,6 +10,17 @@ local function merge_all(...)
 	return result
 end
 
+local function concat_arrays(...)
+	local result = {}
+	for _, arr in ipairs({ ... }) do
+		for _, v in ipairs(arr) do
+			table.insert(result, v)
+		end
+	end
+	return result
+end
+
 return {
 	merge_all = merge_all,
+	concat_arrays = concat_arrays,
 }

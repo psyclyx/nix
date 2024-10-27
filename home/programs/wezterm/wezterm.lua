@@ -5,6 +5,7 @@ local misc = {
 	--front_end = "WebGpu",
 	unzoom_on_switch_pane = true,
 	use_resize_increments = true,
+	mux_enable_ssh_agent = false,
 }
 
 local appearance = require("appearance")

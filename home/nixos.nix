@@ -12,16 +12,17 @@ in {
   ];
 
   imports = [
-    sops-nix.homeManagerModules.sops
+    inputs.sops-nix.homeManagerModules.sops
     ./common.nix
-    ./xdg.nix
-    ./programs/sway
-    ./programs/swayidle.nix
+    ./programs/firefox
     ./programs/rofi
     ./programs/signal.nix
+    ./programs/ssh.nix
+    ./programs/sway
+    ./programs/swayidle.nix
     ./programs/vscodium.nix
-    ./programs/firefox
     ./services/ssh-agent.nix
     ./themes/gtk.nix
+    ./xdg.nix
   ];
 }

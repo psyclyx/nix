@@ -44,5 +44,5 @@ in {
     shell = pkgs.zsh;
   };
 
-  home-manager.users.alice = ../home/work.nix;
+  home-manager.users.alice = ../modules/home/work.nix;
 }

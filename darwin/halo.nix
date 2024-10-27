@@ -20,5 +20,5 @@ in {
     shell = pkgs.zsh;
   };
 
-  home-manager.users.psyc = ../home/darwin.nix;
+  home-manager.users.psyc = ../modules/home/darwin.nix;
 }

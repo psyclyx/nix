@@ -98,5 +98,5 @@ in {
     extraGroups = ["wheel" "video" "networkmanager" "adbusers"];
   };
 
-  home-manager.users.psyc.imports = [../../home/nixos.nix];
+  home-manager.users.psyc.imports = [../../modules/home/nixos.nix];
 }

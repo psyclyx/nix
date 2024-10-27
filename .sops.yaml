@@ -2,7 +2,7 @@ keys:
   - &psyclyx: age18nushvrtmpdfq9m4762rqcgn82xch3etjc0fxdtmqfnz9s4qc50qj6ftuj
 
 creation_rules:
-  - path_regex: secrets/(?:[^/]+/)*[^/]+\.(yaml|json|env|ini)$
+  - path_regex: home/secrets/(?:[^/]+/)*[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
         - *psyclyx

@@ -13,7 +13,7 @@ in {
       extraOptionOverrides = lib.optionalAttrs isDarwin {"useKeychain" = "yes";};
       matchBlocks = {
         "github.com" = {
-          identityFile = "~/.ssh/id_ed25519";
+          identityFile = "~/.ssh/id_alice157";
         };
         "gitlab.com" = {
           identityFile = "~/.ssh/id_psyclyx";

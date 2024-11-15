@@ -9,6 +9,7 @@ in {
     obsidian
     git
     kitty
+    zotero
   ];
 
   imports = [

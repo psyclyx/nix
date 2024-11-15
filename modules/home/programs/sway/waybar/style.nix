@@ -18,17 +18,8 @@ in {
           background-color: ${c.bg-alt};
       }
 
-
       widget > * {
           padding: 0px 16px;
-      }
-
-      widget:first-child > * {
-          padding-left: 4px;
-      }
-
-      widget:last-child > * {
-          padding-right: 4px;
       }
 
       widget:nth-child(2n+1) {
@@ -78,7 +69,6 @@ in {
       #battery.good, #battery.full {
           color: ${c.slate4};
       }
-
     '';
   };
 }

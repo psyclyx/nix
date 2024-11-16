@@ -79,6 +79,9 @@
   };
 
   outputs = inputs: let
+    supportedSystems = ["x86_64-linux" "aarch64-darwin" "x86_64-darwin"];
+    forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
+
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
@@ -89,6 +92,20 @@
     mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
   in rec
   {
+    devShells = forAllSystems (system: let
+      pkgs = inputs.nixpkgs.legacyPackages.${system};
+    in {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
+          babashka
+        ];
+
+        shellHook = ''
+          export PATH="$PWD/scripts:$PATH"
+        '';
+      };
+    });
+
     darwinConfigurations = {
       halo = mkDarwinConfiguration {
         hostPlatform = "aarch64-darwin";

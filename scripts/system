@@ -1,0 +1,118 @@
+#!/usr/bin/env bb
+
+(ns system.core
+  (:require
+    [babashka.cli :as cli]
+    [babashka.process :refer [shell]]
+    [clojure.java.shell :refer [sh]]
+    [clojure.string :as str]))
+
+
+(defn- hostname
+  []
+  (-> (sh "hostname" "-s")
+      (:out)
+      (str/trim)))
+
+
+(defn- confirm
+  [prompt]
+  (print (format "%s [y/N] " prompt))
+  (flush)
+  (-> (read-line)
+      (str/lower-case)
+      (str/starts-with? "y")))
+
+
+(defn- system-info
+  []
+  (let [os-name (System/getProperty "os.name")]
+    {:darwin? (str/includes? os-name "Mac")
+     :nixos? (.exists (java.io.File. "/etc/NIXOS"))}))
+
+
+(defn bootstrap
+  [{:keys [opts]}]
+  (when-not (:darwin? (system-info))
+    (throw (ex-info "bootstrap only works on Darwin" {})))
+
+  (let [system (:system opts)]
+    (when (confirm (format "Are you sure you want to bootstrap system '%s'?" system))
+      (shell "nix" "run" "nix-darwin" "--" "switch" "--flake" (str ".#" system)))))
+
+
+(defn- rebuild-command
+  [system-info]
+  (cond
+    (:darwin? system-info) "darwin-rebuild"
+    (:nixos? system-info) "sudo nixos-rebuild"
+    :else (throw (ex-info "No rebuild command for system" system-info))))
+
+
+(defn switch
+  [{:keys [opts]}]
+  (let [system-info (system-info)
+        system (or (:system opts) (hostname))
+        current-hostname (hostname)
+        rebuild-command (rebuild-command system-info)]
+    (when (and (not= system current-hostname)
+               (not (confirm (format "Warning: Specified system (%s) doesn't match the current hostname (%s). Continue?"
+                                     system current-hostname))))
+      (throw (ex-info "Switch cancelled" {})))
+
+    (println (format "Switching to '%s'" system))
+    (shell rebuild-command "switch" "--flake" (str ".#" system))))
+
+
+(defn build
+  [{:keys [opts]}]
+  (let [system-info (system-info)
+        system (or (:system opts) (hostname))
+        current-hostname (hostname)
+        rebuild-command (rebuild-command system-info)]
+
+    (println (format "Building '%s'" system))
+    (shell rebuild-command "build" "--flake" (str ".#" system))
+    (println "Build complete. Result is available in ./result")))
+
+
+(def spec
+  {:system {:desc "System name (defaults to current hostname)"}})
+
+
+(def subcommands
+  [{:command "bootstrap"
+    :desc "Bootstrap a new system"
+    :opts {:system {:require true}}}
+
+   {:command "switch"
+    :desc "Switch to a system configuration"}
+
+   {:command "build"
+    :desc "Build a system configuration (always rebuilds)"}])
+
+
+(defn help
+  [_opts]
+  (println "Commands:")
+  (doseq [{:keys [command desc]} subcommands]
+    (println (str "  " command ": " desc)))
+  (println)
+  (println "Arguments:")
+  (println (cli/format-opts {:spec spec})))
+
+
+(def commands
+  [{:cmds [] :spec spec :fn help}
+   {:cmds ["bootstrap"] :fn bootstrap}
+   {:cmds ["switch"] :fn switch}
+   {:cmds ["build"] :fn build}])
+
+
+(defn -main
+  [& args]
+  (cli/dispatch commands args {}))
+
+
+(when (= *file* (System/getProperty "babashka.file"))
+  (apply -main *command-line-args*))

@@ -16,6 +16,7 @@ return {
 			{ "<localleader>css", ":ConjureShadowSelect app<cr>", desc = "shadow select stories", ft = "clojure" },
 		},
 	},
+	{ "clojure-vim/clojure.vim", lazy = false },
 	{
 		"PaterJason/nvim-treesitter-sexp",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },

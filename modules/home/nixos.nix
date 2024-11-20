@@ -1,15 +1,18 @@
 {
   inputs,
   pkgs,
+  buildFirefoxXpiAddon,
   ...
 }: let
 in {
   home.packages = with pkgs; [
-    neofetch
-    obsidian
+    freecad
     git
     kitty
+    neofetch
+    obsidian
     zotero
+    orca-slicer
   ];
 
   imports = [

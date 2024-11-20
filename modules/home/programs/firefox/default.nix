@@ -1,9 +1,8 @@
 {
+  inputs,
   pkgs,
-  buildFirefoxXpiAddon,
   ...
-}: let
-in {
+}: {
   programs = {
     firefox = {
       enable = true;
@@ -13,7 +12,7 @@ in {
           id = 0;
           isDefault = true;
           extensions = import ./extensions.nix {
-            inherit pkgs buildFirefoxXpiAddon;
+            inherit pkgs inputs;
           };
           settings = import ./settings.nix;
           search = import ./search.nix {inherit pkgs;};

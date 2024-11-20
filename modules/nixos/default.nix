@@ -20,9 +20,6 @@ in
           };
         }
         home-manager.nixosModules.home-manager
-        ./programs
-        ./services
-        ./system
       ]
       ++ modules;
 

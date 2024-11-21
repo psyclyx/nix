@@ -24,6 +24,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -124,9 +127,15 @@
         hostName = "omen";
         modules = [./hosts/omen];
       };
+      ix = mkNixosConfiguration {
+        hostPlatform = "x86_64-linux";
+        hostName = "ix";
+        modules = [./hosts/ix];
+      };
     };
     halo = darwinConfigurations.halo.system;
     ampere = darwinConfigurations.ampere.system;
     omen = nixosConfigurations.omen.system;
+    ix = nixosConfigurations.omen.system;
   };
 }

@@ -1,5 +1,6 @@
 {...}: {
   networking.firewall.allowedTCPPorts = [22];
+  networking.useNetworkd = true;
 
   systemd.network = {
     enable = true;
@@ -12,12 +13,10 @@
       ];
       routes = [
         {
-          routeConfig = {
-            Gateway = "172.31.1.1";
-            GatewayOnLink = true;
-          };
+          Gateway = "172.31.1.1";
+          GatewayOnLink = true;
         }
-        {routeConfig.Gateway = "fe80::1";}
+        {Gateway = "fe80::1";}
       ];
     };
   };

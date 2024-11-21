@@ -25,9 +25,10 @@
 
     kernelParams = ["ip=dhcp"];
 
-    loader.grub = {
-      enable = true;
-      device = "/dev/sda";
+    loader = {
+      grub = {
+        enable = true;
+      };
     };
   };
 }

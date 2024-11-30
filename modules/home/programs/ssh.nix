@@ -14,8 +14,13 @@ in {
         {"UpdateHostKeys" = "no";}
         // lib.optionalAttrs isDarwin {"useKeychain" = "yes";};
       matchBlocks = {
-        "github.com" = {
+        "alice157.github.com" = {
           identityFile = "~/.ssh/id_alice157";
+          hostname = "github.com";
+        };
+        "psyclyx.github.com" = {
+          identityFile = "~/.ssh/id_psyclyx";
+          hostname = "github.com";
         };
         "gitlab.com" = {
           identityFile = "~/.ssh/id_psyclyx";

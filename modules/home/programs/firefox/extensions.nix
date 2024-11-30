@@ -9,7 +9,6 @@ in
     i-dont-care-about-cookies
     link-cleaner
     privacy-badger
-    sci-hub
     sidebery
     ublock-origin
   ]

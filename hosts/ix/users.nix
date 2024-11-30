@@ -19,6 +19,7 @@
           ../../modules/home/programs/git.nix
           ../../modules/home/programs/nvim
           ../../modules/home/programs/zsh
+          ../../modules/home/services/ssh-agent.nix
         ];
       };
     };

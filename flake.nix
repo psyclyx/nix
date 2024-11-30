@@ -101,6 +101,7 @@
       default = pkgs.mkShell {
         packages = with pkgs; [
           babashka
+          sops
         ];
 
         shellHook = ''

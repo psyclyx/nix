@@ -10,7 +10,9 @@ in {
       enable = true;
       compression = true;
       addKeysToAgent = "yes";
-      extraOptionOverrides = lib.optionalAttrs isDarwin {"useKeychain" = "yes";};
+      extraOptionOverrides =
+        {"UpdateHostKeys" = "no";}
+        // lib.optionalAttrs isDarwin {"useKeychain" = "yes";};
       matchBlocks = {
         "github.com" = {
           identityFile = "~/.ssh/id_alice157";

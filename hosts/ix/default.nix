@@ -9,6 +9,7 @@ in {
     ./hardware.nix
     ./network.nix
     ./users.nix
+    ../../modules/nixos/system/console.nix
     ../../modules/nixos/system/home-manager.nix
     ../../modules/nixos/system/locale.nix
     ../../modules/nixos/system/nix.nix

@@ -27,7 +27,7 @@
               type = "luks";
               name = "crypted";
               settings.allowDiscards = true;
-              passwordFile = "/tmp/secret-disk1.key";
+              passwordFile = "/tmp/secret-disk1.pass";
               content = {
                 type = "filesystem";
                 format = "ext4";

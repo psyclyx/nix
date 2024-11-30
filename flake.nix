@@ -114,7 +114,7 @@
       halo = mkDarwinConfiguration {
         hostPlatform = "aarch64-darwin";
         hostName = "halo";
-        modules = [./darwin/halo.nix];
+        modules = [./hosts/halo];
       };
       ampere = mkDarwinConfiguration {
         hostPlatform = "aarch64-darwin";

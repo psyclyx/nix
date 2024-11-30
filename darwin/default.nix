@@ -18,8 +18,6 @@
       };
     }
     home-manager.darwinModules.home-manager
-    ./homebrew.nix
-    ./common.nix
   ];
 in
   darwin.lib.darwinSystem {

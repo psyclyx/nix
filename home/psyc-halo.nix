@@ -1,12 +1,13 @@
 {pkgs, ...}: {
   home.stateVersion = "23.11";
   home.packages = with pkgs; [
-    source-code-pro
+    nerdfonts
   ];
 
   fonts.fontconfig.enable = true;
 
   imports = [
+    ../modules/home/programs/aerospace.nix
     ../modules/home/programs/git.nix
     ../modules/home/programs/kitty.nix
     ../modules/home/programs/nvim

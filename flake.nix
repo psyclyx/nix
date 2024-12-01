@@ -79,6 +79,11 @@
       url = "github:borkdude/homebrew-brew";
       flake = false;
     };
+
+    homebrew-nikitabobko = {
+      url = "github:nikitabobko/homebrew-tap";
+      flake = false;
+    };
   };
 
   outputs = inputs: let

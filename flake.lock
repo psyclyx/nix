@@ -307,6 +307,22 @@
         "type": "github"
       }
     },
+    "homebrew-nikitabobko": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1732751349,
+        "narHash": "sha256-1z50QcndD73WXHuqslPu8jlKA8+JHBQpaYiaLm3Xk10=",
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "rev": "e31184c8a7ebf626537fa91170622fee1796fe85",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "libpng": {
       "flake": false,
       "locked": {
@@ -489,6 +505,7 @@
         "homebrew-conductorone": "homebrew-conductorone",
         "homebrew-core": "homebrew-core",
         "homebrew-hashicorp": "homebrew-hashicorp",
+        "homebrew-nikitabobko": "homebrew-nikitabobko",
         "mac-app-util": "mac-app-util",
         "nix-homebrew": "nix-homebrew",
         "nixos-hardware": "nixos-hardware",

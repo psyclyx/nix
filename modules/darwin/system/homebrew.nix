@@ -4,7 +4,7 @@
   inputs,
   ...
 }: let
-  inherit (inputs) nix-homebrew homebrew-bundle homebrew-core homebrew-cask;
+  inherit (inputs) nix-homebrew homebrew-bundle homebrew-core homebrew-cask homebrew-nikitabobko;
   inherit (pkgs.stdenv) hostPlatform;
 in {
   imports = [nix-homebrew.darwinModules.nix-homebrew];
@@ -33,6 +33,7 @@ in {
       "homebrew/homebrew-bundle" = homebrew-bundle;
       "homebrew/homebrew-core" = homebrew-core;
       "homebrew/homebrew-cask" = homebrew-cask;
+      "nikitabobko/homebrew-tap" = homebrew-nikitabobko;
     };
   };
 }

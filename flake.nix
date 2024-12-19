@@ -48,6 +48,15 @@
       flake = false;
     };
 
+    darwin-emacs = {
+      url = "github:c4710n/nix-darwin-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    darwin-emacs-packages = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # Homebrew taps
 
     homebrew-core = {
@@ -93,6 +102,8 @@
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
+      inputs.darwin-emacs.overlays.emacs
+      inputs.darwin-emacs-packages.overlays.package
       inputs.nur.overlay
     ];
 

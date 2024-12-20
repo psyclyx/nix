@@ -111,7 +111,9 @@
 
 (defn -main
   [& args]
-  (cli/dispatch commands args {}))
+  (try
+    (cli/dispatch commands args {})
+    (catch Exception _ 1)))
 
 
 (when (= *file* (System/getProperty "babashka.file"))

@@ -8,6 +8,7 @@ in {
     alejandra
     clj-kondo
     coreutils-prefixed
+    cmake
     emacs
     eclint
     emacs

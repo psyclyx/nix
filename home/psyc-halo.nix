@@ -11,7 +11,7 @@
 
   imports = [
     ../modules/home/programs/aerospace.nix
-    #../modules/home/services/emacs.nix
+    ../modules/home/services/syncthing.nix
     ../modules/home/programs/sketchybar
     ../modules/home/programs/git.nix
     ../modules/home/programs/kitty.nix

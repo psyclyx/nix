@@ -48,15 +48,6 @@
       flake = false;
     };
 
-    darwin-emacs = {
-      url = "github:c4710n/nix-darwin-emacs";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    darwin-emacs-packages = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Homebrew taps
 
     homebrew-core = {

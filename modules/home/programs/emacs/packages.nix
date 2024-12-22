@@ -20,9 +20,9 @@
 
       # UI
       all-the-icons
+      all-the-icons-nerd-fonts
       dashboard
       diminish
-      doom-modeline
       doom-themes
       rainbow-delimiters
       which-key

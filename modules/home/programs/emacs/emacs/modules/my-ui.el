@@ -5,7 +5,7 @@
 (setq inhibit-startup-message t)
 
 ;; Font settings
-(set-face-attribute 'default nil :height 120)
+(set-face-attribute 'default nil :font "NotoMono Nerd Font" :height 120)
 
 ;; Theme setup
 (use-package doom-themes
@@ -30,20 +30,11 @@
         dashboard-set-heading-icons t
         dashboard-set-file-icons t))
 
-;; Doom modeline setup
-(use-package doom-modeline
-  :init
-  (doom-modeline-mode 1)
-  :custom
-  (doom-modeline-height 25)
-  (doom-modeline-bar-width 3)
-  (doom-modeline-icon t)
-  (doom-modeline-major-mode-icon t)
-  (doom-modeline-major-mode-color-icon t))
-
 ;; All the Icons
-(use-package all-the-icons
-  :if (display-graphic-p))
+(use-package all-the-icons-nerd-fonts
+  :after all-the-icons
+  :if (display-graphic-p)
+  :config (all-the-icons-nerd-fonts-prefer))
 
 ;; Better delimiters
 (use-package rainbow-delimiters

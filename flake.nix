@@ -42,6 +42,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # used for patches
+    homebrew-emacs-plus = {
+      url = "github:d12frosted/homebrew-emacs-plus";
+      flake = false;
+    };
+
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,9 +109,9 @@
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
+      inputs.emacs-overlay.overlays.emacs
       inputs.emacs-overlay.overlays.package
-      inputs.nix-darwin-emacs.overlays.emacs
-      inputs.nur.overlay
+      inputs.nur.overlays.default
     ];
 
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};

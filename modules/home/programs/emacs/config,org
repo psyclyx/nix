@@ -1,0 +1,311 @@
+#+TITLE: Emacs Configuration
+#+AUTHOR: psyclyx
+#+PROPERTY: header-args:emacs-lisp :tangle t
+#+STARTUP: overview
+
+* Basic Setup
+Basic Emacs configuration and package initialization.
+
+#+begin_src emacs-lisp
+(require 'package)
+(setq use-package-always-ensure t)
+#+end_src
+
+* UI Configuration
+Interface customization and visual enhancements.
+
+#+begin_src emacs-lisp
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(global-display-line-numbers-mode 1)
+(setq inhibit-startup-message t)
+
+;; Font settings
+(set-face-attribute 'default nil :font "NotoMono Nerd Font" :height 120)
+#+end_src
+
+** Theme Setup
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (load-theme 'doom-one t)
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Corrects (and improves) org-mode's native fontification
+  (doom-themes-org-config))
+#+end_src
+
+** Dashboard Configuration
+#+begin_src emacs-lisp
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-startup-banner 'logo
+        dashboard-center-content t
+        dashboard-items '((recents . 5)
+                         (projects . 5)
+                         (agenda . 5))
+        dashboard-set-heading-icons t
+        dashboard-set-file-icons t))
+#+end_src
+
+** Icons and Delimiters
+#+begin_src emacs-lisp
+(use-package all-the-icons-nerd-fonts
+  :after all-the-icons
+  :if (display-graphic-p)
+  :config (all-the-icons-nerd-fonts-prefer))
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+* Evil Mode Configuration
+Vim keybindings and evil-mode setup.
+
+#+begin_src emacs-lisp
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  (setq evil-respect-visual-line-mode t)
+  (setq evil-undo-system 'undo-tree)
+  :config
+  (evil-mode 1)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+
+(use-package undo-tree
+  :init
+  (global-undo-tree-mode 1))
+#+end_src
+
+* Completion Framework
+Setup for Vertico, Marginalia, Orderless, and related packages.
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+    :custom
+    (vertico-cycle t)
+    (vertico-count 20))
+
+  (use-package marginalia
+    :after vertico
+    :init
+    (marginalia-mode))
+
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (basic partial-completion))))))
+
+  (use-package consult
+    :after vertico
+    :config
+    (setq consult-preview-key "M-.")
+    (setq consult-project-root-function #'projectile-project-root))
+
+  (use-package which-key
+    :init
+    (which-key-mode)
+    :config
+    (setq which-key-idle-delay 0.3)
+    (setq which-key-prefix-prefix "◉")
+    (setq which-key-sort-order 'which-key-key-order-alpha))
+
+  (use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
+#+end_src
+
+* Keybindings
+Global keybinding configuration using general.el
+
+#+begin_src emacs-lisp
+(use-package general
+  :init
+  (general-evil-setup)
+
+  (general-create-definer my-leader-def
+    :states '(normal visual insert emacs)
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC")
+
+  (my-leader-def
+    :keymaps 'override
+    :prefix "SPC"
+
+    ;; Top-level commands
+    "." '(find-file :which-key "find file")
+    "," '(consult-buffer :which-key "switch buffer")
+    "/" '(consult-ripgrep :which-key "search project")
+    ";" '(eval-expression :which-key "eval expression")
+    ":" '(execute-extended-command :which-key "M-x")
+
+    ;; Buffer commands
+    "b" '(:ignore t :which-key "buffer")
+    "bb" '(consult-buffer :which-key "switch buffer")
+    "bd" '(kill-current-buffer :which-key "kill buffer")
+    "bn" '(next-buffer :which-key "next buffer")
+    "bp" '(previous-buffer :which-key "previous buffer")
+    "br" '(revert-buffer :which-key "reload buffer")
+
+    ;; File commands
+    "f" '(:ignore t :which-key "file")
+    "ff" '(find-file :which-key "find file")
+    "fs" '(save-buffer :which-key "save file")
+    "fS" '(write-file :which-key "save as")
+    "fr" '(consult-recent-file :which-key "recent files")
+
+    ;; Project commands
+    "p" '(:ignore t :which-key "project")
+    "pf" '(projectile-find-file :which-key "find file in project")
+    "pp" '(projectile-switch-project :which-key "switch project")
+    "pb" '(projectile-switch-to-buffer :which-key "switch project buffer")
+    "pk" '(projectile-kill-buffers :which-key "kill project buffers")
+
+    ;; Search commands
+    "s" '(:ignore t :which-key "search")
+    "ss" '(consult-line :which-key "search in buffer")
+    "sp" '(consult-ripgrep :which-key "search in project")
+    "si" '(imenu :which-key "jump to symbol")
+
+    ;; Git commands
+    "g" '(:ignore t :which-key "git")
+    "gg" '(magit-status :which-key "magit status")
+    "gb" '(magit-blame :which-key "git blame")
+    "gl" '(magit-log-buffer-file :which-key "git log (current file)")
+
+    ;; Org commands
+    "o" '(:ignore t :which-key "org")
+    "oa" '(org-agenda :which-key "agenda")
+    "oc" '(org-capture :which-key "capture")
+    "ol" '(org-store-link :which-key "store link")
+
+    ;; Toggle commands
+    "t" '(:ignore t :which-key "toggle")
+    "tt" '(load-theme :which-key "choose theme")
+    "tl" '(display-line-numbers-mode :which-key "line numbers")
+    "tw" '(whitespace-mode :which-key "whitespace")
+
+    ;; Window commands
+    "w" '(:ignore t :which-key "window")
+    "wh" '(evil-window-left :which-key "window left")
+    "wj" '(evil-window-down :which-key "window down")
+    "wk" '(evil-window-up :which-key "window up")
+    "wl" '(evil-window-right :which-key "window right")
+    "ws" '(evil-window-split :which-key "split horizontal")
+    "wv" '(evil-window-vsplit :which-key "split vertical")
+    "wd" '(evil-window-delete :which-key "delete window")
+    "wm" '(delete-other-windows :which-key "maximize window")))
+#+end_src
+
+* Development Tools
+Programming language support and development environments.
+
+** LSP and Syntax Checking
+#+begin_src emacs-lisp
+(use-package eglot
+  :hook ((python-mode . eglot-ensure)
+         (rust-mode . eglot-ensure)
+         (js-mode . eglot-ensure)
+         (typescript-mode . eglot-ensure)
+         (web-mode . eglot-ensure))
+  :config
+  (setq eglot-events-buffer-size 0
+        eglot-sync-connect nil
+        eglot-connect-timeout 10
+        eglot-autoshutdown t)
+
+  (setq completion-category-defaults nil))
+
+(use-package flycheck
+  :init
+  (global-flycheck-mode)
+  :config
+  (setq flycheck-display-errors-delay 0.3))
+#+end_src
+
+** Clojure Development
+#+begin_src emacs-lisp
+(use-package cider
+  :defer t
+  :init
+  (setq cider-repl-display-help-banner nil)
+  :config
+  (setq cider-show-error-buffer t
+        cider-auto-select-error-buffer t
+        cider-repl-history-file "~/.emacs.d/cider-history"
+        cider-repl-wrap-history t
+        cider-repl-history-size 1000
+        cider-repl-use-clojure-font-lock t)
+
+  (add-hook 'cider-repl-mode-hook #'eldoc-mode)
+  (add-hook 'cider-repl-mode-hook #'paredit-mode))
+#+end_src
+
+** Elisp Configuration
+#+begin_src emacs-lisp
+  (use-package elisp-mode
+    :ensure nil
+    :hook ((emacs-lisp-mode . eldoc-mode)
+           (emacs-lisp-mode . rainbow-delimiters-mode)
+           (emacs-lisp-mode . show-paren-mode))
+    :config
+    (setq lisp-indent-function 'lisp-indent-function))
+#+end_src
+
+** Nix Support
+#+begin_src emacs-lisp
+(use-package nix-ts-mode
+  :mode "\\.nix\\'")
+#+end_src
+
+* Org Mode
+Org-mode configuration and related packages.
+
+#+begin_src emacs-lisp
+(use-package org
+  :config
+  (setq org-directory "~/Sync/org"
+        org-agenda-files '("~/Sync/org/agenda.org")
+        org-log-done 'time))
+
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
+
+(use-package org-roam
+  :config
+  (setq org-roam-directory "~/Sync/org/roam")
+  (org-roam-db-autosync-mode))
+#+end_src
+
+* Project Management
+Project management and version control configuration.
+
+#+begin_src emacs-lisp
+(use-package projectile
+  :config
+  (projectile-mode +1))
+
+(use-package magit
+  :commands magit-status
+  :config
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+#+end_src

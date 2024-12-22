@@ -11,6 +11,7 @@
           "video"
           "networkmanager"
           "adbusers"
+          "builders"
         ];
       };
     };

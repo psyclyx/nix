@@ -37,6 +37,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-darwin-emacs = {
+      url = "github:nix-giant/nix-darwin-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     wezterm = {
       url = "github:wez/wezterm/main?dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -93,8 +103,8 @@
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
-      inputs.darwin-emacs.overlays.emacs
-      inputs.darwin-emacs-packages.overlays.package
+      inputs.emacs-overlay.overlays.package
+      inputs.nix-darwin-emacs.overlays.emacs
       inputs.nur.overlay
     ];
 

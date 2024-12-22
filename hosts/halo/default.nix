@@ -3,7 +3,6 @@
   imports = [
     ./users.nix
     ./casks.nix
-    ../../modules/common/system/cache.nix
     ../../modules/darwin/system/nix.nix
     ../../modules/darwin/system/homebrew.nix
     ../../modules/darwin/system/security.nix

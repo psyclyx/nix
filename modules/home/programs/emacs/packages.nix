@@ -8,15 +8,15 @@
       general
 
       # Completion
-      # cape
-      # consult
-      # corfu
-      # embark
-      # embark-consult
-      # kind-icon
-      # marginalia
-      # orderless
-      # vertico
+      cape
+      consult
+      corfu
+      embark
+      embark-consult
+      kind-icon
+      marginalia
+      orderless
+      vertico
 
       # UI
       all-the-icons
@@ -69,10 +69,10 @@
         git
 
         ## Search/Completion
-        # fd
-        # gnugrep
-        # ripgrep
-        # silver-searcher
+        fd
+        gnugrep
+        ripgrep
+        silver-searcher
 
         # Language support
         # clojure

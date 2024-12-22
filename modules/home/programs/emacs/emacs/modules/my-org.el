@@ -13,4 +13,3 @@
   (org-roam-db-autosync-mode))
 
 (provide 'my-org)
-'';

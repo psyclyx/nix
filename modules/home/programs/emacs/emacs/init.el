@@ -1,3 +1,5 @@
+(setq enable-package-at-startup nil)
+
 (require 'package)
 
 (add-to-list 'load-path (expand-file-name "modules" user-emacs-directory))

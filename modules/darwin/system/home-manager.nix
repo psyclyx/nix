@@ -3,6 +3,5 @@
     useGlobalPkgs = true;
     useUserPackages = true;
     extraSpecialArgs = {inherit inputs;};
-    sharedModules = [inputs.mac-app-util.homeManagerModules.default];
   };
 }

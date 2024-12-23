@@ -129,7 +129,7 @@
       ampere = mkDarwinConfiguration {
         hostPlatform = "aarch64-darwin";
         hostName = "ampere";
-        modules = [./darwin/ampere.nix];
+        modules = [./hosts/ampere];
       };
     };
     nixosConfigurations = {

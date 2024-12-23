@@ -2,7 +2,7 @@
 *~
 \#*
 result
-result-
+result-*
 .lsp/.cache
 .clj-kondo/.cache
 .DS_Store

@@ -26,14 +26,9 @@ in {
   };
 
   nix-homebrew = {
-    enable = true;
+    enable = false;
+    autoMigrate = true;
     enableRosetta = hostPlatform.isAarch64;
-    mutableTaps = true;
-    taps = {
-      "homebrew/homebrew-bundle" = homebrew-bundle;
-      "homebrew/homebrew-core" = homebrew-core;
-      "homebrew/homebrew-cask" = homebrew-cask;
-      "nikitabobko/homebrew-tap" = homebrew-nikitabobko;
-    };
+    mutableTaps = false;
   };
 }

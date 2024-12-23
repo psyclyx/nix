@@ -81,7 +81,6 @@
         clj-kondo
         cljfmt
         leiningen
-        openjdk21
         readline
         zlib
 

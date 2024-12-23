@@ -35,7 +35,7 @@
         orientation = "bottom";
         showhidden = false;
         show-recents = false;
-        tilesize = 20;
+        tilesize = 48;
         wvous-tl-corner = 1;
         wvous-bl-corner = 1;
         wvous-tr-corner = 1;
@@ -43,7 +43,6 @@
       };
       finder = {
         CreateDesktop = false;
-        FXPreferredViewStyle = "clmv";
         FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false;
         NewWindowTarget = "Home";

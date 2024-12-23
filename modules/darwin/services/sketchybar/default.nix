@@ -13,7 +13,7 @@ let
     sketchybar --set $NAME \
         label.border_width=0 \
 	label.background.drawing=off\
-        label.highlight=off 
+        label.highlight=off
     fi
 
   '';
@@ -22,14 +22,14 @@ let
   '';
   newRc = ''
     bar=(
-        height=36
+        height=28
         position=top
         padding_left=2
         padding_right=2
         margin=16
 	corner_radius=16
         y_offset=3
-        color=${theme.background}
+        color=${theme.background_alt} \
         sticky=off
         )
 
@@ -110,7 +110,7 @@ sketchybar --add bracket r time date battery \
 	border_width=2\
 	topmost=2\
         y_offset=3
-    
+
     sketchybar --default \
 	label.font="NotoSans Font Propo:Regular:14.0" \
 	label.color=${theme.foreground} \
@@ -150,7 +150,7 @@ sketchybar --add bracket r time date battery \
 in
   {
     services.sketchybar = {
-      enable = lib.debug.traceSeq theme true;
+      enable = true;
       config = newRc;
       extraPackages = [pkgs.aerospace];
     };

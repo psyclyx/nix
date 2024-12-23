@@ -21,7 +21,7 @@ let
       magenta = "b0d0e4";
       cyan = "93a9be";
       white = "f2f2f2";
-      
+
       bright_black = "6c6c6c";
       bright_red = "ceb293";
       bright_green = "b0d0e4";

@@ -5,18 +5,25 @@
 (setq inhibit-startup-message t)
 
 ;; Font settings
-(set-face-attribute 'default nil :font "NotoMono Nerd Font" :height 120)
+(set-face-attribute 'default nil :font "NotoMono Nerd Font" :height 180)
+
+(setq display-line-numbers 'relative)
 
 ;; Theme setup
 (use-package doom-themes
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
-  (load-theme 'doom-one t)
+  (load-theme 'doom-vibrant t)
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Corrects (and improves) org-mode's native fontification
   (doom-themes-org-config))
+
+
+(setq whitespace-style '(face indentation trailing))
+(global-whitespace-mode t)
+
 
 ;; Dashboard setup
 (use-package dashboard

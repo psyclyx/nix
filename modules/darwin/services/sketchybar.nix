@@ -1,7 +1,6 @@
 {pkgs, ...}: {
   services.sketchybar = {
-    enable = false;
-    extraPackages = with pkgs; [jq gh];
+    enable = true;
+    config = ./sketchybarrc.sh;
   };
-  fonts = [pkgs.sketchybar-app-font];
 }

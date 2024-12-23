@@ -10,9 +10,7 @@
   fonts.fontconfig.enable = true;
 
   imports = [
-    ../modules/home/programs/aerospace.nix
     ../modules/home/services/syncthing.nix
-    ../modules/home/programs/sketchybar
     ../modules/home/programs/git.nix
     ../modules/home/programs/kitty.nix
     ../modules/home/programs/nvim

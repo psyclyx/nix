@@ -24,7 +24,7 @@
         NSWindowShouldDragOnGesture = true;
         "com.apple.trackpad.enableSecondaryClick" = true;
         "com.apple.swipescrolldirection" = false;
-        _HIHideMenuBar = false;
+        _HIHideMenuBar = true;
       };
       dock = {
         autohide = true;

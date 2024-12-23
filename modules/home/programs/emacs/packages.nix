@@ -28,6 +28,7 @@
       which-key
 
       # Notes
+      gptel
       org
       org-bullets
       org-roam

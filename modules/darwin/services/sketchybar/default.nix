@@ -30,7 +30,6 @@ let
 	corner_radius=16
         y_offset=3
         color=${theme.background}
-	topmost=on
         sticky=off
         )
 

@@ -40,7 +40,7 @@
   :config
   (setq lisp-indent-function 'lisp-indent-function))
 
-(use-package nix-mode
+(use-package nix-ts-mode
   :mode "\\.nix\\'")
 
 (provide 'my-development)

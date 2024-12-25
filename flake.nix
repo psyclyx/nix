@@ -1,6 +1,15 @@
 {
   description = "System flake";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -96,7 +105,7 @@
     overlays = [
       (import ./pkgs)
       (import ./overlays/wezterm.nix inputs.wezterm)
-      inputs.emacs-overlay.overlays.emacs
+      inputs.nix-darwin-emacs.overlays.emacs
       inputs.emacs-overlay.overlays.package
       inputs.nur.overlays.default
     ];

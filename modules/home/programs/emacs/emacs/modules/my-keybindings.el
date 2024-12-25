@@ -25,7 +25,7 @@
    "bd" '(kill-current-buffer :which-key "kill buffer")
    "bn" '(next-buffer :which-key "next buffer")
    "bp" '(previous-buffer :which-key "previous buffer")
-   "br" '(revert-buffer :which-key "reload buffer")
+   "br" '(revert-buffer :which-key "revert buffer")
 
    ;; File commands
    "f" '(:ignore t :which-key "file")

@@ -30,8 +30,6 @@ jobs:
     environment:
       name: CI
     runs-on: macos-latest
-    strategy:
-      matrix:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main

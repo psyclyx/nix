@@ -1,7 +1,8 @@
 {pkgs, ...}: {
   fonts = {
     packages = with pkgs; [
-      (nerdfonts.override {fonts = ["FiraCode" "Noto"];})
+      nerd-fonts.noto
+      nerd-fonts.fira-code
       font-awesome
       lato
       liberation_ttf

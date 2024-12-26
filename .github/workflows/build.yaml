@@ -13,6 +13,9 @@ jobs:
     environment:
       name: CI
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [ix, omen]
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
@@ -23,12 +26,15 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build NixOS configurations
         run: |
-          nix build .#checks -L --print-build-logs
+          nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel -L --print-build-logs
 
   build-darwin:
     environment:
       name: CI
     runs-on: macos-latest
+    strategy:
+      matrix:
+        host: [halo, ampere]
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
@@ -39,4 +45,13 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build Darwin configurations
         run: |
-          nix build .#checks -L --print-build-logs
+          nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel -L --print-build-logs
+
+  check-flake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Check flake inputs
+        run: nix flake check

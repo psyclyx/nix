@@ -2,9 +2,7 @@
   config,
   pkgs,
   ...
-}: let
-  emacs = config.programs.emacs.finalPackage;
-in {
+}: {
   services.aerospace = {
     enable = true;
     settings = {
@@ -38,7 +36,6 @@ in {
 
       mode.main.binding = {
         alt-enter = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
-        alt-e = "exec-and-forget ${emacs}/bin/emacsclient -c";
 
         alt-shift-q = "close";
         alt-slash = "layout tiles horizontal vertical";

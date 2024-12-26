@@ -158,6 +158,6 @@
     halo = darwinConfigurations.halo.system;
     ampere = darwinConfigurations.ampere.system;
     omen = nixosConfigurations.omen.system;
-    ix = nixosConfigurations.omen.system;
+    ix = nixosConfigurations.ix.system;
   };
 }

@@ -4,7 +4,7 @@
   inputs,
   ...
 }: let
-  inherit (inputs) nix-homebrew homebrew-bundle homebrew-core homebrew-cask homebrew-nikitabobko;
+  inherit (inputs) nix-homebrew homebrew-bundle homebrew-core homebrew-cask;
   inherit (pkgs.stdenv) hostPlatform;
 in {
   imports = [nix-homebrew.darwinModules.nix-homebrew];
@@ -17,7 +17,7 @@ in {
     global.autoUpdate = false;
 
     onActivation = {
-      upgrade = true;
+      upgrade = false;
       autoUpdate = false;
       cleanup = "zap";
     };
@@ -26,9 +26,14 @@ in {
   };
 
   nix-homebrew = {
-    enable = false;
-    autoMigrate = true;
+    enable = true;
+    autoMigrate = false;
     enableRosetta = hostPlatform.isAarch64;
-    mutableTaps = false;
+    mutableTaps = true;
+    taps = {
+      "homebrew/homebrew-bundle" = homebrew-bundle;
+      "homebrew/homebrew-core" = homebrew-core;
+      "homebrew/homebrew-cask" = homebrew-cask;
+    };
   };
 }

@@ -1,4 +1,10 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: let
+  emacs = config.programs.emacs.finalPackage;
+in {
   services.aerospace = {
     enable = true;
     settings = {
@@ -8,28 +14,31 @@
       default-root-container-layout = "tiles";
       default-root-container-orientation = "auto";
 
-      exec-on-workspace-change = ["/bin/bash" "-c"
-	"${pkgs.sketchybar}/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
+      exec-on-workspace-change = [
+        "/bin/bash"
+        "-c"
+        "${pkgs.sketchybar}/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
       ];
       on-focused-monitor-changed = ["move-mouse monitor-lazy-center"];
       automatically-unhide-macos-hidden-apps = true;
 
       gaps = {
-	inner.horizontal = 8;
-	inner.vertical = 8;
-	outer.left = 4;
-	outer.bottom = 4;
-	outer.top = [
-	  {monitor."BenQ RD280U" = 48;}
-	  4];
-	outer.right = 4;
+        inner.horizontal = 8;
+        inner.vertical = 8;
+        outer.left = 4;
+        outer.bottom = 4;
+        outer.top = [
+          {monitor."BenQ RD280U" = 48;}
+          4
+        ];
+        outer.right = 4;
       };
-      
+
       key-mapping.preset = "qwerty";
 
-
       mode.main.binding = {
-	alt-enter = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
+        alt-enter = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
+        alt-e = "exec-and-forget ${emacs}/bin/emacsclient -c";
 
         alt-shift-q = "close";
         alt-slash = "layout tiles horizontal vertical";

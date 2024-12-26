@@ -9,7 +9,6 @@ permissions:
   contents: read
 
 jobs:
-  
   build-linux:
     environment:
       name: CI
@@ -41,12 +40,3 @@ jobs:
       - name: Build Darwin configurations
         run: |
           nix build .#checks -L --print-build-logs
-
-  check-flake:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - name: Check flake inputs
-        run: nix flake check

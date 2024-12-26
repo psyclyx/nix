@@ -2,6 +2,9 @@
   userName = "psyc";
   userHome = "/Users/psyc";
 in {
+
+  nix.settings.trusted-users = [ "root" "@admin" userName ];
+
   users.users.psyc = {
     name = userName;
     home = userHome;

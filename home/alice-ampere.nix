@@ -29,6 +29,7 @@
   fonts.fontconfig.enable = true;
 
   imports = [
+    ../modules/home/services/syncthing.nix
     ../modules/home/programs/git/work.nix
     ../modules/home/programs/kitty.nix
     ../modules/home/programs/nvim

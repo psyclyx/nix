@@ -10,8 +10,6 @@
   inherit (inputs) nixpkgs home-manager;
 in
   nixpkgs.lib.nixosSystem {
-    # TODO: is this wrong?
-    system = hostPlatform;
     modules =
       [
         {

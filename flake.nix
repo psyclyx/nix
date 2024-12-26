@@ -101,21 +101,24 @@
   };
 
   outputs = inputs: let
+    inherit (inputs) self nixpkgs nix-darwin-emacs emacs-overlay nur;
+    inherit (nixpkgs) lib;
+
     supportedSystems = ["x86_64-linux" "aarch64-darwin" "x86_64-darwin"];
-    forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
+    forAllSystems = lib.genAttrs supportedSystems;
 
     overlays = [
       (import ./pkgs)
-      inputs.nix-darwin-emacs.overlays.emacs
-      inputs.emacs-overlay.overlays.package
-      inputs.nur.overlays.default
+      nix-darwin-emacs.overlays.emacs
+      emacs-overlay.overlays.package
+      nur.overlays.default
     ];
 
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
     mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
   in {
     devShells = forAllSystems (system: let
-      pkgs = inputs.nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
         packages = [pkgs.sops];

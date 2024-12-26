@@ -133,6 +133,7 @@
     darwinConfigurations = {
       halo = mkDarwinConfiguration {
         hostPlatform = "aarch64-darwin";
+        system = "aarch64-darwin";
         hostName = "halo";
         modules = [./hosts/halo];
       };

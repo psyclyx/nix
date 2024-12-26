@@ -14,6 +14,9 @@ jobs:
     environment:
       name: CI
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [ix, omen]
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
@@ -24,12 +27,15 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build NixOS configurations
         run: |
-          nix build .#nixosConfigurations --print-build-logs
+          nix build .#nixosConfigurations.${{ matrix.host }}.system --print-build-logs
 
   build-darwin:
-    runs-on: macos-latest
     environment:
       name: CI
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        host: [halo, ampere]
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
@@ -40,7 +46,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build Darwin configurations
         run: |
-          nix build .#darwinConfigurations --print-build-logs
+          nix build .#darwinConfigurations.${{ matrix.host }}.system --print-build-logs
 
   check-flake:
     runs-on: ubuntu-latest

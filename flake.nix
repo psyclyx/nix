@@ -155,6 +155,22 @@
         modules = [./hosts/ix];
       };
     };
+
+    checks =
+      forAllSystems
+      (system: (let
+        inherit (inputs.nixpkgs.legacyPackages.${system}) lib;
+        systemConfigs =
+          lib.filter (host: system == host.system)
+          (darwinConfigurations // nixosConfigurations);
+      in
+        lib.mapAttrs'
+        (name: (host:
+          lib.attrsets.nameValuePair
+          "${system}-${host.name}"
+          host.config.system.build.toplevel))
+        systemConfigs));
+
     halo = darwinConfigurations.halo.system;
     ampere = darwinConfigurations.ampere.system;
     omen = nixosConfigurations.omen.system;

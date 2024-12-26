@@ -1,4 +1,5 @@
 {pkgs, ...}: {
+  nix.settings.trusted-users = ["psyc"];
   users = {
     users = {
       psyc = {

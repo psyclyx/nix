@@ -19,7 +19,7 @@ in {
     inputs.sops-nix.homeManagerModules.sops
     ./common.nix
     ./programs/firefox
-    ./programs/git.nix
+    ./programs/git
     ./programs/rofi
     ./programs/signal.nix
     ./programs/ssh.nix

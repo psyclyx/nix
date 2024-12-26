@@ -16,7 +16,7 @@
       psyc = {
         imports = [
           {home.stateVersion = "23.11";}
-          ../../modules/home/programs/git.nix
+          ../../modules/home/programs/git
           ../../modules/home/programs/nvim
           ../../modules/home/programs/zsh
           ../../modules/home/services/ssh-agent.nix

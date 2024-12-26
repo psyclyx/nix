@@ -10,7 +10,7 @@
   pactl = "${pkgs.pulseaudio}/bin/pactl";
   rofi = "${pkgs.rofi}/bin/rofi";
   bemoji = "${pkgs.bemoji}/bin/bemoji";
-  wezterm = "${pkgs.wezterm}/bin/wezterm";
+  kitty = "${pkgs.kitty}/bin/kitty";
 in {
   wayland.windowManager.sway = {
     config = {
@@ -51,7 +51,7 @@ in {
         "${mod}+d" = "exec ${rofi} -show drun";
         "${mod}+g" = "exec ${rofi} -show filebrowser";
         "${mod}+m" = "exec ${bemoji} -t";
-        "${mod}+Return" = "exec ${wezterm}";
+        "${mod}+Return" = "exec ${kitty}";
         "${mod}+Shift+e" = "exec ~/bin/rofi-session";
         "${mod}+Shift+c" = "reload";
 

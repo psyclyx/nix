@@ -53,7 +53,6 @@
       gdom = "git diff origin/main";
       gl = "git log --oneline";
       ns = "nix search nixpkgs";
-      rn = "wezterm cli rename-workspace";
       nsp = "nix-shell --run $SHELL -p";
     };
   };

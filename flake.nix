@@ -106,7 +106,6 @@
 
     overlays = [
       (import ./pkgs)
-      (import ./overlays/wezterm.nix inputs.wezterm)
       inputs.nix-darwin-emacs.overlays.emacs
       inputs.emacs-overlay.overlays.package
       inputs.nur.overlays.default

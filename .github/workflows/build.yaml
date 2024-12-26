@@ -24,8 +24,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build NixOS configurations
         run: |
-          nix build .#nixosConfigurations.*.config.system.build.toplevel \
-            --print-build-logs
+          nix build .#nixosConfigurations --print-build-logs
 
   build-darwin:
     runs-on: macos-latest
@@ -41,8 +40,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build Darwin configurations
         run: |
-          nix build .#darwinConfigurations.*.config.system.build.toplevel \
-            --print-build-logs
+          nix build .#darwinConfigurations --print-build-logs
 
   check-flake:
     runs-on: ubuntu-latest

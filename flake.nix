@@ -113,20 +113,12 @@
 
     mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
     mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
-  in rec
-  {
+  in {
     devShells = forAllSystems (system: let
       pkgs = inputs.nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        packages = with pkgs; [
-          babashka
-          sops
-        ];
-
-        shellHook = ''
-          export PATH="$PWD/scripts:$PATH"
-        '';
+        packages = [pkgs.sops];
       };
     });
 
@@ -155,25 +147,5 @@
         modules = [./hosts/ix];
       };
     };
-
-    checks =
-      forAllSystems
-      (system: (let
-        inherit (inputs.nixpkgs.legacyPackages.${system}) lib;
-        systemConfigs =
-          lib.filter (host: system == host.system)
-          (darwinConfigurations // nixosConfigurations);
-      in
-        lib.mapAttrs'
-        (name: (host:
-          lib.attrsets.nameValuePair
-          "${system}-${host.name}"
-          host.config.system.build.toplevel))
-        systemConfigs));
-
-    halo = darwinConfigurations.halo.system;
-    ampere = darwinConfigurations.ampere.system;
-    omen = nixosConfigurations.omen.system;
-    ix = nixosConfigurations.ix.system;
   };
 }

@@ -8,7 +8,10 @@ permissions:
   contents: read
 
 jobs:
+  
   build-linux:
+    environment:
+      name: CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +28,8 @@ jobs:
 
   build-darwin:
     runs-on: macos-latest
+    environment:
+      name: CI
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main

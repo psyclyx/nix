@@ -1,6 +1,9 @@
 {
   emacsPackages = epkgs:
     with epkgs; [
+      # Emacs
+      no-littering
+
       # Evil
       evil
       evil-collection
@@ -53,8 +56,6 @@
       nix-ts-mode
 
       # Utils
-      # ace-window
-      # avy
       undo-tree
     ];
 

@@ -6,7 +6,7 @@
   ...
 }: let
   packageConfig = import ./packages.nix;
-  packages = (packageConfig.systemPackages pkgs);
+  packages = packageConfig.systemPackages pkgs;
   relPath = lib.strings.removePrefix (toString inputs.self) (toString ./emacs);
   configPath = "${config.home.homeDirectory}/projects/nix" + relPath;
 in {
@@ -19,6 +19,7 @@ in {
     extraPackages = epkgs:
       (packageConfig.emacsPackages epkgs) ++ packages;
   };
+  services.emacs.enable = true;
   home.packages = packages;
   home.file.".config/emacs".source = config.lib.file.mkOutOfStoreSymlink configPath;
 }

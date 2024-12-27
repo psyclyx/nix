@@ -37,7 +37,7 @@
 
       mode.main.binding = {
         alt-enter = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
-	alt-e = "exec-and-forget emacsclient -c";
+	alt-e = "exec-and-forget emacsclient -r -n";
 
         alt-shift-q = "close";
         alt-slash = "layout tiles horizontal vertical";

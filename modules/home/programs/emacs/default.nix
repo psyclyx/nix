@@ -7,7 +7,7 @@
 }: let
   packageConfig = import ./packages.nix;
   packages = packageConfig.systemPackages pkgs;
-  relPath = lib.strings.removePrefix (toString inputs.self) (toString ./emacs);
+  relPath = lib.strings.removePrefix (toString inputs.self) (toString ./config);
   configPath = "${config.home.homeDirectory}/projects/nix" + relPath;
 in {
   programs.emacs = {

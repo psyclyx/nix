@@ -1,0 +1,532 @@
+#+begin_src org
+#+TITLE: Emacs Configuration
+#+AUTHOR: psyclyx
+#+PROPERTY: header-args:emacs-lisp :tangle yes
+#+STARTUP: overview
+* Config
+** Core Setup
+Basic setup and package management configuration.
+
+#+begin_src emacs-lisp
+  (require 'package)
+#+end_src
+
+Keep emacs dir clean
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :init
+    (setq auto-save-file-name-transforms
+          `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+    (setq backup-directory-alist
+          `(("." . ,(no-littering-expand-var-file-name "backup/"))))
+    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+    :config
+    ;; Keep transient files in separate directory
+    (setq transient-history-file (no-littering-expand-var-file-name "transient/history.el"))
+    (setq transient-levels-file (no-littering-expand-etc-file-name "transient/levels.el"))
+    (setq transient-values-file (no-littering-expand-etc-file-name "transient/values.el")))
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq create-lock-files nil)
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun my/reload-config ()
+    "Reload the literate config."
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
+#+end_src
+
+** UI Configuration
+Clean, minimal UI with modern aesthetics.
+
+#+begin_src emacs-lisp
+  ;; Disable UI elements
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (global-display-line-numbers-mode 1)
+  (setq inhibit-startup-message t)
+
+  ;; Font settings
+  (set-face-attribute 'default nil :font "Hack Nerd Font Mono" :height 180)
+
+  (setq display-line-numbers 'relative)
+
+  ;; Theme setup
+  (use-package doom-themes
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+    (load-theme 'doom-vibrant t)
+    (doom-themes-visual-bell-config)
+    (doom-themes-org-config))
+
+  ;; Whitespace visualization
+  (setq whitespace-style '(face indentation trailing))
+  (global-whitespace-mode t)
+
+  ;; Dashboard setup
+  (use-package dashboard
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-startup-banner 'logo
+          dashboard-center-content t
+          dashboard-items '((recents . 5)
+                          (projects . 5)
+                          (agenda . 5))
+          dashboard-set-heading-icons t
+          dashboard-set-file-icons t))
+
+  ;; Icons
+  (use-package all-the-icons-nerd-fonts
+    :after all-the-icons
+    :if (display-graphic-p)
+    :config (all-the-icons-nerd-fonts-prefer))
+
+  ;; Better delimiters
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+** Evil Configuration
+Vim emulation layer setup.
+
+#+begin_src emacs-lisp
+  (use-package evil
+    :init
+    (setq evil-want-integration t
+          evil-want-keybinding nil
+          evil-want-C-u-scroll t
+          evil-want-C-i-jump nil
+          evil-respect-visual-line-mode t
+          evil-undo-system 'undo-tree)
+    :config
+    (evil-mode 1)
+
+    ;; Use visual line motions
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+
+  (use-package undo-tree
+    :init
+    (global-undo-tree-mode 1))
+#+end_src
+
+** Completion Framework
+Modern completion UI and search tools.
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+    :custom
+    (vertico-cycle t)
+    (vertico-count 20))
+
+  (use-package vertico-directory
+    :after vertico
+    :ensure nil
+    :bind (:map vertico-map
+                ("RET" . vertico-directory-enter)
+                ("DEL" . vertico-directory-delete-char)
+                ("M-DEL" . vertico-directory-delete-word))
+    :hook (rfn-esm-update-handlers . vertico-directory-tidy))
+
+  (use-package marginalia
+    :after vertico
+    :init
+    (marginalia-mode))
+
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (basic partial-completion))))))
+
+  (use-package consult
+    :after vertico
+    :config
+    (setq consult-preview-key "M-."
+          consult-project-root-function #'projectile-project-root))
+
+  (use-package which-key
+    :init
+    (which-key-mode)
+    :config
+    (setq which-key-idle-delay 0.3
+          which-key-prefix-prefix "◉"
+          which-key-sort-order 'which-key-key-order-alpha))
+
+  (use-package savehist
+    :init
+    (savehist-mode))
+#+end_src
+
+** Development Tools
+Language support and development environment configuration.
+
+#+begin_src emacs-lisp
+  (use-package eglot
+    :hook ((python-mode . eglot-ensure)
+           (rust-mode . eglot-ensure)
+           (js-mode . eglot-ensure)
+           (typescript-mode . eglot-ensure)
+           (web-mode . eglot-ensure))
+    :config
+    (setq eglot-events-buffer-size 0
+          eglot-sync-connect nil
+          eglot-connect-timeout 10
+          eglot-autoshutdown t
+          completion-category-defaults nil))
+
+  (use-package flycheck
+    :init
+    (global-flycheck-mode)
+    :config
+    (setq flycheck-display-errors-delay 0.3))
+
+  (use-package cider
+    :defer t
+    :init
+    (setq cider-repl-display-help-banner nil)
+    :config
+    (setq cider-show-error-buffer t
+          cider-auto-select-error-buffer t
+          cider-repl-history-file (no-littering-expand-var-file-name "cider-history")
+          cider-repl-wrap-history t
+          cider-repl-history-size 1000
+          cider-repl-use-clojure-font-lock t)
+
+    (add-hook 'cider-repl-mode-hook #'eldoc-mode)
+    (add-hook 'cider-repl-mode-hook #'paredit-mode))
+
+  (use-package elisp-mode
+    :hook ((emacs-lisp-mode . eldoc-mode)
+           (emacs-lisp-mode . rainbow-delimiters-mode)
+           (emacs-lisp-mode . show-paren-mode))
+    :config
+    (setq lisp-indent-function 'lisp-indent-function))
+
+  (use-package nix-ts-mode
+    :mode "\\.nix\\'")
+#+end_src
+
+** Project Management
+Project navigation and version control.
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :config
+    (projectile-mode +1))
+
+  (use-package magit
+    :commands magit-status
+    :config
+    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+#+end_src
+
+** Core bindings                                                   :bindings:
+Space as leader key, following modern conventions.
+
+#+begin_src emacs-lisp
+  (use-package general
+    :config
+    (general-evil-setup)
+
+    ;; Unbind regular emacs C- bindings in insert mode
+    (define-key evil-insert-state-map (kbd "C-a") nil)
+    (define-key evil-insert-state-map (kbd "C-e") nil)
+    (define-key evil-insert-state-map (kbd "C-k") nil)
+    (define-key evil-insert-state-map (kbd "C-w") nil)
+    (define-key evil-insert-state-map (kbd "C-y") nil)
+
+    (general-create-definer my-leader-def
+      :states '(normal visual insert emacs)
+      :prefix "SPC"
+      :non-normal-prefix "C-SPC")
+
+    (my-leader-def
+      :keymaps 'override
+      :prefix "SPC"
+
+      ;; Top-level commands - quick access
+      "." '(find-file :which-key "find file")
+      "," '(consult-buffer :which-key "switch buffer")
+      "/" '(consult-ripgrep :which-key "search project")
+      ";" '(eval-expression :which-key "eval expression")
+      ":" '(execute-extended-command :which-key "M-x")
+
+      ;; Help
+      "h" '(:ignore t :which-key "help")
+      "hf" '(describe-function :which-key "describe function")
+      "hv" '(describe-variable :which-key "describe variable")
+      "hk" '(describe-key :which-key "describe key")
+      "hm" '(describe-mode :which-key "describe mode")
+
+      ;; Buffer commands
+      "b" '(:ignore t :which-key "buffer")
+      "bb" '(consult-buffer :which-key "switch buffer")
+      "bd" '(kill-current-buffer :which-key "kill buffer")
+      "bn" '(next-buffer :which-key "next buffer")
+      "bp" '(previous-buffer :which-key "previous buffer")
+      "br" '(revert-buffer :which-key "revert buffer")
+
+      ;; File commands
+      "f" '(:ignore t :which-key "file")
+      "ff" '(find-file :which-key "find file")
+      "fs" '(save-buffer :which-key "save file")
+      "fS" '(write-file :which-key "save as")
+      "fr" '(consult-recent-file :which-key "recent files")
+      "fR" '(my/reload-config :which-key "reload config")
+
+      ;; Project commands
+      "p" '(:ignore t :which-key "project")
+      "pf" '(projectile-find-file :which-key "find file in project")
+      "pp" '(projectile-switch-project :which-key "switch project")
+      "pb" '(projectile-switch-to-buffer :which-key "switch project buffer")
+      "pk" '(projectile-kill-buffers :which-key "kill project buffers")
+
+      ;; Search/Jump commands
+      "s" '(:ignore t :which-key "search")
+      "ss" '(consult-line :which-key "search in buffer")
+      "sp" '(consult-ripgrep :which-key "search in project")
+      "si" '(consult-imenu :which-key "jump to symbol")
+
+      ;; Git commands
+      "g" '(:ignore t :which-key "git")
+      "gg" '(magit-status :which-key "magit status")
+      "gb" '(magit-blame :which-key "git blame")
+      "gl" '(magit-log-buffer-file :which-key "git log (current file)")
+
+      ;; Window commands
+      "w" '(:ignore t :which-key "window")
+      "wh" '(evil-window-left :which-key "window left")
+      "wj" '(evil-window-down :which-key "window down")
+      "wk" '(evil-window-up :which-key "window up")
+      "wl" '(evil-window-right :which-key "window right")
+      "ws" '(evil-window-split :which-key "split horizontal")
+      "wv" '(evil-window-vsplit :which-key "split vertical")
+      "wd" '(evil-window-delete :which-key "delete window")
+      "wm" '(delete-other-windows :which-key "maximize window")
+
+      ;; Toggle commands
+      "t" '(:ignore t :which-key "toggle")
+      "tt" '(load-theme :which-key "choose theme")
+      "tl" '(display-line-numbers-mode :which-key "line numbers")
+      "tw" '(whitespace-mode :which-key "whitespace")
+
+      ;; Quit/Restart
+      "q" '(:ignore t :which-key "quit")
+      "qq" '(save-buffers-kill-terminal :which-key "quit emacs")
+      "qr" '(restart-emacs :which-key "restart emacs"))
+
+    ;; Local leader key for major modes
+    (general-create-definer my-local-leader-def
+      :states '(normal visual insert emacs)
+      :prefix "SPC m"
+      :non-normal-prefix "C-SPC m"))
+#+end_src
+
+** org-mode
+Document authoring and task management.
+
+#+begin_src emacs-lisp
+  (use-package org
+    :config
+    (unless (file-exists-p "~/Sync/org")
+      (make-directory "~/Sync/org" t))
+
+    (setq org-directory "~/Sync/org"
+          org-agenda-files '("~/Sync/org/agenda.org")
+          org-log-done 'time
+
+          ;; Task states
+          org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "QUESTION(q)" "|" "DONE(d)" "ANSWERED(a)" "CANCELLED(c)"))
+
+          ;; Refile targets
+          org-refile-targets '((org-agenda-files :maxlevel . 3)
+                               (org-files-list :maxlevel . 3))
+
+          ;; Capture templates
+          org-capture-templates
+          '(("t" "Todo" entry (file+headline "~/Sync/org/agenda.org" "Tasks")
+             "* TODO %?\n  %i\n  %a")
+            ("n" "Note" entry (file "~/Sync/org/notes.org")
+             "* %? :note:\n  %U\n  %i\n  %a")
+            ("j" "Journal" entry (file+datetree "~/Sync/org/journal.org")
+             "* %?\nEntered on %U\n  %i\n  %a")
+            ("q" "Question" entry (file+headline "~/Sync/org/questions.org" "Questions")
+             "* QUESTION %?\n  %U\n  %i\n  %a"))))
+
+  (use-package org-bullets
+    :hook (org-mode . org-bullets-mode))
+#+end_src
+
+*** Bindings :bindings:
+#+begin_src emacs-lisp
+  (my-local-leader-def
+    :keymaps 'org-mode-map
+
+    ;; Org structure editing - avoiding Meta key
+    "[" '(org-promote-subtree :which-key "promote subtree")
+    "]" '(org-demote-subtree :which-key "demote subtree")
+    "{" '(org-move-subtree-up :which-key "move subtree up")
+    "}" '(org-move-subtree-down :which-key "move subtree down")
+    "r" '(org-refile :which-key "refile subtree")
+    "t" '(org-todo :which-key "cycle todo state")
+    "." '(org-time-stamp :which-key "insert timestamp")
+    "d" '(org-deadline :which-key "set deadline")
+    "s" '(org-schedule :which-key "schedule todo"))
+#+end_src
+
+** gptel
+Core AI assistance capabilities across all modes.
+
+#+begin_src emacs-lisp
+  ;; GPT integration for general use across Emacs
+  (use-package gptel
+    :config
+    (setq gptel-default-mode 'org-mode  ; Default to org-mode for responses
+          gptel-model "openai/o1"       ; Default model
+          gptel-max-tokens 1000)        ; Reasonable default length
+
+    ;; Create a directory for conversation logs if it doesn't exist
+    (unless (file-exists-p "~/Sync/org/gptel-conversations")
+      (make-directory "~/Sync/org/gptel-conversations" t))
+
+    ;; Log conversations to files
+    (setq gptel-log-conversations t
+          gptel-conversation-dir "~/Sync/org/ai-conversations"))
+
+  ;; OpenRouter configuration with multiple model support
+  (defun read-openrouter-token ()
+    "Read OpenRouter API token from ~/.openrouter-token file."
+    (with-temp-buffer
+      (insert-file-contents (expand-file-name "~/.openrouter-token"))
+      (string-trim (buffer-string))))
+
+  (gptel-make-openai "OpenRouter"
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key 'read-openrouter-token
+    :models '(sao10k/l3.3-euryale-70b        ; Specialized for creative writing
+             openai/o1                        ; GPT-4 equivalent
+             google/gemini-2.0-flash-exp:free ; Fast responses
+             qwen/qwq-32b-preview            ; Good for code
+             anthropic/claude-3.5-sonnet:beta ; Strong reasoning
+  	     ))
+
+  ;; Context collection for more informed AI interactions
+  (defun my/collect-context ()
+    "Collect context from various sources based on current mode and buffer."
+    (cond
+     ;; For org-mode, collect tagged headings
+     ((derived-mode-p 'org-mode)
+      (my/collect-org-context))
+
+     ;; For programming modes, collect function/class definition
+     ((derived-mode-p 'prog-mode)
+      (my/collect-code-context))
+
+     ;; Default to current buffer region if selected
+     (t (if (use-region-p)
+            (buffer-substring-no-properties (region-beginning) (region-end))
+          ""))))
+
+  (defun my/collect-org-context ()
+    "Collect context from org-mode specifically."
+    (let ((context ""))
+      (save-excursion
+        ;; Get current tree
+        (org-back-to-heading t)
+        (setq context (concat context
+                             "\nCurrent section:\n"
+                             (buffer-substring-no-properties
+                              (point)
+                              (save-excursion (org-end-of-subtree) (point)))))
+        ;; Get tagged contexts if any
+        (setq context (concat context "\n" (my/collect-llm-context))))
+      context))
+
+  (defun my/collect-code-context ()
+    "Collect context from programming modes."
+    (save-excursion
+      (let ((start (if (use-region-p)
+                      (region-beginning)
+                    (progn (beginning-of-defun) (point))))
+            (end (if (use-region-p)
+                    (region-end)
+                  (progn (end-of-defun) (point)))))
+        (buffer-substring-no-properties start end))))
+
+  ;; Interactive commands for AI interaction
+  (defun my/ai-improve-code ()
+    "Ask AI to improve the current code selection or function."
+    (interactive)
+    (let ((context (my/collect-code-context)))
+      (gptel-send
+       (format "Please improve this code:\n=\n%s\n=\nFocus on:
+                1. Performance
+                2. Readability
+                3. Error handling
+                4. Best practices
+                Explain your changes." context))))
+
+  (defun my/ai-explain-code ()
+    "Ask AI to explain the current code selection or function."
+    (interactive)
+    (let ((context (my/collect-code-context)))
+      (gptel-send
+       (format "Please explain this code:\n=\n%s\n=\n
+                Include:
+                1. High-level overview
+                2. Key components
+                3. Important patterns or techniques used
+                4. Potential gotchas" context))))
+
+  (defun my/ai-review-changes ()
+    "Ask AI to review uncommitted changes in current project."
+    (interactive)
+    (let ((diff (shell-command-to-string "git diff")))
+      (when (not (string-empty-p diff))
+        (gptel-send
+         (format "Please review these changes:\n=diff\n%s\n=\n
+                  Focus on:
+                  1. Potential bugs
+                  2. Performance implications
+                  3. Security considerations
+                  4. Suggested improvements" diff)))))
+
+  ;; Direct question with context
+  (defun my/ai-ask (question)
+    "Ask AI a question with current context."
+    (interactive "sAsk AI: ")
+    (let ((context (my/collect-context)))
+      (gptel-send
+       (format "Context:\n%s\n\nQuestion: %s" context question))))
+#+end_src
+
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    :keymaps 'override
+    :prefix "SPC"
+
+    "a" '(:ignore t :which-key "AI")
+    "aa" '(my/ai-ask :which-key "ask question")
+    "ac" '(:ignore t :which-key "code")
+    "aci" '(my/ai-improve-code :which-key "improve code")
+    "ace" '(my/ai-explain-code :which-key "explain code")
+    "acr" '(my/ai-review-changes :which-key "review changes")
+    "as" '(gptel-send :which-key "send to AI")
+    "am" '(gptel-menu :which-key "AI menu")
+    "at" '(gptel-toggle-model :which-key "toggle AI model"))
+#+end_src

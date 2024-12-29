@@ -35,21 +35,6 @@ Disable lockfiles. I will simply not lose track of emacs instances.
   (setq create-lockfiles nil)
 #+end_src
 
-*** Exec path
-On darwin, I often launch =Emacs.app= instead of =emacs=. However, MacOS
-sets a default environment that doesn't include anything configured through
-home-manager. =exec-path-from-shell= fixes this by +stealing+ borrowing what's
-set in a non-interactive shell.
-
-#+begin_src emacs-lisp
-  (use-package exec-path-from-shell
-    :init
-    ;; ensure shell is non-interactive
-    (setq exec-path-from-shell-arguments nil)
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize)))
-#+end_src
-
 *** Config
 #+begin_src emacs-lisp
   (defun my/reload-config ()

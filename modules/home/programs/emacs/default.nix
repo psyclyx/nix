@@ -19,6 +19,5 @@ in {
     extraPackages = epkgs:
       (packageConfig.emacsPackages epkgs) ++ packages;
   };
-  services.emacs.enable = true;
   home.file.".config/emacs".source = config.lib.file.mkOutOfStoreSymlink configPath;
 }

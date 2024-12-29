@@ -5,13 +5,15 @@
 #+STARTUP: overview
 * Config
 ** Core Setup
+*** Init package
 Basic setup and package management configuration.
-
 #+begin_src emacs-lisp
   (require 'package)
 #+end_src
 
-Keep emacs dir clean
+*** State file cleanup
+Keep `~/.config/emacs` clean with `no-littering`. This must be done early, before anything has a
+chance to make new files.
 #+begin_src emacs-lisp
   (use-package no-littering
     :init
@@ -27,10 +29,28 @@ Keep emacs dir clean
     (setq transient-values-file (no-littering-expand-etc-file-name "transient/values.el")))
 #+end_src
 
+Disable lockfiles. I will simply not lose track of emacs instances.
+
 #+begin_src emacs-lisp
-  (setq create-lock-files nil)
+  (setq create-lockfiles nil)
 #+end_src
 
+*** Exec path
+On darwin, I often launch =Emacs.app= instead of =emacs=. However, MacOS
+sets a default environment that doesn't include anything configured through
+home-manager. =exec-path-from-shell= fixes this by +stealing+ borrowing what's
+set in a non-interactive shell.
+
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :init
+    ;; ensure shell is non-interactive
+    (setq exec-path-from-shell-arguments nil)
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)))
+#+end_src
+
+*** Config
 #+begin_src emacs-lisp
   (defun my/reload-config ()
     "Reload the literate config."
@@ -39,22 +59,53 @@ Keep emacs dir clean
 #+end_src
 
 ** UI Configuration
-Clean, minimal UI with modern aesthetics.
-
+*** Basic UI Cleanup
+Remove unnecessary UI elements and startup screen:
 #+begin_src emacs-lisp
-  ;; Disable UI elements
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
-  (global-display-line-numbers-mode 1)
   (setq inhibit-startup-message t)
+#+end_src
 
-  ;; Font settings
+*** Text Display
+Configure line numbers, wrapping, and whitespace visualization:
+#+begin_src emacs-lisp
+  ;; Line numbers
+  (setq display-line-numbers-type 'relative)
+  (global-display-line-numbers-mode 1)
+
+  ;; Line wrapping
+  (global-visual-line-mode 1)
+
+  ;; Whitespace visualization
+  (setq whitespace-style '(face indentation trailing))
+  (global-whitespace-mode t)
+#+end_src
+
+*** Font and Icons
+Set up fonts and icon support:
+#+begin_src emacs-lisp
+  ;; Default font
   (set-face-attribute 'default nil :font "Hack Nerd Font Mono" :height 180)
 
-  (setq display-line-numbers 'relative)
+  ;; Nerd Font icons
+  (use-package all-the-icons-nerd-fonts
+    :after all-the-icons
+    :if (display-graphic-p)
+    :config (all-the-icons-nerd-fonts-prefer))
+#+end_src
 
-  ;; Theme setup
+*** Code Appearance
+Enhance code readability with rainbow delimiters:
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+*** Theme Configuration
+Set up doom-themes with visual bells and org integration:
+#+begin_src emacs-lisp
   (use-package doom-themes
     :config
     (setq doom-themes-enable-bold t
@@ -62,12 +113,11 @@ Clean, minimal UI with modern aesthetics.
     (load-theme 'doom-vibrant t)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
+#+end_src
 
-  ;; Whitespace visualization
-  (setq whitespace-style '(face indentation trailing))
-  (global-whitespace-mode t)
-
-  ;; Dashboard setup
+*** Dashboard Configuration
+Configure the startup dashboard with recent files, projects, and agenda:
+#+begin_src emacs-lisp
   (use-package dashboard
     :config
     (dashboard-setup-startup-hook)
@@ -78,16 +128,6 @@ Clean, minimal UI with modern aesthetics.
                           (agenda . 5))
           dashboard-set-heading-icons t
           dashboard-set-file-icons t))
-
-  ;; Icons
-  (use-package all-the-icons-nerd-fonts
-    :after all-the-icons
-    :if (display-graphic-p)
-    :config (all-the-icons-nerd-fonts-prefer))
-
-  ;; Better delimiters
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
 ** Evil Configuration
@@ -235,6 +275,9 @@ Project navigation and version control.
 ** Core bindings                                                   :bindings:
 Space as leader key, following modern conventions.
 
+I use a =aerospace= as my window manager on macos, with many =alt=
+bindings, so those are avoided in emacs whenever possible.
+
 #+begin_src emacs-lisp
   (use-package general
     :config
@@ -248,14 +291,12 @@ Space as leader key, following modern conventions.
     (define-key evil-insert-state-map (kbd "C-y") nil)
 
     (general-create-definer my-leader-def
+      :keymaps 'override
       :states '(normal visual insert emacs)
       :prefix "SPC"
       :non-normal-prefix "C-SPC")
 
     (my-leader-def
-      :keymaps 'override
-      :prefix "SPC"
-
       ;; Top-level commands - quick access
       "." '(find-file :which-key "find file")
       "," '(consult-buffer :which-key "switch buffer")
@@ -329,6 +370,7 @@ Space as leader key, following modern conventions.
 
     ;; Local leader key for major modes
     (general-create-definer my-local-leader-def
+      :keymaps 'override
       :states '(normal visual insert emacs)
       :prefix "SPC m"
       :non-normal-prefix "C-SPC m"))
@@ -517,9 +559,6 @@ Core AI assistance capabilities across all modes.
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    :keymaps 'override
-    :prefix "SPC"
-
     "a" '(:ignore t :which-key "AI")
     "aa" '(my/ai-ask :which-key "ask question")
     "ac" '(:ignore t :which-key "code")

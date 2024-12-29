@@ -2,6 +2,7 @@
   emacsPackages = epkgs:
     with epkgs; [
       # Emacs
+      exec-path-from-shell
       no-littering
 
       # Evil

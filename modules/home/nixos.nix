@@ -6,7 +6,6 @@
 }: let
 in {
   home.packages = with pkgs; [
-    freecad
     git
     kitty
     neofetch

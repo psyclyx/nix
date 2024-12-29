@@ -77,6 +77,9 @@
         silver-searcher
 
         # Language support
+	## text
+	ispell
+
         # clojure
         babashka
         clj-kondo

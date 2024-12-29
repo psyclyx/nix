@@ -11,7 +11,6 @@ in {
     neofetch
     obsidian
     zotero
-    orca-slicer
   ];
 
   imports = [

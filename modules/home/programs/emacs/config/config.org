@@ -1,41 +1,61 @@
-#+begin_src org
 #+TITLE: Emacs Configuration
 #+AUTHOR: psyclyx
-#+PROPERTY: header-args:emacs-lisp :tangle yes
+#+PROPERTY: header-args:emacs-lisp :tangle yes :lexical t
 #+STARTUP: overview
-* Config
-** Core Setup
-*** Init package
-Basic setup and package management configuration.
+
+* Base
+** GC
+Don't GC while initializing
 #+begin_src emacs-lisp
-  (require 'package)
+  (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+        gc-cons-percentage 0.6)
+  (defvar config:file-name-handler-alist-cache file-name-handler-alist)
+  (setq file-name-handler-alist nil)
+  (defun config:restore-post-init-settings ()
+    (setq gc-cons-threshold 16777216 ; 16mb
+          gc-cons-percentage 0.1)
+    (setq file-name-handler-alist config:file-name-handler-alist-cache))
+  (add-hook 'emacs-startup-hook #'config:restore-post-init-settings)
 #+end_src
 
-*** State file cleanup
-Keep `~/.config/emacs` clean with `no-littering`. This must be done early, before anything has a
-chance to make new files.
+Don't gc in the minibuffer either
+#+begin_src emacs-lisp
+  (defun config:defer-g; ()
+    (setq gc-cons-threshold most-positive-fixnum))
+  (defun config:-do-restore-gc ()
+    (setq gc-cons-threshold 16777216))
+  (defun config:restore-gc ()
+    (run-at-time 1 nil #'config:-do-restore-gc))
+
+  (add-hook 'minibuffer-setup #'config:defer-gc)
+  (add-hook 'minibuffer-exit #'config:restore-gc)
+#+end_src
+
+** File Management
+#+begin_src emacs-lisp
+  (setq create-lockfiles nil
+        custom-file (expand-file-name "custom.el" user-emacs-directory))
+#+end_src
+
+Keep =~/.config/emacs= clean and organized:
+
 #+begin_src emacs-lisp
   (use-package no-littering
-    :init
+    :config
     (setq auto-save-file-name-transforms
           `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
     (setq backup-directory-alist
           `(("." . ,(no-littering-expand-var-file-name "backup/"))))
-    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-    :config
-    ;; Keep transient files in separate directory
-    (setq transient-history-file (no-littering-expand-var-file-name "transient/history.el"))
-    (setq transient-levels-file (no-littering-expand-etc-file-name "transient/levels.el"))
-    (setq transient-values-file (no-littering-expand-etc-file-name "transient/values.el")))
+
+    ;; Keep transient files organized
+    (setq transient-history-file (no-littering-expand-var-file-name "transient/history.el")
+          transient-levels-file (no-littering-expand-etc-file-name "transient/levels.el")
+          transient-values-file (no-littering-expand-etc-file-name "transient/values.el")))
 #+end_src
 
-Disable lockfiles. I will simply not lose track of emacs instances.
+** Config Management
+Tools for managing this configuration:
 
-#+begin_src emacs-lisp
-  (setq create-lockfiles nil)
-#+end_src
-
-*** Config
 #+begin_src emacs-lisp
   (defun my/reload-config ()
     "Reload the literate config."
@@ -43,9 +63,10 @@ Disable lockfiles. I will simply not lose track of emacs instances.
     (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
 #+end_src
 
-** UI Configuration
-*** Basic UI Cleanup
-Remove unnecessary UI elements and startup screen:
+* Interface
+** UI Fundamentals
+Remove distracting UI elements and provide a clean canvas for editing:
+
 #+begin_src emacs-lisp
   (menu-bar-mode -1)
   (tool-bar-mode -1)
@@ -53,43 +74,43 @@ Remove unnecessary UI elements and startup screen:
   (setq inhibit-startup-message t)
 #+end_src
 
-*** Text Display
-Configure line numbers, wrapping, and whitespace visualization:
+** Text Presentation
+Relative line numbers
 #+begin_src emacs-lisp
-  ;; Line numbers
   (setq display-line-numbers-type 'relative)
   (global-display-line-numbers-mode 1)
+#+end_src
 
-  ;; Line wrapping
-  (global-visual-line-mode 1)
+Show whitespace
+#+begin_src emacs-lisp
 
-  ;; Whitespace visualization
+  ;; Show meaningful whitespace
   (setq whitespace-style '(face indentation trailing))
   (global-whitespace-mode t)
 #+end_src
 
-*** Font and Icons
-Set up fonts and icon support:
+Set font
 #+begin_src emacs-lisp
-  ;; Default font
-  (set-face-attribute 'default nil :font "Hack Nerd Font Mono" :height 180)
+  ;; Set default font with comfortable reading size
+  (set-face-attribute 'default nil
+                      :font "Hack Nerd Font Mono"
+                      :height 180)
 
-  ;; Nerd Font icons
+  ;; Enable Nerd Font icons when in GUI
   (use-package all-the-icons-nerd-fonts
     :after all-the-icons
     :if (display-graphic-p)
-    :config (all-the-icons-nerd-fonts-prefer))
+    :config
+    (all-the-icons-nerd-fonts-prefer))
 #+end_src
 
-*** Code Appearance
-Enhance code readability with rainbow delimiters:
+Matching parens match
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
-*** Theme Configuration
-Set up doom-themes with visual bells and org integration:
+** Theme
 #+begin_src emacs-lisp
   (use-package doom-themes
     :config
@@ -100,8 +121,7 @@ Set up doom-themes with visual bells and org integration:
     (doom-themes-org-config))
 #+end_src
 
-*** Dashboard Configuration
-Configure the startup dashboard with recent files, projects, and agenda:
+** Welcome Screen
 #+begin_src emacs-lisp
   (use-package dashboard
     :config
@@ -109,43 +129,167 @@ Configure the startup dashboard with recent files, projects, and agenda:
     (setq dashboard-startup-banner 'logo
           dashboard-center-content t
           dashboard-items '((recents . 5)
-                          (projects . 5)
-                          (agenda . 5))
+                           (projects . 5)
+                           (agenda . 5))
           dashboard-set-heading-icons t
           dashboard-set-file-icons t))
 #+end_src
 
-** Evil Configuration
-Vim emulation layer setup.
-
+* Editor
+** Modal Editing
 #+begin_src emacs-lisp
   (use-package evil
     :init
     (setq evil-want-integration t
           evil-want-keybinding nil
           evil-want-C-u-scroll t
-          evil-want-C-i-jump nil
-          evil-respect-visual-line-mode t
+          evil-want-C-i-jump t
           evil-undo-system 'undo-tree)
     :config
-    (evil-mode 1)
-
-    ;; Use visual line motions
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+    (evil-mode 1))
 
   (use-package evil-collection
     :after evil
     :config
     (evil-collection-init))
-
-  (use-package undo-tree
-    :init
-    (global-undo-tree-mode 1))
 #+end_src
 
-** Completion Framework
-Modern completion UI and search tools.
+#+begin_src emacs-lisp
+(use-package evil-snipe
+  :after evil
+  :config
+  (evil-snipe-mode +1)
+  (evil-snipe-override-mode +1)
+  :custom
+  (evil-snipe-scope 'buffer)        ; Search in whole buffer instead of just line
+  (evil-snipe-repeat-scope 'buffer) ; Same for repeat
+  (evil-snipe-smart-case t)         ; Smart case sensitivity
+  )
+#+end_src
+
+** Undo System
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :init
+    (global-undo-tree-mode 1)
+    :config
+    (setq undo-tree-auto-save-history t
+          undo-tree-history-directory-alist
+          `(("." . ,(no-littering-expand-var-file-name "undo-tree-hist/")))))
+#+end_src
+
+** Key Leadership
+#+begin_src emacs-lisp
+  (use-package general
+    :config
+    (general-evil-setup)
+
+    ;; Create our leader key definer
+    (general-create-definer my-leader-def
+      :keymaps 'override
+      :states '(normal visual insert emacs)
+      :prefix "SPC"
+      :non-normal-prefix "C-SPC"))
+#+end_src
+
+** Core Bindings
+*** Navigation
+Quick movement between files, buffers, and locations:
+
+#+begin_src emacs-lisp
+  (my-leader-def
+    "." '(find-file :which-key "find file")
+    "," '(consult-buffer :which-key "switch buffer")
+    "/" '(consult-ripgrep :which-key "search project")
+    ";" '(eval-expression :which-key "eval expression")
+    ":" '(execute-extended-command :which-key "M-x"))
+#+end_src
+*** Buffer Management
+Operations for working with buffers:
+
+#+begin_src emacs-lisp
+  (my-leader-def
+    "b" '(:ignore t :which-key "buffer")
+    "bb" '(consult-buffer :which-key "switch buffer")
+    "bd" '(kill-current-buffer :which-key "kill buffer")
+    "bn" '(next-buffer :which-key "next buffer")
+    "bp" '(previous-buffer :which-key "previous buffer")
+    "br" '(revert-buffer :which-key "revert buffer"))
+#+end_src
+
+*** File Operations
+Common file management tasks:
+
+#+begin_src emacs-lisp
+  (my-leader-def
+    "f" '(:ignore t :which-key "file")
+    "ff" '(find-file :which-key "find file")
+    "fs" '(save-buffer :which-key "save file")
+    "fS" '(write-file :which-key "save as")
+    "fr" '(consult-recent-file :which-key "recent files")
+    "fR" '(my/reload-config :which-key "reload config"))
+#+end_src
+
+*** Search
+#+begin_src emacs-lisp
+  (my-leader-def
+    "s" '(:ignore t :which-key "search")
+    "ss" '(consult-line :which-key "search in buffer")
+    "sS" '(consult-line-multi :which-key "search in buffers")
+    "sp" '(consult-ripgrep :which-key "search in project")
+    "sf" '(consult-find :which-key "find files")
+    "sh" '(consult-org-heading :which-key "search headings")
+    "sm" '(consult-mark :which-key "search marks")
+    "si" '(consult-imenu :which-key "search symbols")
+    "sb" '(consult-buffer :which-key "search buffers")
+    "sr" '(consult-recent-file :which-key "search recent")
+    "sg" '(consult-git-grep :which-key "search git files")
+    "sd" '(consult-dir :which-key "search directories")
+    "so" '(consult-outline :which-key "search outline"))
+#+end_src
+
+*** Window Management
+Commands for manipulating window layout:
+
+#+begin_src emacs-lisp
+  (my-leader-def
+    "w" '(:ignore t :which-key "window")
+    "wh" '(evil-window-left :which-key "window left")
+    "wj" '(evil-window-down :which-key "window down")
+    "wk" '(evil-window-up :which-key "window up")
+    "wl" '(evil-window-right :which-key "window right")
+    "ws" '(evil-window-split :which-key "split horizontal")
+    "wv" '(evil-window-vsplit :which-key "split vertical")
+    "wd" '(evil-window-delete :which-key "delete window")
+    "wm" '(delete-other-windows :which-key "maximize window"))
+#+end_src
+
+*** Help System
+Quick access to Emacs' self-documentation:
+
+#+begin_src emacs-lisp
+  (my-leader-def
+    "h" '(:ignore t :which-key "help")
+    "hf" '(describe-function :which-key "describe function")
+    "hv" '(describe-variable :which-key "describe variable")
+    "hk" '(describe-key :which-key "describe key")
+    "hm" '(describe-mode :which-key "describe mode"))
+#+end_src
+
+*** Local Leader
+Set up local leader key for major mode-specific commands:
+
+#+begin_src emacs-lisp
+  (general-create-definer my-local-leader-def
+    :keymaps 'override
+    :states '(normal visual insert emacs)
+    :prefix "SPC m"
+    :non-normal-prefix "C-SPC m")
+#+end_src
+
+* Completion
+** Minibuffer Completion
+Vertico provides a vertical completion interface in the minibuffer:
 
 #+begin_src emacs-lisp
   (use-package vertico
@@ -153,8 +297,19 @@ Modern completion UI and search tools.
     (vertico-mode)
     :custom
     (vertico-cycle t)
-    (vertico-count 20))
+    (vertico-count 15)
+    (vertico-resize t)
+    :config
+    ;; Hide commands in M-x which don't apply to current mode
+    (setq read-extended-command-predicate
+          #'command-completion-default-include-p))
 
+  ;; Persist history over Emacs restarts
+  (use-package savehist
+    :init
+    (savehist-mode))
+
+  ;; Directory navigation like ido
   (use-package vertico-directory
     :after vertico
     :ensure nil
@@ -163,202 +318,505 @@ Modern completion UI and search tools.
                 ("DEL" . vertico-directory-delete-char)
                 ("M-DEL" . vertico-directory-delete-word))
     :hook (rfn-esm-update-handlers . vertico-directory-tidy))
+#+end_src
 
+** Completion Styles
+Orderless provides flexible, modern completion matching:
+
+#+begin_src emacs-lisp
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles . (partial-completion basic)))
+                                   (project-file (styles . (partial-completion basic)))))
+    (orderless-component-separator #'orderless-escapable-split-on-space)
+    :config
+    ;; Recognize more completion styles
+    (setq orderless-matching-styles
+          '(orderless-literal
+            orderless-prefixes
+            orderless-initialism
+            orderless-regexp)))
+#+end_src
+
+** In-buffer Completion
+Corfu provides a sleek pop-up completion interface:
+
+#+begin_src emacs-lisp
+  (use-package corfu
+    :custom
+    (corfu-cycle t)
+    (corfu-auto t)
+    (corfu-auto-delay 0.0)
+    (corfu-auto-prefix 2)
+    (corfu-preview-current nil)
+    (corfu-quit-at-boundary 'separator)
+    (corfu-quit-no-match t)
+    (corfu-separator ?\s)
+    :init
+    (global-corfu-mode)
+    :config
+    ;; Enable Corfu completion for minibuffer prompts
+    (defun corfu-enable-always-in-minibuffer ()
+      "Enable Corfu in the minibuffer if Vertico is not active."
+      (unless (bound-and-true-p vertico--input)
+        (corfu-mode 1)))
+    (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer))
+
+  ;; Make Corfu pop-ups prettier
+  (use-package corfu-popupinfo
+    :after corfu
+    :hook (corfu-mode . corfu-popupinfo-mode)
+    :custom
+    (corfu-popupinfo-delay '(0.25 . 0.1))
+    (corfu-popupinfo-hide nil))
+#+end_src
+
+** Completion At Point Extensions
+Cape enhances completion-at-point with more sources and features:
+
+#+begin_src emacs-lisp
+  (use-package cape
+    :init
+    ;; Add useful completion sources
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
+
+    ;; Silence the pcomplete capf, no errors or messages!
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+    ;; Ensure that pcomplete does not write to the buffer
+    ;; and behaves as a pure =completion-at-point-function'
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+    :config
+    ;; Enable richer annotations in completion items
+    (setq completion-annotate-function #'cape-annotate-prompt))
+#+end_src
+
+** Rich Annotations
+Marginalia adds helpful annotations to minibuffer completions:
+
+#+begin_src emacs-lisp
   (use-package marginalia
     :after vertico
     :init
-    (marginalia-mode))
+    (marginalia-mode)
+    :custom
+    (marginalia-align 'right)
+    (marginalia-max-relative-age 0)
+    :config
+    ;; Add custom annotators for more informative completions
+    (add-to-list 'marginalia-prompt-categories '("\\<face\\>" . face))
+    (add-to-list 'marginalia-prompt-categories '("\\<var\\>" . variable)))
+#+end_src
 
-  (use-package orderless
-    :init
-    (setq completion-styles '(orderless basic)
-          completion-category-defaults nil
-          completion-category-overrides '((file (styles . (basic partial-completion))))))
+** Enhanced Command Interface
+Consult provides enhanced versions of many built-in commands:
 
+#+begin_src emacs-lisp
   (use-package consult
     :after vertico
+    :custom
+    (consult-customize
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file
+     :preview-key "M-.")
     :config
-    (setq consult-preview-key "M-."
-          consult-project-root-function #'projectile-project-root))
+    ;; Enhance register preview and make it consistent
+    (setq register-preview-delay 0.1
+          register-preview-function #'consult-register-format
+  	consult-project-root-function #'projectile-project-root)
 
+    ;; Integration with Evil jumps
+    (setq evil-jumps-cross-buffers nil)
+    (evil-set-command-property 'consult-line :jump t))
+#+end_src
+
+** Command Discovery
+Which-key helps discover available keybindings:
+
+#+begin_src emacs-lisp
   (use-package which-key
     :init
     (which-key-mode)
+    :custom
+    (which-key-idle-delay 0.3)
+    (which-key-prefix-prefix "◉")
+    (which-key-sort-order 'which-key-key-order-alpha)
+    (which-key-sort-uppercase-first nil)
+    (which-key-add-column-padding 1)
+    (which-key-max-display-columns nil)
+    (which-key-min-display-lines 6)
     :config
-    (setq which-key-idle-delay 0.3
-          which-key-prefix-prefix "◉"
-          which-key-sort-order 'which-key-key-order-alpha))
-
-  (use-package savehist
-    :init
-    (savehist-mode))
+    ;; Allow C-h to trigger which-key before it is done automatically
+    (setq which-key-show-early-on-C-h t)
+    ;; Make sure which-key buffer is always below minibuffer
+    (setq which-key-popup-type 'minibuffer))
 #+end_src
 
-** Development Tools
-Language support and development environment configuration.
+* Development
+** Language Server Protocol
+Eglot provides a lightweight, built-in LSP client:
 
 #+begin_src emacs-lisp
   (use-package eglot
-    :hook ((python-mode . eglot-ensure)
-           (rust-mode . eglot-ensure)
-           (js-mode . eglot-ensure)
-           (typescript-mode . eglot-ensure)
-           (web-mode . eglot-ensure))
-    :config
-    (setq eglot-events-buffer-size 0
-          eglot-sync-connect nil
-          eglot-connect-timeout 10
-          eglot-autoshutdown t
-          completion-category-defaults nil))
+    :hook (prog-mode . eglot-ensure)
+    :custom
+    (eglot-autoshutdown t)           ; Shutdown language servers when closing last file
+    (eglot-events-buffer-size 0)     ; Disable events buffer (reduce clutter)
+    (eglot-sync-connect nil)         ; Don't block Emacs when connecting
+    (eglot-connect-timeout 10)       ; Increase timeout for slower servers
+    (eglot-auto-display-help-buffer nil)) ; Don't automatically show help
+#+end_src
 
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    ;; Code actions menu
+    "c" '(:ignore t :which-key "code")
+    "c=" '(eglot-format-buffer :which-key "format buffer")
+    "ca" '(eglot-code-actions :which-key "code actions")
+    "cr" '(eglot-rename :which-key "rename")
+
+    ;; Navigation (using xref for core operations)
+    "cd" '(xref-find-definitions :which-key "goto definition")
+    "cD" '(xref-find-references :which-key "find references")
+    "cb" '(xref-go-back :which-key "go back")
+
+    ;; LSP-specific operations
+    "ci" '(eglot-find-implementation :which-key "goto implementation")
+    "ct" '(eglot-find-typeDefinition :which-key "goto type")
+    "ch" '(eldoc :which-key "documentation")
+
+    ;; LSP server control
+    "l" '(:ignore t :which-key "lsp")
+    "ll" '(eglot :which-key "start lsp")
+    "lr" '(eglot-reconnect :which-key "reconnect")
+    "ls" '(eglot-shutdown :which-key "shutdown"))
+#+end_src
+
+** Syntax Checking
+Flycheck provides real-time syntax checking:
+
+#+begin_src emacs-lisp
   (use-package flycheck
-    :init
-    (global-flycheck-mode)
+    :hook (prog-mode . flycheck-mode)
+    :custom
+    (flycheck-display-errors-delay 0.1)
+    (flycheck-indication-mode 'left-margin)
     :config
-    (setq flycheck-display-errors-delay 0.3))
+    (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+#+end_src
 
-  (use-package cider
-    :defer t
-    :init
-    (setq cider-repl-display-help-banner nil)
-    :config
-    (setq cider-show-error-buffer t
-          cider-auto-select-error-buffer t
-          cider-repl-history-file (no-littering-expand-var-file-name "cider-history")
-          cider-repl-wrap-history t
-          cider-repl-history-size 1000
-          cider-repl-use-clojure-font-lock t)
-
-    (add-hook 'cider-repl-mode-hook #'eldoc-mode)
-    (add-hook 'cider-repl-mode-hook #'paredit-mode))
-
-  (use-package elisp-mode
-    :hook ((emacs-lisp-mode . eldoc-mode)
-           (emacs-lisp-mode . rainbow-delimiters-mode)
-           (emacs-lisp-mode . show-paren-mode))
-    :config
-    (setq lisp-indent-function 'lisp-indent-function))
-
-  (use-package nix-ts-mode
-    :mode "\\.nix\\'")
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "e" '(:ignore t :which-key "errors")
+    "el" '(flycheck-list-errors :which-key "list errors")
+    "en" '(flycheck-next-error :which-key "next error")
+    "ep" '(flycheck-previous-error :which-key "previous error")
+    "eb" '(flycheck-buffer :which-key "check buffer"))
 #+end_src
 
 ** Project Management
-Project navigation and version control.
+Enhanced project navigation and management:
 
 #+begin_src emacs-lisp
   (use-package projectile
+    :init
+    (projectile-mode +1)
+    :custom
+    (projectile-completion-system 'default)    ; use our completion setup
+    (projectile-enable-caching t)              ; enable caching for better performance
+    (projectile-auto-discover nil)             ; don't auto-discover on unknown folders
+    (projectile-globally-ignored-directories   ; ignore dirs that typically don't need searching
+     '(".git" ".log" "tmp" "dist" "node_modules" ".direnv"))
     :config
-    (projectile-mode +1))
-
-  (use-package magit
-    :commands magit-status
-    :config
-    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+    ;; consider these files as project markers
+    (add-to-list 'projectile-project-root-files "flake.nix")
+    (add-to-list 'projectile-project-root-files "package.json")
+    (add-to-list 'projectile-project-root-files "deps.edn"))
 #+end_src
 
-** Core bindings                                                   :bindings:
-Space as leader key, following modern conventions.
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "p"  '(:ignore t :which-key "project")
+    "pa" '(projectile-add-known-project :which-key "add known project")
+    "pp" '(projectile-switch-project :which-key "switch project")
+    "pf" '(projectile-find-file :which-key "find file")
+    "pd" '(projectile-find-dir :which-key "find directory")
+    "pb" '(projectile-switch-to-buffer :which-key "switch buffer")
+    "pk" '(projectile-kill-buffers :which-key "kill buffers")
+    "pt" '(projectile-run-vterm :which-key "terminal")
+    "pc" '(projectile-compile-project :which-key "compile")
+    "p!" '(projectile-run-shell-command-in-root :which-key "run command")
+    "p&" '(projectile-run-async-shell-command-in-root :which-key "run async command"))
+#+end_src
 
-I use a =aerospace= as my window manager on macos, with many =alt=
-bindings, so those are avoided in emacs whenever possible.
+** Version Control
+Magit interface for Git operations:
 
 #+begin_src emacs-lisp
-  (use-package general
+  (use-package magit
+    :custom
+    (magit-display-buffer-function
+     #'magit-display-buffer-fullframe-status-v1)  ; Use full-frame magit status
+    (magit-bury-buffer-function
+     #'magit-restore-window-configuration)        ; Restore windows after quitting
+    (magit-save-repository-buffers 'dontask)      ; Auto-save repo buffers
+    (magit-delete-by-moving-to-trash nil)         ; Don't move files to trash
+    (magit-no-confirm '(stage-all-changes         ; Reduce confirmation prompts
+                        unstage-all-changes))
     :config
-    (general-evil-setup)
+    ;; Use Projectile for repository discovery
+    (setq magit-repository-directories
+          (mapcar (lambda (dir)
+                    (cons dir 1))
+                  projectile-known-projects)))
+#+end_src
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "g"  '(:ignore t :which-key "git")
+    "gg" '(magit-status :which-key "status")
+    "gb" '(magit-blame :which-key "blame")
+    "gc" '(magit-commit :which-key "commit")
+    "gC" '(magit-clone :which-key "clone")
+    "gf" '(magit-file-dispatch :which-key "file dispatch")
+    "gl" '(magit-log-buffer-file :which-key "file log")
+    "gL" '(magit-log-current :which-key "branch log")
+    "gs" '(magit-stage-file :which-key "stage file")
+    "gS" '(magit-stage-modified :which-key "stage all")
+    "gu" '(magit-unstage-file :which-key "unstage file")
+    "gp" '(magit-push :which-key "push")
+    "gP" '(magit-pull :which-key "pull")
+    "gx" '(magit-reset-quickly :which-key "reset")
+    "g/" '(magit-dispatch :which-key "dispatch"))
+#+end_src
 
-    ;; Unbind regular emacs C- bindings in insert mode
-    (define-key evil-insert-state-map (kbd "C-a") nil)
-    (define-key evil-insert-state-map (kbd "C-e") nil)
-    (define-key evil-insert-state-map (kbd "C-k") nil)
-    (define-key evil-insert-state-map (kbd "C-w") nil)
-    (define-key evil-insert-state-map (kbd "C-y") nil)
+* Languages Layer
+** Common Features
+Common settings and utilities for all programming languages:
 
-    (general-create-definer my-leader-def
-      :keymaps 'override
-      :states '(normal visual insert emacs)
-      :prefix "SPC"
-      :non-normal-prefix "C-SPC")
+#+begin_src emacs-lisp
+  (defun my/setup-language-defaults ()
+    "Set up common language support features."
+    (eglot-ensure)
+    (flycheck-mode)
+    (electric-pair-local-mode)
+    (show-paren-mode))
 
-    (my-leader-def
-      ;; Top-level commands - quick access
-      "." '(find-file :which-key "find file")
-      "," '(consult-buffer :which-key "switch buffer")
-      "/" '(consult-ripgrep :which-key "search project")
-      ";" '(eval-expression :which-key "eval expression")
-      ":" '(execute-extended-command :which-key "M-x")
+  ;; Global development bindings
+  (my-leader-def
+    ;; Code actions
+    "c" '(:ignore t :which-key "code")
+    "c=" '(eglot-format-buffer :which-key "format buffer")
+    "ca" '(eglot-code-actions :which-key "code actions")
+    "cr" '(eglot-rename :which-key "rename")
+    "ch" '(eldoc :which-key "documentation")
 
-      ;; Help
-      "h" '(:ignore t :which-key "help")
-      "hf" '(describe-function :which-key "describe function")
-      "hv" '(describe-variable :which-key "describe variable")
-      "hk" '(describe-key :which-key "describe key")
-      "hm" '(describe-mode :which-key "describe mode")
+    ;; LSP/Eglot
+    "l" '(:ignore t :which-key "lsp")
+    "lr" '(eglot-reconnect :which-key "reconnect")
+    "ls" '(eglot-shutdown :which-key "shutdown")
+    "ll" '(eglot :which-key "start lsp")
 
-      ;; Buffer commands
-      "b" '(:ignore t :which-key "buffer")
-      "bb" '(consult-buffer :which-key "switch buffer")
-      "bd" '(kill-current-buffer :which-key "kill buffer")
-      "bn" '(next-buffer :which-key "next buffer")
-      "bp" '(previous-buffer :which-key "previous buffer")
-      "br" '(revert-buffer :which-key "revert buffer")
+    ;; Error checking
+    "e" '(:ignore t :which-key "errors")
+    "el" '(flycheck-list-errors :which-key "list errors")
+    "en" '(flycheck-next-error :which-key "next error")
+    "ep" '(flycheck-previous-error :which-key "previous error")
+    "eb" '(flycheck-buffer :which-key "check buffer"))
 
-      ;; File commands
-      "f" '(:ignore t :which-key "file")
-      "ff" '(find-file :which-key "find file")
-      "fs" '(save-buffer :which-key "save file")
-      "fS" '(write-file :which-key "save as")
-      "fr" '(consult-recent-file :which-key "recent files")
-      "fR" '(my/reload-config :which-key "reload config")
+  ;; Navigation bindings for all programming modes
+  (my-local-leader-def
+    :keymaps 'prog-mode-map
+    "g" '(:ignore t :which-key "goto")
+    "gd" '(eglot-find-declaration :which-key "declaration")
+    "gr" '(eglot-find-references :which-key "references")
+    "gi" '(eglot-find-implementation :which-key "implementation")
+    "gt" '(eglot-find-typeDefinition :which-key "type definition"))
+#+end_src
 
-      ;; Project commands
-      "p" '(:ignore t :which-key "project")
-      "pf" '(projectile-find-file :which-key "find file in project")
-      "pp" '(projectile-switch-project :which-key "switch project")
-      "pb" '(projectile-switch-to-buffer :which-key "switch project buffer")
-      "pk" '(projectile-kill-buffers :which-key "kill project buffers")
+** Clojure
+Core Clojure development environment:
 
-      ;; Search/Jump commands
-      "s" '(:ignore t :which-key "search")
-      "ss" '(consult-line :which-key "search in buffer")
-      "sp" '(consult-ripgrep :which-key "search in project")
-      "si" '(consult-imenu :which-key "jump to symbol")
+#+begin_src emacs-lisp
+  (use-package clojure-mode
+    :mode "\\.clj\\'"
+    :hook (clojure-mode . my/setup-language-defaults))
 
-      ;; Git commands
-      "g" '(:ignore t :which-key "git")
-      "gg" '(magit-status :which-key "magit status")
-      "gb" '(magit-blame :which-key "git blame")
-      "gl" '(magit-log-buffer-file :which-key "git log (current file)")
+  (use-package cider
+    :after clojure-mode
+    :custom
+    (cider-repl-display-help-banner nil)
+    (cider-show-error-buffer t)
+    (cider-auto-select-error-buffer t)
+    (cider-repl-history-file (no-littering-expand-var-file-name "cider-history"))
+    (cider-repl-wrap-history t)
+    (cider-repl-history-size 1000))
 
-      ;; Window commands
-      "w" '(:ignore t :which-key "window")
-      "wh" '(evil-window-left :which-key "window left")
-      "wj" '(evil-window-down :which-key "window down")
-      "wk" '(evil-window-up :which-key "window up")
-      "wl" '(evil-window-right :which-key "window right")
-      "ws" '(evil-window-split :which-key "split horizontal")
-      "wv" '(evil-window-vsplit :which-key "split vertical")
-      "wd" '(evil-window-delete :which-key "delete window")
-      "wm" '(delete-other-windows :which-key "maximize window")
+  ;; Clojure-specific keybindings
+  (my-local-leader-def
+    :keymaps 'clojure-mode-map
+    ;; REPL
+    "'" '(cider-jack-in :which-key "jack in")
+    "\"" '(cider-jack-in-clj&cljs :which-key "jack in clj&cljs")
 
-      ;; Toggle commands
-      "t" '(:ignore t :which-key "toggle")
-      "tt" '(load-theme :which-key "choose theme")
-      "tl" '(display-line-numbers-mode :which-key "line numbers")
-      "tw" '(whitespace-mode :which-key "whitespace")
+    ;; Evaluation
+    "e" '(:ignore t :which-key "eval")
+    "eb" '(cider-eval-buffer :which-key "eval buffer")
+    "ee" '(cider-eval-last-sexp :which-key "eval last sexp")
+    "ef" '(cider-eval-defun-at-point :which-key "eval defun")
+    "er" '(cider-eval-region :which-key "eval region")
 
-      ;; Quit/Restart
-      "q" '(:ignore t :which-key "quit")
-      "qq" '(save-buffers-kill-terminal :which-key "quit emacs")
-      "qr" '(restart-emacs :which-key "restart emacs"))
+    ;; Testing
+    "t" '(:ignore t :which-key "test")
+    "ta" '(cider-test-run-loaded-tests :which-key "run loaded tests")
+    "tn" '(cider-test-run-ns-tests :which-key "run ns tests")
+    "tt" '(cider-test-run-test :which-key "run test at point"))
+#+end_src
 
-    ;; Local leader key for major modes
-    (general-create-definer my-local-leader-def
-      :keymaps 'override
-      :states '(normal visual insert emacs)
-      :prefix "SPC m"
-      :non-normal-prefix "C-SPC m"))
+** Nix
+Support for Nix configuration language:
+
+#+begin_src emacs-lisp
+  (use-package nix-ts-mode
+    :mode "\\.nix\\'"
+    :hook (nix-ts-mode . my/setup-language-defaults)
+    :custom
+    (nix-nixfmt-bin "alejandra"))
+#+end_src
+
+** Emacs Lisp
+Enhanced Emacs Lisp editing experience:
+
+#+begin_src emacs-lisp
+  (use-package emacs-lisp-mode
+    :ensure nil  ; built-in
+    :hook ((emacs-lisp-mode . my/setup-language-defaults)
+           (emacs-lisp-mode . eldoc-mode))
+    :config
+    (setq lisp-indent-function #'lisp-indent-function))
+
+  ;; Emacs Lisp specific keybindings
+  (my-local-leader-def
+    :keymaps 'emacs-lisp-mode-map
+    "e" '(:ignore t :which-key "eval")
+    "eb" '(eval-buffer :which-key "eval buffer")
+    "ee" '(eval-last-sexp :which-key "eval last sexp")
+    "ef" '(eval-defun :which-key "eval defun")
+    "er" '(eval-region :which-key "eval region"))
+#+end_src
+
+** TypeScript/JavaScript
+Modern TypeScript and JavaScript development:
+
+#+begin_src emacs-lisp
+  (use-package typescript-ts-mode
+    :mode (("\\.ts\\'" . typescript-ts-mode)
+           ("\\.tsx\\'" . tsx-ts-mode))
+    :hook ((typescript-ts-mode . my/setup-language-defaults)
+           (tsx-ts-mode . my/setup-language-defaults))
+    :config
+    (add-to-list 'eglot-server-programs
+                 '((typescript-ts-mode . ("typescript-language-server" "--stdio"))
+                   (tsx-ts-mode . ("typescript-language-server" "--stdio")))))
+#+end_src
+
+** Shell Scripts
+Improved shell script editing:
+
+#+begin_src emacs-lisp
+  (use-package sh-script
+    :ensure nil  ; built-in
+    :hook (sh-mode . my/setup-language-defaults)
+    :custom
+    (sh-basic-offset 2)
+    (sh-indentation 2))
+#+end_src
+
+* Applications Layer
+** Terminal
+VTerm provides a full terminal emulation:
+
+#+begin_src emacs-lisp
+  (use-package vterm
+    :commands vterm
+    :custom
+    (vterm-max-scrollback 10000)
+    (vterm-buffer-name-string "vterm: %s")
+    :config
+    ;; Disable some evil keys in vterm that conflict with terminal
+    (evil-set-initial-state 'vterm-mode 'insert))
+#+end_src
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "ot" '(:ignore t :which-key "terminal")
+    "ott" '(vterm :which-key "new terminal")
+    "otv" '(vterm-other-window :which-key "terminal in split"))
+#+end_src
+
+** AI Assistant
+GPTel for AI-powered assistance:
+
+#+begin_src emacs-lisp
+  (use-package gptel
+    :custom
+    (gptel-default-mode 'org-mode)
+    (gptel-model "OpenRouter:anthropic/claude-3.5-sonnet:beta")
+    :config
+    (defun read-openrouter-token ()
+      "Read OpenRouter API token from ~/.openrouter-token file."
+      (with-temp-buffer
+        (insert-file-contents (expand-file-name "~/.openrouter-token"))
+        (string-trim (buffer-string))))
+
+    (gptel-make-openai "OpenRouter"
+      :host "openrouter.ai"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :key 'read-openrouter-token
+      :models '((deepseek/deepseek-chat
+                 :description "DeepSeek's powerful chat model optimized for dialogue")
+                (openai/o1
+                 :description "OpenAI's cutting-edge multimodal model"
+                 :capabilities (media))
+                (google/gemini-2.0-flash-thinking-exp:free
+                 :description "Google's fast Gemini model with experimental features")
+                (anthropic/claude-3.5-sonnet:beta
+                 :description "Anthropic's balanced Claude model for general tasks")
+                (anthropic/claude-3.5-haiku-20241022:beta
+                 :description "Anthropic's smaller, faster Claude model")))
+
+    ;; Set up conversation logging
+    (unless (file-exists-p "~/Sync/org/gptel-conversations")
+      (make-directory "~/Sync/org/gptel-conversations" t))
+    (setq gptel-log-conversations t
+          gptel-conversation-dir "~/Sync/org/gptel-conversations"))
+#+end_src
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "a" '(:ignore t :which-key "AI")
+    "an" '(gptel :which-key "new chat")
+    "am" '(gptel-menu :which-key "model menu"))
+#+end_src
+
+** Environment Management
+Tools for managing development environments:
+
+#+begin_src emacs-lisp
+  (use-package direnv
+    :config
+    (direnv-mode))
+
+  (use-package envrc
+    :config
+    (envrc-global-mode))
 #+end_src
 
 ** org-mode
@@ -394,9 +852,15 @@ Document authoring and task management.
 
   (use-package org-bullets
     :hook (org-mode . org-bullets-mode))
+
+  (use-package org-indent
+    :after org)
 #+end_src
 
-*** Bindings :bindings:
+#+RESULTS:
+
+*** Bindings
+
 #+begin_src emacs-lisp
   (my-local-leader-def
     :keymaps 'org-mode-map
@@ -411,146 +875,4 @@ Document authoring and task management.
     "." '(org-time-stamp :which-key "insert timestamp")
     "d" '(org-deadline :which-key "set deadline")
     "s" '(org-schedule :which-key "schedule todo"))
-#+end_src
-
-** gptel
-Core AI assistance capabilities across all modes.
-
-#+begin_src emacs-lisp
-  ;; GPT integration for general use across Emacs
-  (use-package gptel
-    :config
-    (setq gptel-default-mode 'org-mode  ; Default to org-mode for responses
-          gptel-model "openai/o1"       ; Default model
-          gptel-max-tokens 1000)        ; Reasonable default length
-
-    ;; Create a directory for conversation logs if it doesn't exist
-    (unless (file-exists-p "~/Sync/org/gptel-conversations")
-      (make-directory "~/Sync/org/gptel-conversations" t))
-
-    ;; Log conversations to files
-    (setq gptel-log-conversations t
-          gptel-conversation-dir "~/Sync/org/ai-conversations"))
-
-  ;; OpenRouter configuration with multiple model support
-  (defun read-openrouter-token ()
-    "Read OpenRouter API token from ~/.openrouter-token file."
-    (with-temp-buffer
-      (insert-file-contents (expand-file-name "~/.openrouter-token"))
-      (string-trim (buffer-string))))
-
-  (gptel-make-openai "OpenRouter"
-    :host "openrouter.ai"
-    :endpoint "/api/v1/chat/completions"
-    :stream t
-    :key 'read-openrouter-token
-    :models '(sao10k/l3.3-euryale-70b        ; Specialized for creative writing
-             openai/o1                        ; GPT-4 equivalent
-             google/gemini-2.0-flash-exp:free ; Fast responses
-             qwen/qwq-32b-preview            ; Good for code
-             anthropic/claude-3.5-sonnet:beta ; Strong reasoning
-  	     ))
-
-  ;; Context collection for more informed AI interactions
-  (defun my/collect-context ()
-    "Collect context from various sources based on current mode and buffer."
-    (cond
-     ;; For org-mode, collect tagged headings
-     ((derived-mode-p 'org-mode)
-      (my/collect-org-context))
-
-     ;; For programming modes, collect function/class definition
-     ((derived-mode-p 'prog-mode)
-      (my/collect-code-context))
-
-     ;; Default to current buffer region if selected
-     (t (if (use-region-p)
-            (buffer-substring-no-properties (region-beginning) (region-end))
-          ""))))
-
-  (defun my/collect-org-context ()
-    "Collect context from org-mode specifically."
-    (let ((context ""))
-      (save-excursion
-        ;; Get current tree
-        (org-back-to-heading t)
-        (setq context (concat context
-                             "\nCurrent section:\n"
-                             (buffer-substring-no-properties
-                              (point)
-                              (save-excursion (org-end-of-subtree) (point)))))
-        ;; Get tagged contexts if any
-        (setq context (concat context "\n" (my/collect-llm-context))))
-      context))
-
-  (defun my/collect-code-context ()
-    "Collect context from programming modes."
-    (save-excursion
-      (let ((start (if (use-region-p)
-                      (region-beginning)
-                    (progn (beginning-of-defun) (point))))
-            (end (if (use-region-p)
-                    (region-end)
-                  (progn (end-of-defun) (point)))))
-        (buffer-substring-no-properties start end))))
-
-  ;; Interactive commands for AI interaction
-  (defun my/ai-improve-code ()
-    "Ask AI to improve the current code selection or function."
-    (interactive)
-    (let ((context (my/collect-code-context)))
-      (gptel-send
-       (format "Please improve this code:\n=\n%s\n=\nFocus on:
-                1. Performance
-                2. Readability
-                3. Error handling
-                4. Best practices
-                Explain your changes." context))))
-
-  (defun my/ai-explain-code ()
-    "Ask AI to explain the current code selection or function."
-    (interactive)
-    (let ((context (my/collect-code-context)))
-      (gptel-send
-       (format "Please explain this code:\n=\n%s\n=\n
-                Include:
-                1. High-level overview
-                2. Key components
-                3. Important patterns or techniques used
-                4. Potential gotchas" context))))
-
-  (defun my/ai-review-changes ()
-    "Ask AI to review uncommitted changes in current project."
-    (interactive)
-    (let ((diff (shell-command-to-string "git diff")))
-      (when (not (string-empty-p diff))
-        (gptel-send
-         (format "Please review these changes:\n=diff\n%s\n=\n
-                  Focus on:
-                  1. Potential bugs
-                  2. Performance implications
-                  3. Security considerations
-                  4. Suggested improvements" diff)))))
-
-  ;; Direct question with context
-  (defun my/ai-ask (question)
-    "Ask AI a question with current context."
-    (interactive "sAsk AI: ")
-    (let ((context (my/collect-context)))
-      (gptel-send
-       (format "Context:\n%s\n\nQuestion: %s" context question))))
-#+end_src
-
-*** Bindings
-#+begin_src emacs-lisp
-  (my-leader-def
-    "a" '(:ignore t :which-key "AI")
-    "aa" '(my/ai-ask :which-key "ask question")
-    "ac" '(:ignore t :which-key "code")
-    "aci" '(my/ai-improve-code :which-key "improve code")
-    "ace" '(my/ai-explain-code :which-key "explain code")
-    "acr" '(my/ai-review-changes :which-key "review changes")
-    "as" '(gptel-send :which-key "send to AI")
-    "am" '(gptel-menu :which-key "AI menu")
-    "at" '(gptel-toggle-model :which-key "toggle AI model"))
 #+end_src

@@ -4,6 +4,7 @@
       # Emacs
       exec-path-from-shell
       no-littering
+      undo-tree
 
       # Evil
       evil
@@ -56,8 +57,8 @@
       ### Nix
       nix-ts-mode
 
-      # Utils
-      undo-tree
+      ### Zig
+      zig-mode
     ];
 
   systemPackages = pkgs:
@@ -69,6 +70,7 @@
         nerd-fonts.symbols-only
 
         # Development
+	direnv
         git
 
         ## Search/Completion
@@ -103,6 +105,9 @@
         nodePackages.typescript
         nodePackages.typescript-language-server
         nodejs
+
+	# zig
+	zls
       ]
       ++ lib.optionals stdenv.isDarwin []
       ++ lib.optionals stdenv.isLinux [];

@@ -121,7 +121,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        packages = [pkgs.sops];
+        packages = [pkgs.sops pkgs.nixd];
       };
     });
 

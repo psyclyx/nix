@@ -63,6 +63,20 @@ Tools for managing this configuration:
     (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
 #+end_src
 
+** Exec path
+On darwin, I often launch =Emacs.app= instead of =emacs=. However, MacOS
+sets a default environment that doesn't include anything configured through
+home-manager. =exec-path-from-shell= fixes this by +stealing+ borrowing what's
+set in a non-interactive shell.
+
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :init
+    ;; ensure shell is non-interactive
+    (setq exec-path-from-shell-arguments nil)
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)))
+ #+end_src
 * Interface
 ** UI Fundamentals
 Remove distracting UI elements and provide a clean canvas for editing:
@@ -860,6 +874,21 @@ Document authoring and task management.
 #+RESULTS:
 
 *** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "n" '(:ignore t :which-key "notes")
+    "na" '(org-agenda :which-key "agenda")
+    "nc" '(org-capture :which-key "capture")
+    "nf" '(org-find-file :which-key "find org file")
+    "nl" '(org-store-link :which-key "store link")
+    "ni" '(org-insert-link :which-key "insert link")
+    "ns" '(org-search-view :which-key "search")
+    "nt" '(org-todo-list :which-key "todo list")
+    "nj" '(org-journal-new-entry :which-key "journal entry")
+    "nb" '(org-switchb :which-key "switch org buffer")
+    "nr" '(org-refile :which-key "refile")
+    "nT" '(org-toggle-heading :which-key "toggle heading"))
+#+end_src
 
 #+begin_src emacs-lisp
   (my-local-leader-def

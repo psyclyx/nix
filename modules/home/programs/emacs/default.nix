@@ -29,4 +29,5 @@ in {
       (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient];
   };
   home.file.".config/emacs".source = config.lib.file.mkOutOfStoreSymlink configPath;
+  home.packages = packages;
 }

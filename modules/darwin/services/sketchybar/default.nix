@@ -24,10 +24,8 @@ let
     bar=(
         height=28
         position=top
-        padding_left=2
-        padding_right=2
-        margin=16
-	corner_radius=16
+        padding_left=24
+        padding_right=24
         y_offset=3
         color=${theme.background_alt} \
         sticky=off

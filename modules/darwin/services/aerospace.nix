@@ -27,7 +27,7 @@
         outer.left = 4;
         outer.bottom = 4;
         outer.top = [
-          {monitor."BenQ RD280U" = 48;}
+          {monitor."BenQ RD280U" = 36;}
           4
         ];
         outer.right = 4;

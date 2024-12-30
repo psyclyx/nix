@@ -2,9 +2,28 @@
   home.stateVersion = "23.11";
 
   home.packages = with pkgs; [
-    source-code-pro
-    nerd-fonts.noto
+    alejandra
+    babashka
+    cargo
+    clj-kondo
+    cljstyle
+    clojure
+    clojure-lsp
+    fd
     htop
+    htop
+    jq
+    leiningen
+    lua-language-server
+    maven
+    nerd-fonts.hack
+    nerd-fonts.noto
+    nixd
+    nodejs
+    python3
+    ripgrep
+    rustc
+    source-code-pro
     vscode
   ];
 

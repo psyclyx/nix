@@ -22,11 +22,11 @@ in {
       cleanup = "zap";
     };
 
-    taps = builtins.attrNames config.nix-homebrew.taps;
+    taps = ["conductorone/cone" "hashicorp/tap" "borkdude/brew"];
   };
 
   nix-homebrew = {
-    enable = true;
+    enable = false;
     autoMigrate = false;
     enableRosetta = hostPlatform.isAarch64;
     mutableTaps = true;

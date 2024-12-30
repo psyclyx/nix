@@ -3,6 +3,7 @@
 
   home.packages = with pkgs; [
     nerd-fonts.noto
+    nerd-fonts.hack
     htop
     vscode
     alejandra

@@ -2,6 +2,8 @@
   userName = "alice";
   userHome = "/Users/alice";
 in {
+  nix.settings.trusted-users = ["alice"];
+
   users.users.alice = {
     name = userName;
     home = userHome;

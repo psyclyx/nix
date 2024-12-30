@@ -7,9 +7,20 @@
     };
   };
 
+  homebrew.brews = [
+    "borkdude/brew/jet"
+    "conductorone/cone/cone"
+    "docker-compose"
+    "hashicorp/tap/vault"
+    "tfenv"
+  ];
+
   homebrew.casks = [
+    "chromedriver"
+    "docker"
     "firefox"
-    "zoom"
+    "google-chrome"
     "slack"
+    "zoom"
   ];
 }

@@ -361,12 +361,20 @@ Corfu provides a sleek pop-up completion interface:
     :custom
     (corfu-cycle t)
     (corfu-auto t)
-    (corfu-auto-delay 0.0)
-    (corfu-auto-prefix 2)
-    (corfu-preview-current nil)
+    (corfu-auto-delay 0.1)
+    (corfu-auto-prefix 1)
+    (corfu-preselect 'prompt)
     (corfu-quit-at-boundary 'separator)
     (corfu-quit-no-match t)
     (corfu-separator ?\s)
+
+    :bind
+    (:map corfu-map
+  	("TAB" . corfu-next)
+  	([tab] . corfu-next)
+  	("S-TAB" . corfu-previous)
+  	([backtab] . corfu-previous))
+
     :init
     (global-corfu-mode)
     :config

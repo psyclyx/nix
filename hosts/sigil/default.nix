@@ -5,6 +5,7 @@ in {
   imports = [
     disko.nixosModules.disko
     ../../modules/nixos/programs/nix-ld.nix
+    ../../modules/nixos/programs/steam.nix
     ../../modules/nixos/programs/sway.nix
     ../../modules/nixos/programs/zsh.nix
     ../../modules/nixos/services/devmon.nix

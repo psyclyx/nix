@@ -66,11 +66,12 @@
       [
         # UI
         fontconfig
+        nerd-fonts.hack
         nerd-fonts.noto
         nerd-fonts.symbols-only
 
         # Development
-	direnv
+        direnv
         git
 
         ## Search/Completion
@@ -80,8 +81,8 @@
         silver-searcher
 
         # Language support
-	## text
-	ispell
+        ## text
+        ispell
 
         # clojure
         babashka
@@ -106,8 +107,8 @@
         nodePackages.typescript-language-server
         nodejs
 
-	# zig
-	zls
+        # zig
+        zls
       ]
       ++ lib.optionals stdenv.isDarwin []
       ++ lib.optionals stdenv.isLinux [];

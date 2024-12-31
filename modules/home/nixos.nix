@@ -25,7 +25,7 @@ in {
     ./programs/swayidle.nix
     ./programs/vscodium.nix
     ./secrets/sops.nix
-    ../modules/home/services/syncthing.nix
+    ./services/syncthing.nix
     ./services/ssh-agent.nix
     ./themes/gtk.nix
     ./xdg.nix

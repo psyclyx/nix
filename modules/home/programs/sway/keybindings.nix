@@ -36,12 +36,8 @@ in {
         "${mod}+b" = "splith";
         "${mod}+v" = "splitv";
         "${mod}+f" = "fullscreen toggle";
-        "${mod}+a" = "focus parent";
+        "${mod}+u" = "focus parent";
         "${mod}+Shift+a" = "focus child";
-
-        "${mod}+s" = "layout stacking";
-        "${mod}+w" = "layout tabbed";
-        "${mod}+e" = "layout toggle split";
 
         "${mod}+Shift+space" = "floating toggle";
         "${mod}+space" = "focus mode_toggle";
@@ -51,7 +47,7 @@ in {
         "${mod}+d" = "exec ${rofi} -show drun";
         "${mod}+g" = "exec ${rofi} -show filebrowser";
         "${mod}+m" = "exec ${bemoji} -t";
-        "${mod}+Return" = "exec ${kitty}";
+        "${mod}+Return" = "exec ${kitty} --single-instance -d ~";
         "${mod}+Shift+e" = "exec ~/bin/rofi-session";
         "${mod}+Shift+c" = "reload";
 
@@ -68,8 +64,8 @@ in {
         "${mod}+9" = "workspace number 9";
         "${mod}+0" = "workspace number 10";
 
-        "${mod}+period" = "workspace next";
-        "${mod}+comma" = "workspace prev";
+        "${mod}+slash" = "layout toggle split";
+        "${mod}+comma" = "layout toggle stacking tabbed";
 
         "${mod}+Shift+1" = "move container to workspace number 1";
         "${mod}+Shift+2" = "move container to workspace number 2";
@@ -81,9 +77,6 @@ in {
         "${mod}+Shift+8" = "move container to workspace number 8";
         "${mod}+Shift+9" = "move container to workspace number 9";
         "${mod}+Shift+0" = "move container to workspace number 0";
-
-        "${mod}+Shift+period" = "move container to workspace next; workspace-next";
-        "${mod}+Shift+comma" = "move container to workspace prev; workspace-prev";
 
         "${mod}+Shift+minus" = "move scratchpad";
         "${mod}+minus" = "scratchpad show";

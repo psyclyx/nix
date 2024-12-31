@@ -144,6 +144,11 @@
         hostName = "omen";
         modules = [./hosts/omen];
       };
+      sigil = mkNixosConfiguration {
+        hostPlatform = "x86_64-linux";
+        hostName = "sigil";
+        modules = [./hosts/sigil];
+      };
       ix = mkNixosConfiguration {
         hostPlatform = "x86_64-linux";
         hostName = "ix";

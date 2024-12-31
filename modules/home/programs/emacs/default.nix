@@ -9,16 +9,17 @@
   packages = packageConfig.systemPackages pkgs;
   relPath = lib.strings.removePrefix (toString inputs.self) (toString ./config);
   configPath = "${config.home.homeDirectory}/projects/nix" + relPath;
-  emacs = if pkgs.stdenv.isDarwin
-            then pkgs.emacs-30
-            else pkgs.emacs-git;
+  emacs =
+    if pkgs.stdenv.isDarwin
+    then pkgs.emacs-30
+    else pkgs.emacs-pgtk;
   emacsclient = pkgs.stdenv.mkDerivation {
     pname = "emacsclient";
     version = emacs.version;
-    phases = [ "installPhase" ];
+    phases = ["installPhase"];
     installPhase = ''
-      mkdir -p $out/bin
-	  cp ${emacs}/bin/emacsclient $out/bin/
+         mkdir -p $out/bin
+      cp ${emacs}/bin/emacsclient $out/bin/
     '';
   };
 in {

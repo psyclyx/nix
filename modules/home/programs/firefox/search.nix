@@ -1,7 +1,7 @@
 {pkgs}: {
   force = true;
   default = "Kagi";
-  order = ["Kagi" "DuckDuckGo" "Youtube" "NixOS Options" "Nix Packages" "GitHub" "HackerNews"];
+  order = ["DuckDuckGo" "Kagi" "Youtube" "NixOS Options" "Nix Packages" "GitHub" "HackerNews"];
 
   engines = {
     "Bing".metaData.hidden = true;

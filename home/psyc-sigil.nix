@@ -13,7 +13,7 @@ in {
     obsidian
     zotero
   ];
-
+  programs.waybar.settings.mainBar."cpu".format = " ${pkgs.lib.concatMapStrings (n: "{icon${toString n}}") (lib.range 0 31)}";
   imports = [
     inputs.sops-nix.homeManagerModules.sops
     ../modules/home/programs/firefox

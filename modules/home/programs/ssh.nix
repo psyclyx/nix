@@ -29,6 +29,10 @@ in {
           forwardAgent = true;
           identityFile = "~/.ssh/id_psyclyx";
         };
+        "sigil.lan" = {
+          forwardAgent = true;
+          identityFile = "~/.ssh/id_psyclyx";
+        };
       };
     };
   };

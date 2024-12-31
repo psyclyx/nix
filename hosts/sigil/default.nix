@@ -12,6 +12,7 @@ in {
     ../../modules/nixos/services/gnome-keyring.nix
     ../../modules/nixos/services/greetd.nix
     ../../modules/nixos/services/gvfs.nix
+    ../../modules/nixos/services/openssh.nix
     ../../modules/nixos/services/udisks2.nix
     ../../modules/nixos/system/console.nix
     ../../modules/nixos/system/fonts.nix

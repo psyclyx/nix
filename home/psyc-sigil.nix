@@ -29,6 +29,7 @@ in {
     ../modules/home/programs/swayidle.nix
     ../modules/home/secrets/sops.nix
     ../modules/home/services/ssh-agent.nix
+    ../modules/home/services/syncthing.nix
     ../modules/home/themes/gtk.nix
     ../modules/home/xdg.nix
   ];

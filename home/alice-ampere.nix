@@ -36,6 +36,7 @@
     ../modules/home/programs/nvim
     ../modules/home/programs/emacs
     ../modules/home/programs/zsh
+    ../modules/home/programs/zsh/darwin.nix
     ../modules/home/programs/zsh/work.nix
   ];
 }

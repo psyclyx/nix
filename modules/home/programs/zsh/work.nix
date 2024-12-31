@@ -42,7 +42,7 @@
       }
 
       arcopy () {
-        admin-repl $1 start && admin-repl $1 addr | sed 's/ /:/' | notify-copy "arcopy $1"
+        admin-repl $1 start && admin-repl $1 addr | sed 's/ /:/'
       }
 
       arkill () {

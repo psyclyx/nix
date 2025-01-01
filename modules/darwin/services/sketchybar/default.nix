@@ -5,14 +5,13 @@ let
   theme = colors.colorUtils.mkTheme "sketchybar";
   aerospacePlugin = pkgs.writeShellScript "aerospace_plugin" ''
     if [ "$1" = "$FOCUSED_WORKSPACE" ]; then
+
     sketchybar --set $NAME \
-        label.border_width=1 \
-	label.background.drawing=on\
+        background.color=${theme.wm.focused.background} \
         label.highlight=on
     else
     sketchybar --set $NAME \
-        label.border_width=0 \
-	label.background.drawing=off\
+        background.color=${theme.wm.unfocused.background} \
         label.highlight=off
     fi
 
@@ -26,8 +25,7 @@ let
         position=top
         padding_left=24
         padding_right=24
-        y_offset=3
-        color=${theme.background_alt} \
+        color=${theme.background}
         sticky=off
         )
 
@@ -55,15 +53,15 @@ let
 		padding_right=6 \
                 icon.width=0\
 		label.font="NotoMono Nerd Font: Regular:16.0"\
-                label.border_color=${theme.wm.focused.border} \
-		label.background.color=${theme.wm.focused.background} \
-                label.background.drawing=off\
-		label.align=center\
+		background.highlight_color=${theme.wm.focused.background} \
+		background.color=${theme.wm.unfocused.background} \
+		label.color=${theme.wm.unfocused.text}\
+		label.highlight_color=${theme.wm.focused.text}\
                 label.width=36\
-                label.background.height=24\
+		label.align=center\
                 label.background.width=36\
-                label.background.corner_radius=12\
-		label.border_width=1 \
+		height=28\
+                icon.drawing=off\
 		label="$sid" \
             --subscribe space.$sid aerospace_workspace_change
     done

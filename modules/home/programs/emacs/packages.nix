@@ -39,6 +39,7 @@
       org-roam
 
       # Development
+      apheleia
       direnv
       eglot
       envrc
@@ -56,6 +57,9 @@
 
       ### Nix
       nix-ts-mode
+
+      ### Lua
+      lua-mode
 
       ### Zig
       zig-mode

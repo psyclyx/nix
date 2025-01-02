@@ -95,6 +95,12 @@ Relative line numbers
   (global-display-line-numbers-mode 1)
 #+end_src
 
+Enable visual line mode globally:
+
+#+begin_src emacs-lisp
+  (global-visual-line-mode 1)
+#+end_src
+
 Show whitespace
 #+begin_src emacs-lisp
 
@@ -299,6 +305,13 @@ Set up local leader key for major mode-specific commands:
     :states '(normal visual insert emacs)
     :prefix "SPC m"
     :non-normal-prefix "C-SPC m")
+#+end_src
+
+*** Toggles
+#+begin_src emacs-lisp
+  (my-leader-def
+    "t" '(:ignore t :which-key "toggle")
+    "tw" '(visual-line-mode :which-key "word wrap"))
 #+end_src
 
 * Completion
@@ -541,6 +554,16 @@ Flycheck provides real-time syntax checking:
     "eb" '(flycheck-buffer :which-key "check buffer"))
 #+end_src
 
+* Formatting
+Code formatting across different languages:
+
+#+begin_src emacs-lisp
+  (use-package apheleia)
+
+  (my-leader-def
+    "=" '(apheleia-format-buffer :which-key "format (apheleia)"))
+#+end_src
+
 ** Project Management
 Enhanced project navigation and management:
 
@@ -668,7 +691,12 @@ Core Clojure development environment:
 #+begin_src emacs-lisp
   (use-package clojure-mode
     :mode "\\.clj\\'"
-    :hook (clojure-mode . my/setup-language-defaults))
+    :hook (clojure-mode . my/setup-language-defaults)
+    :config
+    (with-eval-after-load 'apheleia
+      (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
+      (setf (alist-get 'cljstyle apheleia-formatters)
+  	  '("cljstyle" "pipe"))))
 
   (use-package cider
     :after clojure-mode
@@ -709,7 +737,12 @@ Support for Nix configuration language:
     :mode "\\.nix\\'"
     :hook (nix-ts-mode . my/setup-language-defaults)
     :custom
-    (nix-nixfmt-bin "alejandra"))
+    (nix-nixfmt-bin "alejandra")
+    :config
+    (with-eval-after-load 'apheleia
+      (setf (alist-get 'nix-ts-mode apheleia-mode-alist) 'alejandra)
+      (setf (alist-get 'alejandra apheleia-formatters)
+  	  '("alejandra" "-"))))
 #+end_src
 
 ** Emacs Lisp
@@ -760,6 +793,98 @@ Improved shell script editing:
     (sh-indentation 2))
 #+end_src
 
+** Lua
+Core Lua development environment:
+
+#+begin_src emacs-lisp
+  (use-package lua-mode
+    :mode "\\.lua\\'"
+    :interpreter "lua"
+    :hook (lua-mode . my/setup-language-defaults)
+    :custom
+    (lua-indent-level 2)
+    (lua-indent-string-contents t)
+    (lua-prefix-key nil)  ; Don't override any prefix keys
+    :config
+    ;; Configure LSP (using lua-language-server)
+    (add-to-list 'eglot-server-programs
+                 '(lua-mode . ("lua-language-server")))
+
+    ;; Better syntax highlighting
+    (setq lua-font-lock-keywords
+          (append lua-font-lock-keywords
+                  '(("\\<\\(self\\)\\>" . font-lock-keyword-face))))
+
+    (with-eval-after-load 'apheleia
+        (setf (alist-get 'lua-mode apheleia-mode-alist) 'stylua)
+        (setf (alist-get 'stylua apheleia-formatters)
+              '("stylua" "-"))))
+
+
+  ;; Lua-specific keybindings
+  (my-local-leader-def
+    :keymaps 'lua-mode-map
+
+    ;; Evaluation
+    "e" '(:ignore t :which-key "eval")
+    "eb" '(lua-send-buffer :which-key "eval buffer")
+    "ef" '(lua-send-defun :which-key "eval function")
+    "el" '(lua-send-current-line :which-key "eval line")
+    "er" '(lua-send-region :which-key "eval region")
+
+    ;; Documentation
+    "h" '(:ignore t :which-key "help")
+    "hh" '(eldoc :which-key "documentation at point")
+    "hr" '(xref-find-references :which-key "find references")
+
+    ;; Format
+    "=" '(apheleia-format-buffer :which-key "format buffer")
+
+    ;; Testing (if using busted or luaunit)
+    "t" '(:ignore t :which-key "test")
+    "tb" '(lua-send-buffer-and-test :which-key "test buffer")
+    "tf" '(lua-send-defun-and-test :which-key "test function")
+    "tt" '(lua-run-tests :which-key "run all tests")
+
+    ;; Navigation
+    "g" '(:ignore t :which-key "goto")
+    "gg" '(xref-find-definitions :which-key "goto definition")
+    "gr" '(xref-find-references :which-key "find references")
+    "gi" '(eglot-find-implementation :which-key "goto implementation")
+
+    ;; Code actions
+    "c" '(:ignore t :which-key "code")
+    "cr" '(eglot-rename :which-key "rename")
+    "ca" '(eglot-code-actions :which-key "code actions")
+    "cf" '(apheleia-format-buffer :which-key "format buffer"))
+
+  ;; Optional: Add support for Neovim configuration if needed
+  (add-to-list 'auto-mode-alist '("init\\.lua\\'" . lua-mode))
+  (add-to-list 'auto-mode-alist '("\\.nvim/lua/.*\\.lua\\'" . lua-mode))
+
+  ;; Helper functions for Lua development
+  (defun lua-send-buffer-and-test ()
+    "Send buffer to Lua REPL and run tests."
+    (interactive)
+    (lua-send-buffer)
+    (lua-run-tests))
+
+  (defun lua-send-defun-and-test ()
+    "Send current function to Lua REPL and run its tests."
+    (interactive)
+    (lua-send-defun)
+    (lua-run-tests))
+
+  (defun lua-run-tests ()
+    "Run Lua tests using the configured test runner."
+    (interactive)
+    (let ((test-command
+           (cond
+            ((file-exists-p "busted") "busted")
+            ((file-exists-p "luaunit") "lua -lluaunit")
+            (t "lua test.lua"))))
+      (compile test-command)))
+#+end_src
 * Applications Layer
 ** Terminal
 VTerm provides a full terminal emulation:

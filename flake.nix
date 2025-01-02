@@ -127,7 +127,13 @@
 
     overlays = {
       "aarch64-darwin" = {
-	packages = (import ./pkgs);
+	default = (import ./pkgs);
+      };
+      "x86_64-linux" = {
+	default = final: prev: prev;
+      };
+      "x86_64-darwin" = {
+	default = final: prev: prev;
       };
     };
 

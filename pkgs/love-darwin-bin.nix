@@ -6,7 +6,7 @@
 }: let
   version = "11.5";
   url = "https://github.com/love2d/love/releases/download/${version}/love-${version}-macos.zip";
-  sha256 = "sha256-IsynTLOySc6NXjeslLxIW9PfipTZXpHsbVzWCcfTz0k=";
+  sha256 = "sha256-6pz66mZMpAkMBtTPzfhFs0Ws8cYVxWjrSroy2xoYgYQ=";
 in
   stdenv.mkDerivation {
     pname = "love-darwin-bin";

@@ -121,9 +121,15 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        packages = [pkgs.sops pkgs.nixd];
+        packages = [pkgs.sops pkgs.nixd pkgs.alejandra];
       };
     });
+
+    overlays = {
+      "aarch64-darwin" = {
+	packages = (import ./pkgs);
+      };
+    };
 
     darwinConfigurations = {
       halo = mkDarwinConfiguration {
@@ -139,6 +145,7 @@
         modules = [./hosts/ampere];
       };
     };
+
     nixosConfigurations = {
       omen = mkNixosConfiguration {
         hostPlatform = "x86_64-linux";

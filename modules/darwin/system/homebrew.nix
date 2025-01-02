@@ -22,7 +22,7 @@ in {
       cleanup = "zap";
     };
 
-    taps = ["conductorone/cone" "hashicorp/tap" "borkdude/brew"];
+    taps = builtins.attrNames config.nix-homebrew.taps;
   };
 
   nix-homebrew = {

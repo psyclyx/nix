@@ -18,12 +18,11 @@
         "-c"
         "${pkgs.sketchybar}/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
       ];
-      on-focused-monitor-changed = ["move-mouse monitor-lazy-center"];
       automatically-unhide-macos-hidden-apps = true;
 
       gaps = {
-        inner.horizontal = 8;
-        inner.vertical = 8;
+        inner.horizontal = 12;
+        inner.vertical = 12;
         outer.left = 4;
         outer.bottom = 4;
         outer.top = [

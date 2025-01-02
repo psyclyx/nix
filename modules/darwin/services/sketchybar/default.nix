@@ -5,6 +5,7 @@
 }: let
   colors = import ../../../home/themes/angel.nix {inherit lib;};
   themeEnv = with colors.colorUtils; mkThemeEnv [(transform.withAlpha 1.0) transform.withOx];
+  transparentTheme = with colors.colorUtils; mkTheme [(transform.withAlpha 0.4) transform.withOx];
   aerospacePlugin = pkgs.writeShellApplication {
     name = "aerospace_plugin";
     text = builtins.readFile ./aerospace_plugin.sh;
@@ -56,7 +57,9 @@
       batteryPlugin
       clockPlugin
     ];
-    runtimeEnv = builtins.trace themeEnv themeEnv;
+    runtimeEnv = themeEnv // {
+      "BAR_BACKGROUND" = transparentTheme.background;
+    };
   };
 in {
   services.sketchybar = {

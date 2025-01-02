@@ -2,7 +2,7 @@
 
 let
   colors = import ../../home/themes/angel.nix { inherit lib; };
-  theme = with colors.colorUtils; mkTheme [(transform.withAlpha 1.0) transform.withOx];
+  theme = with colors.colorUtils; mkTheme [(transform.withAlpha 0.9) transform.withOx];
 in {
   services.jankyborders = {
     enable = true;
@@ -13,9 +13,10 @@ in {
     inactive_color = theme.wm.unfocused.border;
 
     # Styling
-    width = 8.0;
+    width = 12.0;
+    blur_radius = 4.0;
     style = "round";  # or "square" if you prefer
-    order = "above";  # or "below" if you prefer
+    order = "below";  # or "below" if you prefer
 
     # Optional: Enable HiDPI if you're using a retina display
     hidpi = false;  # Set to true for retina displays

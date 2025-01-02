@@ -6,7 +6,7 @@ bar=(
   position=top
   padding_left=24
   padding_right=24
-  color="${THEME_BACKGROUND}"
+  color="${BAR_BACKGROUND}"
   sticky=off
 )
 

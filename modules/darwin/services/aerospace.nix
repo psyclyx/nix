@@ -21,15 +21,15 @@
       automatically-unhide-macos-hidden-apps = true;
 
       gaps = {
-        inner.horizontal = 12;
-        inner.vertical = 12;
-        outer.left = 4;
-        outer.bottom = 4;
+        inner.horizontal = 18;
+        inner.vertical = 18;
+        outer.left = 14;
+        outer.bottom = 14;
         outer.top = [
-          {monitor."BenQ RD280U" = 36;}
+          {monitor."BenQ RD280U" = 42;}
           4
         ];
-        outer.right = 4;
+        outer.right = 14;
       };
 
       key-mapping.preset = "qwerty";

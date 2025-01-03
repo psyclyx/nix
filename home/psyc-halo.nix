@@ -15,6 +15,8 @@
     jq
     leiningen
     lua-language-server
+    lua
+    love-darwin-bin
     maven
     nerd-fonts.hack
     nerd-fonts.noto

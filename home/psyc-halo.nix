@@ -27,6 +27,8 @@
     rustc
     source-code-pro
     vscode
+    zig
+    zls
   ];
 
   fonts.fontconfig.enable = true;

@@ -554,6 +554,90 @@ Flycheck provides real-time syntax checking:
     "eb" '(flycheck-buffer :which-key "check buffer"))
 #+end_src
 
+** Structural Editing
+Enhanced structural editing for Lisp dialects:
+
+#+begin_src emacs-lisp
+  (use-package lispy
+    :hook ((emacs-lisp-mode
+            clojure-mode
+            lisp-mode
+            scheme-mode) . lispy-mode)
+    :custom
+    (lispy-close-quotes-at-end-p t)
+    (lispy-colon-p nil)
+    :config
+    ;; Customize special chars
+    (setq lispy-outline "^;; \\(?:[*]+ \\)"
+          lispy-outline-header ";; "
+          lispy-safe-delete t
+          lispy-safe-copy t
+          lispy-safe-paste t
+          lispy-safe-actions-no-pull-delimiters-into-comments t))
+
+  (use-package lispyville
+    :after (evil lispy)
+    :hook (lispy-mode . lispyville-mode)
+    :custom
+    (lispyville-key-theme
+     '(operators
+       c-w
+       (escape insert)
+       (additional-movement normal visual motion)
+       prettify
+       text-objects
+       (atom-movement t)
+       commentary
+       slurp/barf-cp))
+    :config
+    ;; Additional keybindings for better Evil integration
+    (lispyville-set-key-theme)
+
+    ;; Custom mappings for common operations
+    (general-define-key
+     :states '(normal visual)
+     :keymaps 'lispyville-mode-map
+     "[" 'lispyville-previous-opening
+     "]" 'lispyville-next-opening
+     "(" 'lispyville-backward-up-list
+     ")" 'lispyville-up-list
+     "M-(" 'lispyville-wrap-round
+     "M-[" 'lispyville-wrap-brackets
+     "M-{" 'lispyville-wrap-braces)
+
+    ;; Integration with existing leader keys
+    (my-local-leader-def
+      :keymaps 'lispyville-mode-map
+      "l" '(:ignore t :which-key "lispy")
+      "ls" '(lispyville-wrap-round :which-key "wrap sexp")
+      "lS" '(lispy-splice :which-key "splice sexp")
+      "lr" '(lispy-raise :which-key "raise sexp")
+      "lc" '(lispy-clone :which-key "clone sexp")
+      "lj" '(lispy-join :which-key "join sexps")
+      "l>" '(lispy-slurp :which-key "slurp")
+      "l<" '(lispy-barf :which-key "barf")
+      "lk" '(lispy-kill :which-key "kill sexp")
+      "l(" '(lispy-wrap-round :which-key "wrap ()")
+      "l[" '(lispy-wrap-brackets :which-key "wrap []")
+      "l{" '(lispy-wrap-braces :which-key "wrap {}")
+      "l'" '(lispy-quotes :which-key "wrap quotes")
+      "l`" '(lispy-backtick :which-key "wrap backtick"))
+
+    ;; Mode line indicator
+    (add-to-list 'mode-line-format
+                 '(:eval (when (and (boundp 'lispy-mode)
+                                   lispy-mode)
+                          " Lispy"))
+                 t))
+
+  (defun my/lispy-eval-and-comment ()
+    "Evaluate the current sexp and insert the result as a comment."
+    (interactive)
+    (save-excursion
+      (let ((result (lispy-eval-and-insert)))
+        (newline-and-indent)
+        (insert ";; => " result))))
+#+end_src
 * Formatting
 Code formatting across different languages:
 
@@ -690,6 +774,7 @@ Core Clojure development environment:
 
 #+begin_src emacs-lisp
   (use-package clojure-mode
+    :after (lispyville)
     :mode "\\.clj\\'"
     :hook (clojure-mode . my/setup-language-defaults)
     :config
@@ -729,6 +814,10 @@ Core Clojure development environment:
     "tt" '(cider-test-run-test :which-key "run test at point"))
 #+end_src
 
+#+begin_src emacs-lisp
+  (with-eval-after-load 'clojure-mode
+    (setq lispy-clojure-eval-method 'cider))
+#+end_src
 ** Nix
 Support for Nix configuration language:
 
@@ -766,6 +855,10 @@ Enhanced Emacs Lisp editing experience:
     "er" '(eval-region :which-key "eval region"))
 #+end_src
 
+#+begin_src emacs-lisp
+  (with-eval-after-load 'emacs-lisp-mode
+    (setq lispy-eval-display-style 'overlay))
+#+end_src
 ** TypeScript/JavaScript
 Modern TypeScript and JavaScript development:
 

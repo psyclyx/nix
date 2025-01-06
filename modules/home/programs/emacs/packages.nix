@@ -44,6 +44,8 @@
       eglot
       envrc
       flycheck
+      lispy
+      lispyville
       magit
       projectile
       treesit-grammars.with-all-grammars

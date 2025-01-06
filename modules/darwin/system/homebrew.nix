@@ -22,7 +22,7 @@ in {
       cleanup = "zap";
     };
 
-    taps = builtins.attrNames config.nix-homebrew.taps;
+    taps = builtins.attrNames (builtins.removeAttrs config.nix-homebrew.taps ["homebrew/bundle" "homebrew/core" "homebrew/cask"]);
   };
 
   nix-homebrew = {
@@ -31,9 +31,9 @@ in {
     enableRosetta = hostPlatform.isAarch64;
     mutableTaps = true;
     taps = {
-      "homebrew/homebrew-bundle" = homebrew-bundle;
-      "homebrew/homebrew-core" = homebrew-core;
-      "homebrew/homebrew-cask" = homebrew-cask;
+      "homebrew/bundle" = homebrew-bundle;
+      "homebrew/core" = homebrew-core;
+      "homebrew/cask" = homebrew-cask;
     };
   };
 }

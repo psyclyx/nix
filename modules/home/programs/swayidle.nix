@@ -15,12 +15,6 @@ in {
           command = "${swaylock}/bin/swaylock";
         }
       ];
-      timeouts = [
-        {
-          timeout = 300;
-          command = "${swaylock}/bin/swaylock -fF";
-        }
-      ];
     };
   };
 }

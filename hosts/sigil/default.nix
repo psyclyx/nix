@@ -1,9 +1,11 @@
 {inputs, ...}: let
-  inherit (inputs) disko;
+  inherit (inputs) disko sops-nix vpn-confinement;
 in {
   system.stateVersion = "24.05";
   imports = [
     disko.nixosModules.disko
+    sops-nix.nixosModules.sops
+    vpn-confinement.nixosModules.default
     ../../modules/nixos/programs/nix-ld.nix
     ../../modules/nixos/programs/steam.nix
     ../../modules/nixos/programs/sway.nix
@@ -27,6 +29,8 @@ in {
     ./hardware.nix
     ./network.nix
     ./users.nix
+    ./secrets.nix
+    ./services/rtorrent.nix
   ];
 
   programs.sway.extraOptions = [

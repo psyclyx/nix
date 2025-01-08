@@ -57,6 +57,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
+
     powerlevel10k = {
       url = "github:romkatv/powerlevel10k";
       flake = false;
@@ -127,13 +129,13 @@
 
     overlays = {
       "aarch64-darwin" = {
-	default = (import ./pkgs);
+        default = import ./pkgs;
       };
       "x86_64-linux" = {
-	default = final: prev: prev;
+        default = final: prev: prev;
       };
       "x86_64-darwin" = {
-	default = final: prev: prev;
+        default = final: prev: prev;
       };
     };
 

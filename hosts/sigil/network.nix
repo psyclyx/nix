@@ -9,7 +9,7 @@
   networking.useDHCP = false;
   networking.interfaces.enp6s0.useDHCP = true;
   services.tailscale = {enable = true;};
-  networking.firewall.allowedTCPPorts = [8123];
+  networking.firewall.allowedTCPPorts = [8123 3000 51103];
   environment.systemPackages = [pkgs.tailscale];
   networking.firewall.allowedUDPPorts = [41641 51820 6881 3000 51103];
 

@@ -13,7 +13,7 @@
   environment.systemPackages = [pkgs.tailscale];
   networking.firewall.allowedUDPPorts = [41641 51820 6881 3000 51103];
 
-  vpn-confinement.wg-mullvad = {
+  vpnNamespaces.wg-mvd = {
     enable = true;
     wireguardConfigFile = config.sops.secrets."wg-mullvad.conf".path;
     openVPNPorts = [

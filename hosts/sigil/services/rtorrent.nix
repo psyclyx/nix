@@ -28,6 +28,6 @@
 
   systemd.services.rtorrent.vpnConfinement = {
     enable = true;
-    vpnNamespace = "wg";
+    vpnNamespace = "wg-mvd";
   };
 }

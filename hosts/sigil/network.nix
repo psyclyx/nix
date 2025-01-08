@@ -27,12 +27,4 @@
       }
     ];
   };
-
-  networking.wg-quick = {
-    wg-mullvad = {
-      autostart = true;
-      configFile = config.sops.secrets."wg-mullvad.conf".path;
-    };
-  };
-
 }

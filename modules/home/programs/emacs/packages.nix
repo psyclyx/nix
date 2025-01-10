@@ -9,6 +9,7 @@
       # Evil
       evil
       evil-collection
+      evil-easymotion
       evil-snipe
       general
 

@@ -103,10 +103,15 @@ Enable visual line mode globally:
 
 Show whitespace
 #+begin_src emacs-lisp
-
   ;; Show meaningful whitespace
   (setq whitespace-style '(face indentation trailing))
-  (global-whitespace-mode t)
+  (global-whitespace-mode '(not shell-mode
+  			                  help-mode
+  			                  magit-mode
+  			                  magit-diff-mode
+  			                  ibuffer-mode
+  			                  dired-mode
+  			                  occur-mode))
 #+end_src
 
 Set font
@@ -156,6 +161,11 @@ Matching parens match
 #+end_src
 
 * Editor
+** Indentation
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil
+                tab-width 4)
+#+end_src
 ** Modal Editing
 #+begin_src emacs-lisp
   (use-package evil
@@ -175,18 +185,33 @@ Matching parens match
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package evil-snipe
-  :after evil
-  :config
-  (evil-snipe-mode +1)
-  (evil-snipe-override-mode +1)
-  :custom
-  (evil-snipe-scope 'buffer)        ; Search in whole buffer instead of just line
-  (evil-snipe-repeat-scope 'buffer) ; Same for repeat
-  (evil-snipe-smart-case t)         ; Smart case sensitivity
-  )
+  (use-package evil-snipe
+    :after evil
+    :config
+    (evil-snipe-mode +1)
+    (evil-snipe-override-mode +1)
+    :custom
+    (evil-snipe-scope 'buffer)        ; Search in whole buffer instead of just line
+    (evil-snipe-repeat-scope 'buffer) ; Same for repeat
+    (evil-snipe-smart-case t)         ; Smart case sensitivity
+    )
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-package evil-easymotion
+    :after (evil-snipe)
+    :config
+    (general-define-key
+     :states '(motion)
+     :prefix "C-;"
+     :prefix-map 'evilem-map)
+    (general-define-key
+     :keymaps 'evil-snipe-parent-transient-map
+     "C-;" (evilem-create 'evil-snipe-repeat
+                          :bind ((evil-snipe-scope 'buffer)
+                                 (evil-snipe-enable-highlight)
+                                 (evil-snipe-enable-incremental-highlight)))))
+#+end_src
 ** Undo System
 #+begin_src emacs-lisp
   (use-package undo-tree
@@ -501,21 +526,19 @@ Which-key helps discover available keybindings:
 ** Embark
 #+begin_src emacs-lisp
   (use-package embark
-    :ensure t
-
-    :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
-     ("C-;" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
     :init
-
     (setq prefix-help-command #'embark-prefix-help-command)
 
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+    ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
     :config
+    (general-define-key
+     :keymaps 'override
+     :states '(normal visual insert emacs)
+     "C-." '(embark-act :which-key "embark-act")
+     "S-C-." '(embark-dwim :which-key "embark-dwin")
+     "C-h B" '(embark-bindings :which-key "embark bindings"))
 
     ;; Hide the mode line of the Embark live/completions buffers
     (add-to-list 'display-buffer-alist
@@ -525,7 +548,6 @@ Which-key helps discover available keybindings:
 
   ;; Consult users will also want the embark-consult package.
   (use-package embark-consult
-    :ensure t ; only need to install it, embark loads it after consult if found
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 
@@ -1198,7 +1220,6 @@ Document authoring and task management.
 #+begin_src emacs-lisp
   (my-local-leader-def
     :keymaps 'org-mode-map
-
     ;; Org structure editing - avoiding Meta key
     "[" '(org-promote-subtree :which-key "promote subtree")
     "]" '(org-demote-subtree :which-key "demote subtree")

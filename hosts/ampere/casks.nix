@@ -1,9 +1,6 @@
 {inputs, lib, ...}: {
   nix-homebrew = {
     taps = with inputs; {
-      "homebrew/bundle" = homebrew-bundle;
-      "homebrew/core" = homebrew-core;
-      "homebrew/cask" = homebrew-cask;
       "conductorone/cone" = homebrew-conductorone;
       "hashicorp/tap" = homebrew-hashicorp;
       "borkdude/brew" = homebrew-borkdude;

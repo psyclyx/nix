@@ -1106,38 +1106,46 @@ GPTel for AI-powered assistance:
 
 #+begin_src emacs-lisp
   (use-package gptel
-    :custom
-    (gptel-default-mode 'org-mode)
-    (gptel-model "OpenRouter:anthropic/claude-3.5-sonnet:beta")
     :config
-    (defun read-openrouter-token ()
-      "Read OpenRouter API token from ~/.openrouter-token file."
-      (with-temp-buffer
-        (insert-file-contents (expand-file-name "~/.openrouter-token"))
-        (string-trim (buffer-string))))
-
-    (gptel-make-openai "OpenRouter"
-      :host "openrouter.ai"
-      :endpoint "/api/v1/chat/completions"
-      :stream t
-      :key 'read-openrouter-token
-      :models '((deepseek/deepseek-chat
-                 :description "DeepSeek's powerful chat model optimized for dialogue")
-                (openai/o1
-                 :description "OpenAI's cutting-edge multimodal model"
-                 :capabilities (media))
-                (google/gemini-2.0-flash-thinking-exp:free
-                 :description "Google's fast Gemini model with experimental features")
-                (anthropic/claude-3.5-sonnet:beta
-                 :description "Anthropic's balanced Claude model for general tasks")
-                (anthropic/claude-3.5-haiku-20241022:beta
-                 :description "Anthropic's smaller, faster Claude model")))
-
-    ;; Set up conversation logging
     (unless (file-exists-p "~/Sync/org/gptel-conversations")
       (make-directory "~/Sync/org/gptel-conversations" t))
-    (setq gptel-log-conversations t
-          gptel-conversation-dir "~/Sync/org/gptel-conversations"))
+
+    (setq gptel-default-mode 'org-mode
+          gptel-log-conversations t
+          gptel-conversation-dir "~/Sync/org/gptel-conversations")
+
+    (when (file-exists-p "~/.openrouter-token")
+      (defun read-openrouter-token ()
+        "Read OpenRouter API token from ~/.openrouter-token file."
+        (with-temp-buffer
+          (insert-file-contents (expand-file-name "~/.openrouter-token"))
+          (string-trim (buffer-string))))
+
+      (gptel-make-openai "OpenRouter"
+        :host "openrouter.ai"
+        :endpoint "/api/v1/chat/completions"
+        :stream t
+        :key 'read-openrouter-token
+        :models '((deepseek/deepseek-chat
+                   :description "DeepSeek's powerful chat model optimized for dialogue")
+                  (openai/o1
+                   :description "OpenAI's cutting-edge multimodal model"
+                   :capabilities (media))
+                  (google/gemini-2.0-flash-thinking-exp:free
+                   :description "Google's fast Gemini model with experimental features")
+                  (anthropic/claude-3.5-sonnet:beta
+                   :description "Anthropic's balanced Claude model for general tasks")
+                  (anthropic/claude-3.5-haiku-20241022:beta
+                   :description "Anthropic's smaller, faster Claude model")))
+
+      (setq gptel-backend "OpenRouter"
+            gptel-model "anthropic/claude-3.5-sonnet:beta"))
+
+
+    (when (file-exists-p "~/.gptel.el")
+      (load-file "~/.gptel.el")
+      (when (fboundp 'config:gptel)
+        (config:gptel))))
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp

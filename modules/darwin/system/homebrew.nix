@@ -27,7 +27,7 @@ in {
 
   nix-homebrew = {
     enable = true;
-    autoMigrate = false;
+    autoMigrate = true;
     enableRosetta = hostPlatform.isAarch64;
     mutableTaps = true;
     taps = {

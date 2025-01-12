@@ -116,7 +116,7 @@
       nur.overlays.default
     ];
 
-    mkDarwinConfiguration = import ./darwin {inherit inputs overlays;};
+    mkDarwinConfiguration = import ./modules/darwin {inherit inputs overlays;};
     mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
   in {
     devShells = forAllSystems (system: let

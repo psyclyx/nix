@@ -106,12 +106,12 @@ Show whitespace
   ;; Show meaningful whitespace
   (setq whitespace-style '(face indentation trailing))
   (global-whitespace-mode '(not shell-mode
-  			                  help-mode
-  			                  magit-mode
-  			                  magit-diff-mode
-  			                  ibuffer-mode
-  			                  dired-mode
-  			                  occur-mode))
+                                help-mode
+                                magit-mode
+                                magit-diff-mode
+                                ibuffer-mode
+                                dired-mode
+                                occur-mode))
 #+end_src
 
 Set font
@@ -416,10 +416,10 @@ Corfu provides a sleek pop-up completion interface:
 
     :bind
     (:map corfu-map
-  	("TAB" . corfu-next)
-  	([tab] . corfu-next)
-  	("S-TAB" . corfu-previous)
-  	([backtab] . corfu-previous))
+      ("TAB" . corfu-next)
+      ([tab] . corfu-next)
+      ("S-TAB" . corfu-previous)
+      ([backtab] . corfu-previous))
 
     :init
     (global-corfu-mode)
@@ -584,8 +584,8 @@ Which-key helps discover available keybindings:
 
   (setq embark-indicators
         '(embark-which-key-indicator
-  	embark-highlight-indicator
-  	embark-isearch-highlight-indicator))
+      embark-highlight-indicator
+      embark-isearch-highlight-indicator))
 
   (defun embark-hide-which-key-indicator (fn &rest args)
     "Hide the which-key indicator immediately when using the completing-read prompter."
@@ -890,7 +890,7 @@ Core Clojure development environment:
     (with-eval-after-load 'apheleia
       (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
       (setf (alist-get 'cljstyle apheleia-formatters)
-  	  '("cljstyle" "pipe"))))
+        '("cljstyle" "pipe"))))
 
   (use-package cider
     :after clojure-mode
@@ -940,7 +940,7 @@ Support for Nix configuration language:
     (with-eval-after-load 'apheleia
       (setf (alist-get 'nix-ts-mode apheleia-mode-alist) 'alejandra)
       (setf (alist-get 'alejandra apheleia-formatters)
-  	  '("alejandra" "-"))))
+        '("alejandra" "-"))))
 #+end_src
 
 ** Emacs Lisp

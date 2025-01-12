@@ -1189,29 +1189,63 @@ Document authoring and task management.
           org-agenda-files '("~/Sync/org/agenda.org")
           org-log-done 'time
 
-          ;; Task states
-          org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "QUESTION(q)" "|" "DONE(d)" "ANSWERED(a)" "CANCELLED(c)"))
+          org-todo-keywords '((sequence
+                               "TODO(t)" "NEXT(n)" "PROGRESS(p)" "WAITING(w@/!)"
+                               "QUESTION(q)" "|" "DONE(d)" "ANSWERED(a)" "CANCELLED(c@)"))
 
-          ;; Refile targets
-          org-refile-targets '((org-agenda-files :maxlevel . 3)
-                               (org-files-list :maxlevel . 3))
+          org-todo-keyword-faces '(("NEXT" . (:foreground "orange" :weight bold))
+                                   ("WAITING" . (:foreground "yellow" :weight bold))
+                                   ("PROGRESS" . (:foreground "blue" :weight bold)))
 
-          ;; Capture templates
+
+          org-refile-targets '((nil :maxlevel . 9)
+                               (org-agenda-files :maxlevel . 9))
+          org-refile-use-outline-path 'file
+          org-outline-path-complete-in-steps nil
           org-capture-templates
-          '(("t" "Todo" entry (file+headline "~/Sync/org/agenda.org" "Tasks")
-             "* TODO %?\n  %i\n  %a")
+          '(("t" "Todo" entry (file+headline "~/Sync/org/agenda.org" "Inbox")
+             "* TODO %?\n  %i\n  %U\n  %a")
             ("n" "Note" entry (file "~/Sync/org/notes.org")
              "* %? :note:\n  %U\n  %i\n  %a")
             ("j" "Journal" entry (file+datetree "~/Sync/org/journal.org")
              "* %?\nEntered on %U\n  %i\n  %a")
             ("q" "Question" entry (file+headline "~/Sync/org/questions.org" "Questions")
-             "* QUESTION %?\n  %U\n  %i\n  %a"))))
+             "* QUESTION %?\n  %U\n  %i\n  %a")
+            ("p" "Project" entry (file+headline "~/Sync/org/agenda.org" "Projects")
+             "* %?\n  %U\n  ** NEXT First task\n")
+            ("c" "Current Clock Note" entry (clock)
+             "* %<%H:%M> %^{Title|Note|Quick thought|Update|Status}\n%?" :clock-keep t)))
+
+    (setq org-agenda-custom-commands
+          '(("n" "Next Tasks"
+             ((todo "NEXT"
+                    ((org-agenda-overriding-header "Next Tasks")))))
+            ("w" "Waiting Tasks"
+             ((todo "WAITING"
+                    ((org-agenda-overriding-header "Waiting For")))))))
+
+    (setq org-display-custom-times t
+          org-time-stamp-custom-formats '("<%Y-%m-%d %a>" . "<%Y-%m-%d %a %H:%M>"))
+
+
+    ;; Clock settings
+    (setq org-clock-persist 'history
+          org-clock-persist-query-resume nil
+          org-clock-in-resume t
+          org-clock-out-remove-zero-time-clocks t
+          org-clock-clocked-in-display 'mode-line
+          org-clock-into-drawer t)
+
+    ;; Save clock history when emacs is closed
+    (org-clock-persistence-insinuate))
 
   (use-package org-bullets
     :hook (org-mode . org-bullets-mode))
 
   (use-package org-indent
-    :after org)
+    :after org
+    :config
+    (setq org-startup-indented 1))
 #+end_src
 
 #+RESULTS:

@@ -1,12 +1,11 @@
-{pkgs, ...}:
-{
-    programs = {
-        vscode = {
-            enable = true;
-            package = pkgs.vscodium;
-            extensions = with pkgs.vscode-extensions; [
-                julialang.language-julia
-            ];
-        };
+{pkgs, ...}: {
+  programs = {
+    vscode = {
+      enable = true;
+      package = pkgs.vscodium;
+      extensions = with pkgs.vscode-extensions; [
+        julialang.language-julia
+      ];
     };
+  };
 }

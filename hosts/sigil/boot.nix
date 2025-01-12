@@ -18,6 +18,6 @@
       "nvidia_uvm"
     ];
 
-    blacklistedKernelModules = [ "nouveau" ];
+    blacklistedKernelModules = ["nouveau"];
   };
 }

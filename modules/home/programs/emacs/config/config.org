@@ -1248,7 +1248,6 @@ Document authoring and task management.
     (setq org-startup-indented 1))
 #+end_src
 
-#+RESULTS:
 
 *** Bindings
 #+begin_src emacs-lisp
@@ -1256,28 +1255,10 @@ Document authoring and task management.
     "n" '(:ignore t :which-key "notes")
     "na" '(org-agenda :which-key "agenda")
     "nc" '(org-capture :which-key "capture")
-    "nf" '(org-find-file :which-key "find org file")
     "nl" '(org-store-link :which-key "store link")
     "ni" '(org-insert-link :which-key "insert link")
     "ns" '(org-search-view :which-key "search")
     "nt" '(org-todo-list :which-key "todo list")
     "nj" '(org-journal-new-entry :which-key "journal entry")
-    "nb" '(org-switchb :which-key "switch org buffer")
-    "nr" '(org-refile :which-key "refile")
-    "nT" '(org-toggle-heading :which-key "toggle heading"))
-#+end_src
-
-#+begin_src emacs-lisp
-  (my-local-leader-def
-    :keymaps 'org-mode-map
-    ;; Org structure editing - avoiding Meta key
-    "[" '(org-promote-subtree :which-key "promote subtree")
-    "]" '(org-demote-subtree :which-key "demote subtree")
-    "{" '(org-move-subtree-up :which-key "move subtree up")
-    "}" '(org-move-subtree-down :which-key "move subtree down")
-    "r" '(org-refile :which-key "refile subtree")
-    "t" '(org-todo :which-key "cycle todo state")
-    "." '(org-time-stamp :which-key "insert timestamp")
-    "d" '(org-deadline :which-key "set deadline")
-    "s" '(org-schedule :which-key "schedule todo"))
+    "nb" '(org-switchb :which-key "switch org buffer"))
 #+end_src

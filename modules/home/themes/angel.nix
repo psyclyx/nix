@@ -34,12 +34,14 @@
         text = "295573";
         indicator = "93A9BE";
       };
+
       unfocused = {
         border = "6C6C6C";
         background = "F2F2F2";
         text = "6C6C6C";
         indicator = "CEB293";
       };
+
       urgent = {
         border = "B79574";
         background = "CEB293";
@@ -69,9 +71,11 @@
           else a
         )
         + hex;
+
       rgb = hex: let
         c = toRGB hex;
       in "rgb(${toString c.r}, ${toString c.g}, ${toString c.b})";
+
       rgba = alpha: hex: let
         c = toRGB hex;
       in "rgba(${toString c.r}, ${toString c.g}, ${toString c.b}, ${toString alpha})";

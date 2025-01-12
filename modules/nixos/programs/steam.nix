@@ -7,6 +7,10 @@
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
-    extraPackages = with pkgs; [gamescope bumblebee glxinfo];
+    extraPackages = with pkgs; [
+      gamescope
+      bumblebee
+      glxinfo
+    ];
   };
 }

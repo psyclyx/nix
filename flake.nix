@@ -103,7 +103,7 @@
   };
 
   outputs = inputs: let
-    inherit (inputs) self nixpkgs nix-darwin-emacs emacs-overlay nur;
+    inherit (inputs) nixpkgs nix-darwin-emacs emacs-overlay nur;
     inherit (nixpkgs) lib;
 
     supportedSystems = ["x86_64-linux" "aarch64-darwin" "x86_64-darwin"];

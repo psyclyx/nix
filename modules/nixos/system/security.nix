@@ -9,6 +9,7 @@
           value = 1;
         }
       ];
+
       sshAgentAuth.enable = true;
     };
 

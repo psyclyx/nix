@@ -12,4 +12,5 @@ else
   )
 fi
 
+
 sketchybar --set "${NAME}" "${workspace[@]}"

@@ -5,6 +5,7 @@
       lr = "lein refresh";
       lrr = "lein refresh repl";
     };
+
     initExtra = lib.mkAfter ''
       path_append "''${HOME}/projects/app/bin"
       export NODE_OPTIONS=--openssl-legacy-provider

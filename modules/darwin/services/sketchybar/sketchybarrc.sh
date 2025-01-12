@@ -54,6 +54,7 @@ for sid in $(aerospace list-workspaces --all); do
 	     --subscribe space."${sid}" aerospace_workspace_change
 done
 
+
 sketchybar \
   --add item battery right \
   --set battery \

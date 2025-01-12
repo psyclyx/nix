@@ -34,6 +34,7 @@ with lib;
         example = "./path/to/your/.p10k.zsh";
         description = "Path to your Powerlevel10k configuration file (.p10k.zsh)";
       };
+
     };
 
     config =
@@ -60,7 +61,6 @@ with lib;
             source ${powerlevel10k}/powerlevel10k.zsh-theme
             source ~/.p10k-config.zsh
           '';
-
         };
       };
   }

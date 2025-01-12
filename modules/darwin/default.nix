@@ -18,11 +18,11 @@
         config.allowUnfree = true;
       };
     }
+
     home-manager.darwinModules.home-manager
   ];
 in
   darwin.lib.darwinSystem {
     modules = defaultModules ++ modules;
-
     specialArgs = {inherit inputs;} // args;
   }

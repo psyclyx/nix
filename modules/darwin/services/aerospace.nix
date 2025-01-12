@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}:
-{
+{pkgs, ...}: {
   services.aerospace = {
     enable = true;
     settings = {

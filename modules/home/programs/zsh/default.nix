@@ -1,19 +1,19 @@
 {pkgs, ...}: {
-  imports = [./p10k-hm.zsh];
-  home.packages = with pkgs; [
-    jq
-  ];
+  imports = [./p10k-hm.nix];
+  home.packages = with pkgs; [jq];
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
   };
+
   programs.direnv = {
     enable = true;
     enableZshIntegration = false;
     silent = true;
     nix-direnv.enable = true;
   };
+
   programs.zsh = {
     enable = true;
     powerlevel10k = {
@@ -21,6 +21,7 @@
       instantPrompt = true;
       config.source = ./p10k.zsh;
     };
+
     initExtra = ''
       path_append() {
         if [ -d "''$1" ] && [[ ":''$PATH:" != *":''$1:"* ]]; then

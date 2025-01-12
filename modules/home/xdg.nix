@@ -12,9 +12,11 @@
       templates = "\$HOME/templates";
       publicShare = "\$HOME/public";
     };
+
     configFile = {
       "mimeapps.list".force = true;
     };
+
     mimeApps = let
       nvim = "nvim.desktop";
       firefox = "firefox.desktop";
@@ -38,6 +40,7 @@
         "x-scheme-handler/unknown" = [firefox];
         "x-scheme-handler/about" = [firefox];
       };
+
       defaultApplications = {
         "application/pdf" = [firefox];
         "application/x-extension-htm" = [firefox];

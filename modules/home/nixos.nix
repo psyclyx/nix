@@ -1,7 +1,6 @@
 {
   inputs,
   pkgs,
-  buildFirefoxXpiAddon,
   ...
 }: let
 in {

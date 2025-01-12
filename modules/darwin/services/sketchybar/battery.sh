@@ -4,6 +4,7 @@ CHARGING=$(pmset -g batt | grep 'AC Power' || echo "")
 HIGHLIGHT=${CHARGING:+on}
 HIGHLIGHT=${HIGHLIGHT:-off}
 
+
 get_icon() {
   local percent=$1
   local charging=$2
@@ -33,6 +34,7 @@ get_icon() {
 }
 
 ICON=$(get_icon "${PERCENT}" "${CHARGING}")
+
 
 battery=(
   "icon=${ICON}"

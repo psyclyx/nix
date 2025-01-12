@@ -182,6 +182,14 @@ Matching parens match
     :after evil
     :config
     (evil-collection-init))
+
+  (use-package evil-org
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (evil-org-set-key-theme '(navigation insert textobjects additional calendar))
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
 #+end_src
 
 #+begin_src emacs-lisp

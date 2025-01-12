@@ -10,6 +10,7 @@
       evil
       evil-collection
       evil-easymotion
+      evil-org
       evil-snipe
       general
 

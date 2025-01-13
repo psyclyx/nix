@@ -1,7 +1,7 @@
 #+TITLE: Emacs Configuration
 #+AUTHOR: psyclyx
 #+PROPERTY: header-args:emacs-lisp :tangle yes :lexical t
-#+STARTUP: overview
+#+STARTUP: content
 
 * Base
 ** GC
@@ -104,14 +104,16 @@ Enable visual line mode globally:
 Show whitespace
 #+begin_src emacs-lisp
   ;; Show meaningful whitespace
-  (setq whitespace-style '(face indentation trailing))
-  (global-whitespace-mode '(not shell-mode
-                                help-mode
-                                magit-mode
-                                magit-diff-mode
-                                ibuffer-mode
-                                dired-mode
-                                occur-mode))
+  (setq whitespace-style '(face indentation trailing)
+        whitespace-global-modes '(not shell-mode
+                                      help-mode
+                                      magit-mode
+                                      magit-diff-mode
+                                      ibuffer-mode
+                                      dired-mode
+                                      occur-mode))
+
+  (global-whitespace-mode 1)
 #+end_src
 
 Set font
@@ -185,11 +187,11 @@ Matching parens match
 
   (use-package evil-org
     :after org
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (evil-org-set-key-theme '(navigation insert textobjects additional calendar))
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
+    :hook (org-mode . (lambda ()
+                        (evil-org-set-key-theme '(navigation insert return textobjects additional shift todo heading calendar))
+                        (evil-org-mode)
+                        (require 'evil-org-agenda)
+                        (evil-org-agenda-set-keys))))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1197,24 +1199,37 @@ Document authoring and task management.
                                    ("WAITING" . (:foreground "yellow" :weight bold))
                                    ("PROGRESS" . (:foreground "blue" :weight bold)))
 
-
           org-refile-targets '((nil :maxlevel . 9)
                                (org-agenda-files :maxlevel . 9))
           org-refile-use-outline-path 'file
           org-outline-path-complete-in-steps nil
           org-capture-templates
           '(("t" "Todo" entry (file+headline "~/Sync/org/agenda.org" "Inbox")
-             "* TODO %?\n  %i\n  %U\n  %a")
-            ("n" "Note" entry (file "~/Sync/org/notes.org")
-             "* %? :note:\n  %U\n  %i\n  %a")
-            ("j" "Journal" entry (file+datetree "~/Sync/org/journal.org")
-             "* %?\nEntered on %U\n  %i\n  %a")
-            ("q" "Question" entry (file+headline "~/Sync/org/questions.org" "Questions")
-             "* QUESTION %?\n  %U\n  %i\n  %a")
-            ("p" "Project" entry (file+headline "~/Sync/org/agenda.org" "Projects")
-             "* %?\n  %U\n  ** NEXT First task\n")
+             "* TODO %?
+  :PROPERTIES:
+  :CREATED: %U
+  :END:
+  %i"
+             :prepend t)
+            ("n" "note" entry (file+headline "~/Sync/org/agenda.org" "Inbox")
+             "* %?
+  :PROPERTIES:
+  :CREATED: %U
+  :END:
+  %i"
+             :prepend t)
             ("c" "Current Clock Note" entry (clock)
-             "* %<%H:%M> %^{Title|Note|Quick thought|Update|Status}\n%?" :clock-keep t)))
+             "* %<%H:%M> %^{Title|Note|Quick thought|Update|Status}
+  %?"
+  	       :prepend t
+             :clock-keep t)
+            ("j" "Journal" entry (file+datetree "~/Sync/org/journal.org")
+             "* %?
+  :PROPERTIES:
+  :CREATED: %U
+  :END:
+  %i
+  ")))
 
     (setq org-agenda-custom-commands
           '(("n" "Next Tasks"
@@ -1248,7 +1263,6 @@ Document authoring and task management.
     (setq org-startup-indented 1))
 #+end_src
 
-
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
@@ -1260,5 +1274,20 @@ Document authoring and task management.
     "ns" '(org-search-view :which-key "search")
     "nt" '(org-todo-list :which-key "todo list")
     "nj" '(org-journal-new-entry :which-key "journal entry")
-    "nb" '(org-switchb :which-key "switch org buffer"))
+    "nb" '(org-switchb :which-key "switch org buffer")
+
+    "nC" '(:ignore t :which-key "clock")
+    "nCg" '(org-clock-goto :which-key "goto clock")
+    "nCo" '(org-clock-out :which-key "clock out")
+    "nCm" '(org-clock-menu :which-key "clock menu"))
+#+end_src
+
+#+begin_src emacs-lisp
+  (my-local-leader-def
+    :keymaps 'org-mode-map
+    "r" '(org-refile :which-key "refile subtree")
+    "t" '(org-todo :which-key "cycle todo state")
+    "." '(org-time-stamp :which-key "insert timestamp")
+    "d" '(org-deadline :which-key "set deadline")
+    "s" '(org-schedule :which-key "schedule todo"))
 #+end_src

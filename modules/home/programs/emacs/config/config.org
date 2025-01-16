@@ -4,8 +4,8 @@
 #+STARTUP: content
 
 * Base
-** GC
-Don't GC while initializing
+** Disable GC
+*** During startup
 #+begin_src emacs-lisp
   (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
         gc-cons-percentage 0.6)
@@ -17,8 +17,7 @@ Don't GC while initializing
     (setq file-name-handler-alist config:file-name-handler-alist-cache))
   (add-hook 'emacs-startup-hook #'config:restore-post-init-settings)
 #+end_src
-
-Don't gc in the minibuffer either
+*** In minibuffer
 #+begin_src emacs-lisp
   (defun config:defer-g; ()
     (setq gc-cons-threshold most-positive-fixnum))
@@ -31,14 +30,16 @@ Don't gc in the minibuffer either
   (add-hook 'minibuffer-exit #'config:restore-gc)
 #+end_src
 
-** File Management
+** Declutter
+*** Disable lockfiles
 #+begin_src emacs-lisp
-  (setq create-lockfiles nil
-        custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (setq create-lockfiles nil)
 #+end_src
-
-Keep =~/.config/emacs= clean and organized:
-
+*** Place =custom.el= next to config
+#+begin_src emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+#+end_src
+*** no-littering
 #+begin_src emacs-lisp
   (use-package no-littering
     :config
@@ -52,17 +53,13 @@ Keep =~/.config/emacs= clean and organized:
           transient-levels-file (no-littering-expand-etc-file-name "transient/levels.el")
           transient-values-file (no-littering-expand-etc-file-name "transient/values.el")))
 #+end_src
-
-** Config Management
-Tools for managing this configuration:
-
+** Config reload
 #+begin_src emacs-lisp
   (defun my/reload-config ()
     "Reload the literate config."
     (interactive)
     (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
 #+end_src
-
 ** Exec path
 On darwin, I often launch =Emacs.app= instead of =emacs=. However, MacOS
 sets a default environment that doesn't include anything configured through
@@ -545,7 +542,6 @@ Which-key helps discover available keybindings:
     :config
     (general-define-key
      :keymaps 'override
-     :states '(normal visual insert emacs)
      "C-." '(embark-act :which-key "embark-act")
      "S-C-." '(embark-dwim :which-key "embark-dwin")
      "C-h B" '(embark-bindings :which-key "embark bindings"))
@@ -1111,18 +1107,27 @@ VTerm provides a full terminal emulation:
     "otv" '(vterm-other-window :which-key "terminal in split"))
 #+end_src
 
-** AI Assistant
-GPTel for AI-powered assistance:
-
+** gptel
 #+begin_src emacs-lisp
   (use-package gptel
     :config
     (unless (file-exists-p "~/Sync/org/gptel-conversations")
       (make-directory "~/Sync/org/gptel-conversations" t))
 
+
     (setq gptel-default-mode 'org-mode
           gptel-log-conversations t
           gptel-conversation-dir "~/Sync/org/gptel-conversations")
+
+
+    (when (file-exists-p "~/.openai-token")
+      (defun read-openai-token ()
+        "Read OpenAI API token from ~/.openrouter-token file."
+        (with-temp-buffer
+          (insert-file-contents (expand-file-name "~/.openrouter-token"))
+          (string-trim (buffer-string))))
+      (setq gptel-api-key 'read-openai-token))
+
 
     (when (file-exists-p "~/.openrouter-token")
       (defun read-openrouter-token ()
@@ -1130,26 +1135,25 @@ GPTel for AI-powered assistance:
         (with-temp-buffer
           (insert-file-contents (expand-file-name "~/.openrouter-token"))
           (string-trim (buffer-string))))
-
-      (gptel-make-openai "OpenRouter"
-        :host "openrouter.ai"
-        :endpoint "/api/v1/chat/completions"
-        :stream t
-        :key 'read-openrouter-token
-        :models '((deepseek/deepseek-chat
-                   :description "DeepSeek's powerful chat model optimized for dialogue")
-                  (openai/o1
-                   :description "OpenAI's cutting-edge multimodal model"
-                   :capabilities (media))
-                  (google/gemini-2.0-flash-thinking-exp:free
-                   :description "Google's fast Gemini model with experimental features")
-                  (anthropic/claude-3.5-sonnet:beta
-                   :description "Anthropic's balanced Claude model for general tasks")
-                  (anthropic/claude-3.5-haiku-20241022:beta
-                   :description "Anthropic's smaller, faster Claude model")))
-
-      (setq gptel-backend "OpenRouter"
-            gptel-model "anthropic/claude-3.5-sonnet:beta"))
+      (let ((openrouter (gptel-make-openai "OpenRouter"
+                          :host "openrouter.ai"
+                          :endpoint "/api/v1/chat/completions"
+                          :stream t
+                          :key 'read-openrouter-token
+                          :models '(mistralai/codestral-2501
+                                    (deepseek/deepseek-chat
+                                     :description "DeepSeek's powerful chat model optimized for dialogue")
+                                    (openai/o1
+                                     :description "OpenAI's cutting-edge multimodal model"
+                                     :capabilities (media))
+                                    (google/gemini-2.0-flash-thinking-exp:free
+                                     :description "Google's fast Gemini model with experimental features")
+                                    (anthropic/claude-3.5-sonnet:beta
+                                     :description "Anthropic's balanced Claude model for general tasks")
+                                    (anthropic/claude-3.5-haiku-20241022:beta
+                                     :description "Anthropic's smaller, faster Claude model")))))
+        (setq gptel-backend openrouter
+              gptel-model 'anthropic/claude-3.5-sonnet:beta)))
 
 
     (when (file-exists-p "~/.gptel.el")

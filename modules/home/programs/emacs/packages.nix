@@ -30,8 +30,10 @@
       all-the-icons-nerd-fonts
       dashboard
       diminish
+      doom-modeline
       doom-themes
       rainbow-delimiters
+      unicode-fonts
       which-key
 
       # Notes
@@ -73,10 +75,14 @@
     with pkgs;
       [
         # UI
+        etBook
         fontconfig
         nerd-fonts.hack
         nerd-fonts.noto
         nerd-fonts.symbols-only
+        symbola
+        dejavu_fonts
+        noto-fonts
 
         # Development
         direnv

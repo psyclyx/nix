@@ -115,17 +115,18 @@ Show whitespace
 
 Set font
 #+begin_src emacs-lisp
-  ;; Set default font with comfortable reading size
-  (set-face-attribute 'default nil
-                      :font "Hack Nerd Font Mono"
-                      :height 180)
+  (use-package unicode-fonts
+    :init
+    (unicode-fonts-setup))
 
-  ;; Enable Nerd Font icons when in GUI
-  (use-package all-the-icons-nerd-fonts
-    :after all-the-icons
-    :if (display-graphic-p)
-    :config
-    (all-the-icons-nerd-fonts-prefer))
+  (set-face-attribute 'default nil
+                      :family "Berkeley Mono"
+                      :height 180
+                      :weight 'normal)
+
+  ;; Set fallback font
+  (set-fontset-font t nil "Hack Nerd Font Mono" nil 'append)
+
 #+end_src
 
 Matching parens match
@@ -136,11 +137,17 @@ Matching parens match
 
 ** Theme
 #+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp
   (use-package doom-themes
     :config
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
-    (load-theme 'doom-vibrant t)
+    (load-theme 'doom-nova t)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 #+end_src

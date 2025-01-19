@@ -21,13 +21,13 @@ in {
       display-drun = "Apps: ";
       modi = [
         "drun"
-        "filebrowser"
+        # "filebrowser"
         "run"
       ];
       show-icons = true;
     };
 
-    plugins = [pkgs.rofi-file-browser];
+    #plugins = [pkgs.rofi-file-browser];
     theme = let
       mkLiteral = config.lib.formats.rasi.mkLiteral;
     in {

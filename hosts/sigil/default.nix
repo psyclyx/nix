@@ -30,7 +30,7 @@ in {
     ./network.nix
     ./users.nix
     ./secrets.nix
-    ./services/rtorrent.nix
+    #./services/rtorrent.nix
   ];
 
   programs.sway.extraOptions = [

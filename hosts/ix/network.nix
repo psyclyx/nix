@@ -1,6 +1,8 @@
 {...}: {
+  networking.firewall.trustedInterfaces = ["tailscale0"];
   networking.firewall.allowedTCPPorts = [22];
   networking.useNetworkd = true;
+  services.resolved.enable = true;
 
   systemd.network = {
     enable = true;

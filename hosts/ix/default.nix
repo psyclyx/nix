@@ -18,4 +18,6 @@ in {
     ../../modules/nixos/programs/zsh.nix
     ../../modules/nixos/services/openssh.nix
   ];
+
+  services.soju.enable = true;
 }

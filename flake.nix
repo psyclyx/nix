@@ -172,7 +172,7 @@
       };
       kaitain = mkNixosConfiguration {
         hostPlatform = "x86_64-linux";
-        hostname = "kaitan";
+        hostName = "kaitan";
         modules = [./hosts/kaitan];
       };
     };

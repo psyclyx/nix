@@ -173,7 +173,10 @@
       kaitain = mkNixosConfiguration {
         hostPlatform = "x86_64-linux";
         hostName = "kaitan";
-        modules = [./hosts/kaitan];
+        modules = [
+          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+          ./hosts/kaitain
+        ];
       };
     };
   };

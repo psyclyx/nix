@@ -1273,7 +1273,24 @@ Document authoring and task management.
     :config
     (setq org-startup-indented 1))
 #+end_src
+*** org-roam
+**** Enable
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :after org)
 
+#+end_src
+**** Database location
+#+begin_src emacs-lisp
+    (unless (file-exists-p "~/Sync/org/roam")
+          (make-directory "~/Sync/org/roam" t))
+
+  (setq org-roam-directory "~/Sync/org/roam")
+#+end_src
+**** Autosync database
+#+begin_src emacs-lisp
+  (org-roam-db-autosync-mode)
+#+end_src
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
@@ -1290,7 +1307,12 @@ Document authoring and task management.
     "nC" '(:ignore t :which-key "clock")
     "nCg" '(org-clock-goto :which-key "goto clock")
     "nCo" '(org-clock-out :which-key "clock out")
-    "nCm" '(org-clock-menu :which-key "clock menu"))
+    "nCm" '(org-clock-menu :which-key "clock menu")
+
+    "nr" '(:ignore t :which-key "roam")
+    "nri" '(org-roam-node-insert :which-key "insert node")
+    "nrf" '(org-roam-node-find :which-key "find node")
+    "nrc" '(org-roam-capture :which-key "capture"))
 #+end_src
 
 #+begin_src emacs-lisp

@@ -47,11 +47,11 @@ workspace=(
 sketchybar --add event aerospace_workspace_change
 for sid in $(aerospace list-workspaces --all); do
   sketchybar --add item space."${sid}" left \
-	     --set space."${sid}" \
-	       "${workspace[@]}" \
-	       script="aerospace_plugin ${sid}" \
-	       label="${sid}" \
-	     --subscribe space."${sid}" aerospace_workspace_change
+             --set space."${sid}" \
+             "${workspace[@]}" \
+             script="aerospace_plugin ${sid}" \
+             label="${sid}" \
+             --subscribe space."${sid}" aerospace_workspace_change
 done
 
 

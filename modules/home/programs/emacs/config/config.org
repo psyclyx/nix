@@ -120,18 +120,20 @@ set in a non-interactive shell.
   (set-fontset-font t nil "Hack Nerd Font Mono" nil 'append)
 
 #+end_src
-** Highlight matching parentheses
+** Distinguish real buffers (=solaire-mode=)
 #+begin_src emacs-lisp
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+  (use-package solaire-mode
+    :after '(doom-themes)
+    :config
+    (solaire-global-mode 1))
 #+end_src
-** Theme
+** Theme (=doom-themes=)
 #+begin_src emacs-lisp
   (use-package doom-themes
     :config
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
-    (load-theme 'doom-nova t)
+    (load-theme 'doom-monokai-octagon t)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 #+end_src
@@ -402,12 +404,13 @@ set in a non-interactive shell.
     :custom
     (corfu-cycle t)
     (corfu-auto t)
-    (corfu-auto-delay 0.1)
-    (corfu-auto-prefix 1)
+    (corfu-auto-delay 0.4)
+    (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
     (corfu-quit-at-boundary nil)
     (corfu-quit-no-match t)
     (corfu-separator ?\s)
+    (read-extended-command-predicate #'command-completion-default-include-p)
 
     :bind
     (:map corfu-map
@@ -430,8 +433,7 @@ set in a non-interactive shell.
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay '(0.25 . 0.1))
-    (corfu-popupinfo-hide nil))
+    (corfu-popupinfo-delay '(0.8 . 0.5)))
 #+end_src
 ** At point (=cape=)
 #+begin_src emacs-lisp
@@ -448,6 +450,7 @@ set in a non-interactive shell.
     ;; Ensure that pcomplete does not write to the buffer
     ;; and behaves as a pure =completion-at-point-function'
     (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
+    :bind ("C-c p" . cape-prefix-map)
     :config
     ;; Enable richer annotations in completion items
     (setq completion-annotate-function #'cape-annotate-prompt))
@@ -560,6 +563,11 @@ set in a non-interactive shell.
               :around #'embark-hide-which-key-indicator)
 #+end_src
 * Development
+** Highlight matching parentheses (=rainbow-delimiters=)
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
 ** LSP (=eglot=)
 #+begin_src emacs-lisp
   (use-package eglot
@@ -988,7 +996,6 @@ set in a non-interactive shell.
     (vterm-max-scrollback 10000)
     (vterm-buffer-name-string "vterm: %s")
     :config
-    ;; Disable some evil keys in vterm that conflict with terminal
     (evil-set-initial-state 'vterm-mode 'insert))
 #+end_src
 *** Bindings
@@ -999,65 +1006,90 @@ set in a non-interactive shell.
     "otv" '(vterm-other-window :which-key "terminal in split"))
 #+end_src
 ** =gptel=
+*** Packages
 #+begin_src emacs-lisp
   (use-package gptel
+    :custom
+    (gptel-default-mode 'org-mode)
+    (gptel-org-branching-context t)
+
     :config
-    (unless (file-exists-p "~/Sync/org/gptel-conversations")
-      (make-directory "~/Sync/org/gptel-conversations" t))
+    (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
+    (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n"))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package corsair
+    :after gptel)
+#+end_src
+*** Model definitions
+#+begin_src emacs-lisp
+  (when (file-exists-p "~/.openai-token")
+    (defun read-openai-token ()
+      "Read OpenAI API token from ~/.openrouter-token file."
+      (with-temp-buffer
+        (insert-file-contents (expand-file-name "~/.openrouter-token"))
+        (string-trim (buffer-string))))
+    (setq gptel-api-key 'read-openai-token))
 
 
-    (setq gptel-default-mode 'org-mode
-          gptel-log-conversations t
-          gptel-conversation-dir "~/Sync/org/gptel-conversations")
+  (when (file-exists-p "~/.openrouter-token")
+    (defun read-openrouter-token ()
+      "Read OpenRouter API token from ~/.openrouter-token file."
+      (with-temp-buffer
+        (insert-file-contents (expand-file-name "~/.openrouter-token"))
+        (string-trim (buffer-string))))
+    (let ((openrouter (gptel-make-openai "OpenRouter"
+                        :host "openrouter.ai"
+                        :endpoint "/api/v1/chat/completions"
+                        :stream t
+                        :key 'read-openrouter-token
+                        :models '(mistralai/codestral-2501
+                                  (deepseek/deepseek-chat
+                                   :description "DeepSeek's powerful chat model optimized for dialogue")
+                                  (openai/o1
+                                   :description "OpenAI's cutting-edge multimodal model"
+                                   :capabilities (media))
+                                  (google/gemini-2.0-flash-thinking-exp:free
+                                   :description "Google's fast Gemini model with experimental features")
+                                  (anthropic/claude-3.5-sonnet:beta
+                                   :description "Anthropic's balanced Claude model for general tasks")
+                                  (anthropic/claude-3.5-haiku-20241022:beta
+                                   :description "Anthropic's smaller, faster Claude model")))))
+      (setq gptel-backend openrouter
+            gptel-model 'anthropic/claude-3.5-sonnet:beta)))
 
 
-    (when (file-exists-p "~/.openai-token")
-      (defun read-openai-token ()
-        "Read OpenAI API token from ~/.openrouter-token file."
-        (with-temp-buffer
-          (insert-file-contents (expand-file-name "~/.openrouter-token"))
-          (string-trim (buffer-string))))
-      (setq gptel-api-key 'read-openai-token))
+  (when (file-exists-p "~/.gptel.el")
+    (load-file "~/.gptel.el")
+    (when (fboundp 'config:gptel)
+      (config:gptel)))
 
+  (gptel-make-openai "llama-cpp"
+    :stream t
+    :protocol "http"
+    :host "localhost:10200"
+    :models '(local))
 
-    (when (file-exists-p "~/.openrouter-token")
-      (defun read-openrouter-token ()
-        "Read OpenRouter API token from ~/.openrouter-token file."
-        (with-temp-buffer
-          (insert-file-contents (expand-file-name "~/.openrouter-token"))
-          (string-trim (buffer-string))))
-      (let ((openrouter (gptel-make-openai "OpenRouter"
-                          :host "openrouter.ai"
-                          :endpoint "/api/v1/chat/completions"
-                          :stream t
-                          :key 'read-openrouter-token
-                          :models '(mistralai/codestral-2501
-                                    (deepseek/deepseek-chat
-                                     :description "DeepSeek's powerful chat model optimized for dialogue")
-                                    (openai/o1
-                                     :description "OpenAI's cutting-edge multimodal model"
-                                     :capabilities (media))
-                                    (google/gemini-2.0-flash-thinking-exp:free
-                                     :description "Google's fast Gemini model with experimental features")
-                                    (anthropic/claude-3.5-sonnet:beta
-                                     :description "Anthropic's balanced Claude model for general tasks")
-                                    (anthropic/claude-3.5-haiku-20241022:beta
-                                     :description "Anthropic's smaller, faster Claude model")))))
-        (setq gptel-backend openrouter
-              gptel-model 'anthropic/claude-3.5-sonnet:beta)))
-
-
-    (when (file-exists-p "~/.gptel.el")
-      (load-file "~/.gptel.el")
-      (when (fboundp 'config:gptel)
-        (config:gptel))))
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    "a" '(:ignore t :which-key "AI")
+    "a" '(:ignore t :which-key "gptel")
+    "as" '(gptel-send :which-key "send")
     "an" '(gptel :which-key "new chat")
-    "am" '(gptel-menu :which-key "model menu"))
+    "am" '(gptel-menu :which-key "model menu")
+    "ar" '(gptel-rewrite :which-key "rewrite")
+
+    "ac" '(:ignore t :which-key "corsair")
+    "acc" '(corsair-open-chat-buffer :which-key "open chat buffer")
+    "aca" '(:ignore t :which-key "accumulate")
+    "acac" '(corsair-accumulate-file-path-and-contents :which-key "file path and contents")
+    "acan" '(corsair-accumulate-file-name :which-key "file name")
+    "acap" '(corsair-accumulate-file-path :which-key "file path")
+    "acav" '(corsair-accumulate-selected-text :which-key "selected text")
+    "acad" '(corsair-drop-accumulated-buffer :which-key "drop")
+    "acaf" '(corsair-insert-file-or-folder-contents :which-key "file/folder contents"))
 #+end_src
 ** =direnv= & =envrc=
 #+begin_src emacs-lisp

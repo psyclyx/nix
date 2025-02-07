@@ -16,6 +16,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     nur.url = "github:nix-community/NUR";
+    nur.inputs.nixpkgs.follows = "nixpkgs";
 
     rycee-nurpkgs = {
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";

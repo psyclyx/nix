@@ -27,3 +27,5 @@ Roles group base modules, and are referenced by hosts.
 Configuration for =GNU Emacs=. This is, by far, the largest program configuration in this repository, and is documented separately.
 ***** Git                                                       :trivial:
 Simple [[https://git-scm.com/][git]] configuration.
+***** Firefox                                                   :trivial:
+Trivially  installs =firefox-bin=. Throws on darwin, install via cask instead.

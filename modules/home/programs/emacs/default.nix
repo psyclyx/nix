@@ -5,6 +5,7 @@
   inputs,
   ...
 }: let
+  useSymlinkConfig = false;
   packageConfig = import ./packages.nix;
   packages = packageConfig.systemPackages pkgs;
   relPath = lib.strings.removePrefix (toString inputs.self) (toString ./config);
@@ -22,13 +23,26 @@
       cp ${emacs}/bin/emacsclient $out/bin/
     '';
   };
-in {
-  programs.emacs = {
-    enable = true;
-    package = emacs;
-    extraPackages = epkgs:
-      (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient];
-  };
-  home.file.".config/emacs".source = config.lib.file.mkOutOfStoreSymlink configPath;
-  home.packages = packages;
-}
+in
+  lib.mkMerge [
+    {
+      programs.emacs = {
+        enable = true;
+        package = emacs;
+        extraPackages = epkgs:
+          (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient];
+      };
+      home = {
+        file.".config/emacs".source =
+          if useSymlinkConfig
+          then config.lib.file.mkOutOfStoreSymlink configPath
+          else ./config;
+
+        packages = packages;
+      };
+    }
+
+    (lib.mkIf pkgs.stdenv.isDarwin {
+      targets.darwin.defaults."org.gnu.Emacs".AppleFontSmoothing = 0;
+    })
+  ]

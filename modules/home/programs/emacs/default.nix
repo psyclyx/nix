@@ -32,12 +32,12 @@ in
   lib.mkMerge [
     {
       programs.emacs = {
-        enable = true;
-        package = emacs;
-        extraPackages = epkgs:
-          (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient];
+        enable = lib.mkDefault true;
+        package = lib.mkDefault emacs;
+        extraPackages = lib.mkMerge
+          (epkgs: (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient]);
       };
-      home = {
+      home = lib.mkIf config.programs.emacs.enable {
         file = {
           ".config/emacs/init.el".source = mkRepoFile ./init.el ./init.el;
           ".config/emacs/config.org".source = mkRepoFile ./config.org ./config.org;
@@ -46,7 +46,7 @@ in
       };
     }
 
-    (lib.mkIf pkgs.stdenv.isDarwin {
+    (lib.mkIf (pkgs.stdenv.isDarwin && config.programs.emacs.enable) {
       targets.darwin.defaults."org.gnu.Emacs".AppleFontSmoothing = 0;
     })
   ]

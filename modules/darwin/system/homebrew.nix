@@ -14,11 +14,11 @@ in {
 
     caskArgs.no_quarantine = true;
 
-    global.autoUpdate = false;
+    global.autoUpdate = true;
 
     onActivation = {
-      upgrade = false;
-      autoUpdate = false;
+      upgrade = true;
+      autoUpdate = true;
       cleanup = "zap";
     };
 

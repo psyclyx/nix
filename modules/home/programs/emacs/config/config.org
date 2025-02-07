@@ -1203,6 +1203,7 @@ set in a non-interactive shell.
 
 #+begin_src emacs-lisp
   (set-face-attribute 'org-document-title nil :height 2.0)
+  (set-face-attribute 'org-document-info nil :height 1.5)
   (set-face-attribute 'org-level-1 nil :height 1.75)
   (set-face-attribute 'org-level-2 nil :height 1.5)
   (set-face-attribute 'org-level-3 nil :height 1.25)

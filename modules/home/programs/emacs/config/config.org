@@ -1,4 +1,4 @@
-#+TITLE: Emacs Configuration
+#+TITLE: Emacs configuration
 #+AUTHOR: psyclyx
 #+PROPERTY: header-args:emacs-lisp :tangle yes :lexical t
 #+STARTUP: content
@@ -107,18 +107,42 @@ set in a non-interactive shell.
 #+end_src
 ** Font
 #+begin_src emacs-lisp
-  (use-package unicode-fonts
-    :init
-    (unicode-fonts-setup))
+  (defcustom config:default-font-height
+    160
+    "Initial font height")
+
+  (defun config:adjust-font-size (delta)
+    (let ((new-height (+ (face-attribute 'default :height) delta)))
+      (set-face-attribute 'default nil :height new-height)
+      (message "Height: %d" new-height)))
+
+  (defun config:decrease-font-size ()
+    (interactive)
+    (config:adjust-font-size -10))
+
+  (defun config:increase-font-size ()
+    (interactive)
+    (config:adjust-font-size 10))
+
+  (defun config:reset-font-size ()
+    (interactive)
+    (set-face-attribute 'default nil :height config:default-font-height))
 
   (set-face-attribute 'default nil
+                      :inherit 'config:root-face
                       :family "Berkeley Mono"
-                      :height 180
-                      :weight 'normal)
+                      :height config:default-font-height)
 
-  ;; Set fallback font
-  (set-fontset-font t nil "Hack Nerd Font Mono" nil 'append)
+  (set-face-attribute 'variable-pitch nil
+                      :inherit 'config:root-face
+                      :family "ETBembo"
+                      :height 1.125)
 
+  (set-fontset-font t 'unicode (font-spec :family "Symbola"))
+
+  (use-package mixed-pitch
+    :hook
+    ((org-mode org-roam-mode text-mode) . mixed-pitch-mode))
 #+end_src
 ** Distinguish real buffers (=solaire-mode=)
 #+begin_src emacs-lisp
@@ -330,12 +354,15 @@ set in a non-interactive shell.
     "hk" '(describe-key :which-key "describe key")
     "hm" '(describe-mode :which-key "describe mode"))
 #+end_src
-*** Toggles
+*** Tweak
 #+begin_src emacs-lisp
   (my-leader-def
-
     "t" '(:ignore t :which-key "toggle")
-    "tw" '(visual-line-mode :which-key "word wrap"))
+    "tf" '(:ignore t :which-key "font size")
+    "tfj" '(config:decrease-font-size :which-key "decrease")
+    "tfk" '(config:increase-font-size :which-key "increase")
+    "tf0" '(config:reset-font-size :which-key "reset")
+    "tw" '(visual-line-mode :which-key "toggle visual-line-mode"))
 #+end_src
 * Completion
 ** Matching (=orderless=)
@@ -1018,10 +1045,6 @@ set in a non-interactive shell.
     (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n"))
 #+end_src
 
-#+begin_src emacs-lisp
-  (use-package corsair
-    :after gptel)
-#+end_src
 *** Model definitions
 #+begin_src emacs-lisp
   (when (file-exists-p "~/.openai-token")
@@ -1079,17 +1102,7 @@ set in a non-interactive shell.
     "as" '(gptel-send :which-key "send")
     "an" '(gptel :which-key "new chat")
     "am" '(gptel-menu :which-key "model menu")
-    "ar" '(gptel-rewrite :which-key "rewrite")
-
-    "ac" '(:ignore t :which-key "corsair")
-    "acc" '(corsair-open-chat-buffer :which-key "open chat buffer")
-    "aca" '(:ignore t :which-key "accumulate")
-    "acac" '(corsair-accumulate-file-path-and-contents :which-key "file path and contents")
-    "acan" '(corsair-accumulate-file-name :which-key "file name")
-    "acap" '(corsair-accumulate-file-path :which-key "file path")
-    "acav" '(corsair-accumulate-selected-text :which-key "selected text")
-    "acad" '(corsair-drop-accumulated-buffer :which-key "drop")
-    "acaf" '(corsair-insert-file-or-folder-contents :which-key "file/folder contents"))
+    "ar" '(gptel-rewrite :which-key "rewrite"))
 #+end_src
 ** =direnv= & =envrc=
 #+begin_src emacs-lisp
@@ -1175,13 +1188,25 @@ set in a non-interactive shell.
     ;; Save clock history when emacs is closed
     (org-clock-persistence-insinuate))
 
-  (use-package org-bullets
-    :hook (org-mode . org-bullets-mode))
-
   (use-package org-indent
     :after org
     :config
     (setq org-startup-indented 1))
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package org-superstar
+    :hook (org-mode-hook . org-superstar-mode)
+    :custom
+    (org-superstar-headline-bullets-list '("🜂" "🜃" "🜄" "🜁" "🜔" "🜖")))
+#+end_src
+
+#+begin_src emacs-lisp
+  (set-face-attribute 'org-document-title nil :height 2.0)
+  (set-face-attribute 'org-level-1 nil :height 1.75)
+  (set-face-attribute 'org-level-2 nil :height 1.5)
+  (set-face-attribute 'org-level-3 nil :height 1.25)
+  (set-face-attribute 'org-level-3 nil :height 1.1)
 #+end_src
 *** org-roam
 **** Enable

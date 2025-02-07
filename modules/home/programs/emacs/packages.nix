@@ -28,19 +28,17 @@
       # UI
       all-the-icons-nerd-fonts
       dashboard
-      diminish
       doom-modeline
       doom-themes
+      mixed-pitch
       rainbow-delimiters
       solaire-mode
-      unicode-fonts
       which-key
 
       # Notes
-      corsair
       gptel
       org
-      org-bullets
+      org-superstar
       org-roam
 
       # Development

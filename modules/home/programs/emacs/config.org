@@ -1,6 +1,6 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: psyclyx
-#+PROPERTY: header-args:emacs-lisp :tangle yes :lexical t
+#+PROPERTY: header-args:emacs-lisp :lexical t
 #+STARTUP: content
 
 * Base
@@ -37,7 +37,9 @@
 #+end_src
 *** Place =custom.el= next to config
 #+begin_src emacs-lisp
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (setq custom-file (expand-file-name "custom.el" "~/.local/state/emacs/"))
+  (when (file-exists-p custom-file)
+    (load custom-file))
 #+end_src
 *** no-littering
 #+begin_src emacs-lisp

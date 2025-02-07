@@ -5,11 +5,16 @@
   inputs,
   ...
 }: let
-  useSymlinkConfig = false;
+  repoSymlink = false; # will eventually be argument
+  relPath = lib.strings.removePrefix (toString inputs.self);
+  repoPath = f: "${config.home.homeDirectory}/projects/nix" + relPath f;
+  mkRepoFile = file: fallback:
+    if repoSymlink
+    then config.lib.file.mkOutOfStoreSymlink (repoPath file)
+    else fallback;
+
   packageConfig = import ./packages.nix;
   packages = packageConfig.systemPackages pkgs;
-  relPath = lib.strings.removePrefix (toString inputs.self) (toString ./config);
-  configPath = "${config.home.homeDirectory}/projects/nix" + relPath;
   emacs =
     if pkgs.stdenv.isDarwin
     then pkgs.emacs-30
@@ -33,11 +38,10 @@ in
           (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient];
       };
       home = {
-        file.".config/emacs".source =
-          if useSymlinkConfig
-          then config.lib.file.mkOutOfStoreSymlink configPath
-          else ./config;
-
+        file = {
+          ".config/emacs/init.el".source = mkRepoFile ./init.el ./init.el;
+          ".config/emacs/config.org".source = mkRepoFile ./config.org ./config.org;
+        };
         packages = packages;
       };
     }

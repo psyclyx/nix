@@ -21,7 +21,7 @@
     # nix
     alejandra
     nixd
-    nixfmt
+    nixfmt-rfc-style
 
     # python
     python3

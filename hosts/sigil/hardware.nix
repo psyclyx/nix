@@ -11,17 +11,16 @@
     inputs.nixos-hardware.nixosModules.common-gpu-intel-disable
   ];
   services.xserver.videoDrivers = ["nvidia"];
-  hardware.graphics.enable = true;
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
   hardware.nvidia = {
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.production;
+    package = config.boot.kernelPackages.nvidiaPackages.latest;
     powerManagement.enable = false;
     powerManagement.finegrained = false;
-    open = false;
+    open = true;
     modesetting.enable = true;
   };
 }

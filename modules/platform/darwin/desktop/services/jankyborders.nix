@@ -10,7 +10,7 @@ in {
     enable = true;
     package = pkgs.jankyborders;
 
-    active_color = builtins.trace theme.wm.focused.border theme.wm.focused.border;
+    active_color = theme.wm.focused.border;
     inactive_color = theme.wm.unfocused.border;
 
     width = 12.0;

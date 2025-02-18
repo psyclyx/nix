@@ -1,9 +1,10 @@
-name: "Build and Cache Nix Flakes"
+name: "build and cache"
 
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read

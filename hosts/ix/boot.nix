@@ -15,7 +15,7 @@
         flushBeforeStage2 = true;
         ssh = {
           enable = true;
-          port = 22;
+          port = 8022;
           authorizedKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEwUKqMso49edYpzalH/BFfNlwmLDmcUaT00USWiMoFO me@psyclyx.xyz"];
           hostKeys = ["/etc/secrets/initrd/ssh_host_key"];
         };

@@ -1,4 +1,6 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  mkHome = import ../../modules/home;
+in {
   nix.settings.trusted-users = ["psyc"];
   users = {
     users = {
@@ -14,15 +16,21 @@
           "adbusers"
           "builders"
         ];
+        openssh.authorizedKeys.keys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEwUKqMso49edYpzalH/BFfNlwmLDmcUaT00USWiMoFO me@psyclyx.xyz"];
       };
     };
   };
 
-  home-manager = {
-    users = {
-      psyc = {
-        imports = [../../modules/home/nixos.nix];
-      };
-    };
+  home-manager.users.psyc = mkHome {
+    name = "psyc";
+    email = "me@psyclyx.xyz";
+    modules = [
+      ../../modules/home/base
+      ../../modules/home/nixos
+      ../../modules/home/xdg.nix
+      ../../modules/home/programs/emacs
+      ../../modules/home/programs/kitty.nix
+      ../../modules/home/programs/signal.nix
+    ];
   };
 }

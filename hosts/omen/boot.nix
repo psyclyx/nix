@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   boot = {
+    kernelPackages = pkgs.linuxPackages_latest;
     initrd = {
       availableKernelModules = [
         "xhci_pci"
@@ -17,6 +18,9 @@
     ];
 
     loader = {
+      systemd-boot = {
+        enable = true;
+      };
       efi = {
         canTouchEfiVariables = true;
       };

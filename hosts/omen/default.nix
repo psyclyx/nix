@@ -1,13 +1,19 @@
 {pkgs, ...}: {
+  system.stateVersion = "24.05";
+  time.timeZone = "America/Los_Angeles";
   imports = [
+    ../../modules/platform/nixos/base
+    ../../modules/platform/nixos/physical
+    ../../modules/platform/nixos/graphical
+    ../../modules/platform/nixos/services/printing.nix
+    ../../modules/platform/nixos/programs/adb.nix
+
     ./boot.nix
     ./filesystems.nix
     ./hardware.nix
     ./users.nix
-    ../../modules/nixos/programs
-    ../../modules/nixos/services
-    ../../modules/nixos/system
   ];
+
   services.resolved.enable = true;
   networking.useDHCP = true;
   networking.interfaces.tailscale0.useDHCP = false;

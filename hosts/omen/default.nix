@@ -5,6 +5,7 @@
     ../../modules/platform/nixos/base
     ../../modules/platform/nixos/physical
     ../../modules/platform/nixos/graphical
+    ../../modules/platform/nixos/laptop
     ../../modules/platform/nixos/services/printing.nix
     ../../modules/platform/nixos/programs/adb.nix
 

@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/build-steps.yaml
     with:
       os: macos-latest
-      build-command: nix build .#emacs
+      build-command: nix build .#emacs -L
     secrets: inherit
 
   build-darwin:
@@ -42,5 +42,5 @@ jobs:
     uses: ./.github/workflows/build-steps.yaml
     with:
       os: macos-latest
-      build-command: nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel
+      build-command: nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel -L
     secrets: inherit

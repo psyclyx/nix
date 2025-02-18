@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   mkHome = import ../../modules/home;
 in {
   nix.settings.trusted-users = ["psyc"];
@@ -25,6 +29,11 @@ in {
     name = "psyc";
     email = "me@psyclyx.xyz";
     modules = [
+      {
+        programs.waybar.settings.mainBar."cpu".format =
+          lib.mkForce
+          " ${lib.concatMapStrings (n: "{icon${toString n}}") (lib.range 0 31)}";
+      }
       ../../modules/home/base
       ../../modules/home/nixos
       ../../modules/home/xdg.nix

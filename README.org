@@ -4,28 +4,3 @@
 #+STARTUP: content
 
 This repository contains (most) of the configuration for my various devices, and associated documentation.
-
-* Status
-WIP. Stated structure is aspirational, and there's some tech debt to pay down on the way there.
-
-* Nix
-I use [[https:nixos.org][Nixos]] and [[https://github.com/LnL7/nix-darwin][nix-darwin]] to manage my devices with the Nix package manager/build system. My home directories are managed with [[https://github.com/nix-community/home-manager][home-manager]].
-
-** Structure
-- =hosts/=: System definitions
-- =modules/= : Reusable configuration modules
-  - =home-manager/=: =home-manager= modules
-  - =platform=: platform (=Nixos=, =nix-darwin=) modules
-- =roles/=: Commonly used collection of modules
-  - =platform/=
-  - =home-manager/=
-Roles group base modules, and are referenced by hosts.
-** Modules
-*** Home-manager
-**** Programs
-***** Emacs
-Configuration for =GNU Emacs=. This is, by far, the largest program configuration in this repository, and is documented separately.
-***** Git                                                       :trivial:
-Simple [[https://git-scm.com/][git]] configuration.
-***** Firefox                                                   :trivial:
-Trivially  installs =firefox-bin=. Throws on darwin, install via cask instead.

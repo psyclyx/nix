@@ -23,7 +23,7 @@
         .${arch};
     };
 in
-  stdenv.mkDerivation rec {
+  stdenv.mkDerivation {
     pname = "cljstyle";
     inherit version;
     src = getBinary stdenv.hostPlatform.system;

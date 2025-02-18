@@ -8,8 +8,6 @@ in {
     git
     kitty
     neofetch
-    obsidian
-    zotero
   ];
 
   imports = [

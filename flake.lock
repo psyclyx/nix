@@ -232,22 +232,6 @@
         "type": "github"
       }
     },
-    "homebrew-emacs-plus": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1734881694,
-        "narHash": "sha256-0awwiJjYGvwzqghzjgQiE6rRyv//I68l2ivwdstbBfU=",
-        "owner": "d12frosted",
-        "repo": "homebrew-emacs-plus",
-        "rev": "5f1f625f43d498dcb9a931e0f351bfdaeb41cd1b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "d12frosted",
-        "repo": "homebrew-emacs-plus",
-        "type": "github"
-      }
-    },
     "homebrew-hashicorp": {
       "flake": false,
       "locked": {
@@ -451,7 +435,6 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-conductorone": "homebrew-conductorone",
         "homebrew-core": "homebrew-core",
-        "homebrew-emacs-plus": "homebrew-emacs-plus",
         "homebrew-hashicorp": "homebrew-hashicorp",
         "homebrew-nikitabobko": "homebrew-nikitabobko",
         "nix-darwin-emacs": "nix-darwin-emacs",

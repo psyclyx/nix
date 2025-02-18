@@ -34,8 +34,10 @@ in
       programs.emacs = {
         enable = lib.mkDefault true;
         package = lib.mkDefault emacs;
-        extraPackages = lib.mkMerge
-          (epkgs: (packageConfig.emacsPackages epkgs) ++ packages ++ [emacsclient]);
+        extraPackages = epkgs:
+          (packageConfig.emacsPackages epkgs)
+          ++ packages
+          ++ [emacsclient];
       };
       home = lib.mkIf config.programs.emacs.enable {
         file = {

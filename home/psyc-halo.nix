@@ -2,33 +2,32 @@
   home.stateVersion = "23.11";
 
   home.packages = with pkgs; [
-    alejandra
-    babashka
-    cargo
-    clj-kondo
-    cljstyle
-    clojure
-    clojure-lsp
-    fd
-    htop
-    htop
-    jq
-    leiningen
-    lua-language-server
-    lua
-    love-darwin-bin
-    maven
+    .alejandra
+    .babashka
+    .cargo
+    .clj-kondo
+    .cljstyle
+    .clojure
+    .clojure-lsp
+    .fd
+    .htop
+    .jq
+    .leiningen
+    .lua-language-server
+    .lua
+    .love-darwin-bin
+    .maven
     nerd-fonts.hack
     nerd-fonts.noto
-    nixd
-    nodejs
-    python3
-    ripgrep
-    rustc
+    .nixd
+    .nodejs
+    .python3
+    .ripgrep
+    .rustc
     source-code-pro
     vscode
-    zig
-    zls
+    .zig
+    .zls
   ];
 
   fonts.fontconfig.enable = true;

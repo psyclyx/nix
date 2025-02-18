@@ -1,5 +1,5 @@
 {...}: {
   homebrew.casks = [
-    "orcaslicer"
+    "firefox"
   ];
 }

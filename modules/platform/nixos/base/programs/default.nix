@@ -1,0 +1,3 @@
+{...}: {
+  imports = [ ./nix-ld.nix ];
+}

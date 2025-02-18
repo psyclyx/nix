@@ -19,7 +19,7 @@
 #+end_src
 *** In minibuffer
 #+begin_src emacs-lisp
-  (defun config:defer-g; ()
+  (defun config:defer-gc ()
     (setq gc-cons-threshold most-positive-fixnum))
   (defun config:-do-restore-gc ()
     (setq gc-cons-threshold 16777216))
@@ -29,7 +29,7 @@
   (add-hook 'minibuffer-setup #'config:defer-gc)
   (add-hook 'minibuffer-exit #'config:restore-gc)
 #+end_src
-
+Is this minibuffer gc bit actually helpful?
 ** Declutter
 *** Disable lockfiles
 #+begin_src emacs-lisp
@@ -150,8 +150,7 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package solaire-mode
     :after '(doom-themes)
-    :config
-    (solaire-global-mode 1))
+    :init (solaire-global-mode 1))
 #+end_src
 ** Theme (=doom-themes=)
 #+begin_src emacs-lisp
@@ -600,7 +599,6 @@ set in a non-interactive shell.
 ** LSP (=eglot=)
 #+begin_src emacs-lisp
   (use-package eglot
-    :hook (prog-mode . eglot-ensure)
     :custom
     (eglot-autoshutdown t)
     (eglot-events-buffer-size 0)
@@ -789,7 +787,6 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (defun my/setup-language-defaults ()
     "Set up common language support features."
-    (eglot-ensure)
     (flycheck-mode)
     (electric-pair-local-mode)
     (show-paren-mode))
@@ -797,9 +794,6 @@ set in a non-interactive shell.
   ;; Global development bindings
   (my-leader-def
     "L" '(:ignore t :which-key "lsp")
-    "L=" '(eglot-format-buffer :which-key "format buffer")
-    "La" '(eglot-code-actions :which-key "code actions")
-    "Lr" '(eglot-rename :which-key "rename")
     "Lh" '(eldoc :which-key "documentation")
 
     ;; LSP/Eglot
@@ -887,8 +881,7 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package emacs-lisp-mode
     :ensure nil  ; built-in
-    :hook ((emacs-lisp-mode . my/setup-language-defaults)
-           (emacs-lisp-mode . eldoc-mode))
+    :hook ((emacs-lisp-mode . my/setup-language-defaults))
     :config
     (setq lisp-indent-function #'lisp-indent-function))
 
@@ -1228,6 +1221,19 @@ set in a non-interactive shell.
 **** Autosync database
 #+begin_src emacs-lisp
   (org-roam-db-autosync-mode)
+#+end_src
+*** Utilities
+#+begin_src emacs-lisp
+  (defun my/org-insert-directory-structure (dir level)
+    "Insert directory structure as org-mode links starting at DIR with heading LEVEL."
+    (interactive "DDirectory: \nnStarting level (e.g., 2 for **): ")
+    (dolist (file (directory-files dir))
+      (unless (member file '("." ".."))
+        (let ((path (concat dir "/" file)))
+          (insert (make-string level ?*) " "
+                  "[[file:" path "][" file "/]]\n")
+          (when (file-directory-p path)
+            (my/org-insert-directory-structure path (1+ level)))))))
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp

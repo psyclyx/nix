@@ -1,8 +1,7 @@
-name: "build and cache"
+name: build
 
 on:
   push:
-    branches: [ "main" ]
   workflow_dispatch:
   pull_request:
 
@@ -10,40 +9,42 @@ permissions:
   contents: read
 
 jobs:
+  build-emacs-linux:
+    uses: ./.github/workflows/build-steps.yaml
+    with:
+      os: ubuntu-latest
+      build-command: nix build .#emacs -L
+    secrets: inherit
+    vars: inherit
+
   build-linux:
-    environment:
-      name: CI
-    runs-on: ubuntu-latest
+    needs: build-emacs-linux
     strategy:
       matrix:
         host: [ix, omen, sigil]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: cachix/cachix-action@v14
-        with:
-          name: ${{ vars.CACHIX_CACHE_NAME }}
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build NixOS configurations
-        run: |
-          nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel -L --print-build-logs
+    uses: ./.github/workflows/build-steps.yaml
+    with:
+      os: ubuntu-latest
+      build-command: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel -L
+    secrets: inherit
+    vars: inherit
+
+  build-emacs-darwin:
+    uses: ./.github/workflows/build-steps.yaml
+    with:
+      os: macos-latest
+      build-command: nix build .#emacs
+    secrets: inherit
+    vars: inherit
 
   build-darwin:
-    environment:
-      name: CI
-    runs-on: macos-latest
+    needs: build-emacs-darwin
     strategy:
       matrix:
         host: [halo, ampere]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: cachix/cachix-action@v14
-        with:
-          name: ${{ vars.CACHIX_CACHE_NAME }}
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build Darwin configurations
-        run: |
-          nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel -L --print-build-logs
+    uses: ./.github/workflows/build-steps.yaml
+    with:
+      os: macos-latest
+      build-command: nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel
+    secrets: inherit
+    vars: inherit

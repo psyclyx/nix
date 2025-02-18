@@ -107,6 +107,12 @@
 
     mkDarwinConfiguration = import ./modules/platform/darwin {inherit inputs overlays;};
     mkNixosConfiguration = import ./modules/platform/nixos {inherit inputs overlays;};
+
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system overlays;
+        config.allowUnfree = true;
+      };
   in {
     devShells =
       lib.genAttrs
@@ -152,6 +158,12 @@
         hostName = "ix";
         modules = [./hosts/ix];
       };
+    };
+
+    # For cache
+    packages = {
+      "aarch64-darwin".emacs = (pkgsFor "aarch64-darwin").emacs-30;
+      "x86_64-linux".emacs = (pkgsFor "x86_64-linux").emacs-pgtk;
     };
   };
 }

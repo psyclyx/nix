@@ -1,29 +1,15 @@
 {inputs, ...}: let
-  inherit (inputs) disko sops-nix vpn-confinement;
 in {
   system.stateVersion = "24.05";
+  time.timeZone = "America/Los_Angeles";
   imports = [
-    disko.nixosModules.disko
-    sops-nix.nixosModules.sops
-    vpn-confinement.nixosModules.default
-    ../../modules/nixos/programs/nix-ld.nix
-    ../../modules/nixos/programs/steam.nix
-    ../../modules/nixos/programs/sway.nix
-    ../../modules/nixos/programs/zsh.nix
-    ../../modules/nixos/services/devmon.nix
-    ../../modules/nixos/services/fwupd.nix
-    ../../modules/nixos/services/gnome-keyring.nix
-    ../../modules/nixos/services/greetd.nix
-    ../../modules/nixos/services/gvfs.nix
-    ../../modules/nixos/services/openssh.nix
-    ../../modules/nixos/services/udisks2.nix
-    ../../modules/nixos/system/console.nix
-    ../../modules/nixos/system/fonts.nix
-    ../../modules/nixos/system/home-manager.nix
-    ../../modules/nixos/system/locale.nix
-    ../../modules/nixos/system/nix.nix
-    ../../modules/nixos/system/security.nix
-    ../../modules/nixos/system/time.nix
+    ../../modules/platform/nixos/base
+    ../../modules/platform/nixos/physical
+    ../../modules/platform/nixos/graphical
+    ../../modules/platform/nixos/services/printing.nix
+    ../../modules/platform/nixos/programs/adb.nix
+    ../../modules/platform/nixos/programs/steam.nix
+
     ./boot.nix
     ./filesystems.nix
     ./hardware.nix

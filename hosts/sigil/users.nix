@@ -1,4 +1,6 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  mkHome = import ../../modules/home;
+in {
   nix.settings.trusted-users = ["psyc"];
   users = {
     users = {
@@ -19,13 +21,16 @@
     };
   };
 
-  home-manager = {
-    users = {
-      psyc = {
-        imports = [
-          ../../home/psyc-sigil.nix
-        ];
-      };
-    };
+  home-manager.users.psyc = mkHome {
+    name = "psyc";
+    email = "me@psyclyx.xyz";
+    modules = [
+      ../../modules/home/base
+      ../../modules/home/nixos
+      ../../modules/home/xdg.nix
+      ../../modules/home/programs/emacs
+      ../../modules/home/programs/kitty.nix
+      ../../modules/home/programs/signal.nix
+    ];
   };
 }

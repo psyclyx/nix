@@ -6,6 +6,7 @@
 }: {
   services.resolved.enable = true;
   networking.useNetworkd = true;
+  networking.networkmanager.enable = true;
   networking.useDHCP = false;
   networking.firewall.trustedInterfaces = ["tailscale0"];
   networking.interfaces.enp6s0.useDHCP = true;

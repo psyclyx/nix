@@ -1,3 +1,6 @@
 {...}: {
-  imports = [ ./nix-ld.nix ];
+  imports = [
+    ./nix-ld.nix
+    ../../../common/programs/zsh.nix
+  ];
 }

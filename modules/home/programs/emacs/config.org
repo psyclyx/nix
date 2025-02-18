@@ -109,42 +109,44 @@ set in a non-interactive shell.
 #+end_src
 ** Font
 #+begin_src emacs-lisp
-  (defcustom config:default-font-height
-    160
-    "Initial font height")
+    (defcustom config:default-font-height
+      160
+      "Initial font height")
 
-  (defun config:adjust-font-size (delta)
-    (let ((new-height (+ (face-attribute 'default :height) delta)))
-      (set-face-attribute 'default nil :height new-height)
-      (message "Height: %d" new-height)))
+    (defun config:adjust-font-size (delta)
+      (let ((new-height (+ (face-attribute 'default :height) delta)))
+        (set-face-attribute 'default nil :height new-height)
+        (message "Height: %d" new-height)))
 
-  (defun config:decrease-font-size ()
-    (interactive)
-    (config:adjust-font-size -10))
+    (defun config:decrease-font-size ()
+      (interactive)
+      (config:adjust-font-size -10))
 
-  (defun config:increase-font-size ()
-    (interactive)
-    (config:adjust-font-size 10))
+    (defun config:increase-font-size ()
+      (interactive)
+      (config:adjust-font-size 10))
 
-  (defun config:reset-font-size ()
-    (interactive)
-    (set-face-attribute 'default nil :height config:default-font-height))
+    (defun config:reset-font-size ()
+      (interactive)
+      (set-face-attribute 'default nil :height config:default-font-height))
 
-  (set-face-attribute 'default nil
-                      :inherit 'config:root-face
-                      :family "Berkeley Mono"
-                      :height config:default-font-height)
+    (set-face-attribute 'default nil
+                        :inherit 'config:root-face
+                        :family "Berkeley Mono"
+                        :height config:default-font-height)
 
-  (set-face-attribute 'variable-pitch nil
-                      :inherit 'config:root-face
-                      :family "ETBembo"
-                      :height 1.125)
+    (set-fontset-font t nil "NotoMono Nerd Font" nil 'append)
 
-  (set-fontset-font t 'unicode (font-spec :family "Symbola"))
+    (set-face-attribute 'variable-pitch nil
+                        :inherit 'config:root-face
+                        :family "ETBembo"
+                        :height 1.125)
 
-  (use-package mixed-pitch
-    :hook
-    ((org-mode org-roam-mode text-mode) . mixed-pitch-mode))
+    (set-fontset-font t 'unicode (font-spec :family "Symbola"))
+
+    (use-package mixed-pitch
+      :hook
+      ((org-mode org-roam-mode text-mode) . mixed-pitch-mode))
 #+end_src
 ** Distinguish real buffers (=solaire-mode=)
 #+begin_src emacs-lisp

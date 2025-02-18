@@ -15,7 +15,6 @@ jobs:
       os: ubuntu-latest
       build-command: nix build .#emacs -L
     secrets: inherit
-    vars: inherit
 
   build-linux:
     needs: build-emacs-linux
@@ -27,7 +26,6 @@ jobs:
       os: ubuntu-latest
       build-command: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel -L
     secrets: inherit
-    vars: inherit
 
   build-emacs-darwin:
     uses: ./.github/workflows/build-steps.yaml
@@ -35,7 +33,6 @@ jobs:
       os: macos-latest
       build-command: nix build .#emacs
     secrets: inherit
-    vars: inherit
 
   build-darwin:
     needs: build-emacs-darwin
@@ -47,4 +44,3 @@ jobs:
       os: macos-latest
       build-command: nix build .#darwinConfigurations.${{ matrix.host }}.config.system.build.toplevel
     secrets: inherit
-    vars: inherit

@@ -12,9 +12,6 @@ on:
     secrets:
       CACHIX_AUTH_TOKEN:
         required: true
-    vars:
-      CACHIX_CACHE_NAME:
-        required: true
 
 jobs:
   build:

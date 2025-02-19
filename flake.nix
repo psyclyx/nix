@@ -158,6 +158,19 @@
         hostName = "ix";
         modules = [./hosts/ix];
       };
+      tleilax = mkNixosConfiguration {
+        hostPlatform = "x86_64-linux";
+        hostName = "tleilax";
+        modules = [./hosts/tleilax];
+      };
+      tleilax-iso = mkNixosConfiguration {
+        hostPlatform = "x86_64-linux";
+        hostName = "tleilax";
+        modules = [
+          ./modules/platform/nixos/iso.nix
+          ./hosts/tleilax
+        ];
+      };
     };
 
     # For cache

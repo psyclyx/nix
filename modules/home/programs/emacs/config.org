@@ -132,7 +132,7 @@ set in a non-interactive shell.
 
   (set-face-attribute 'default nil
                       :inherit 'config:root-face
-                      :family "Berkeley Mono"
+                      :family "NotoMono Nerd Font Mono"
                       :height config:default-font-height)
 
   (set-face-attribute 'variable-pitch nil

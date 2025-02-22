@@ -1,4 +1,4 @@
-{...}: {
+{pkgs, ...}: {
   networking.firewall.trustedInterfaces = ["tailscale0"];
   networking.firewall.allowedTCPPorts = [22];
   networking.useNetworkd = true;
@@ -22,4 +22,7 @@
       ];
     };
   };
+
+  services.tailscale = {enable = true;};
+  environment.systemPackages = [pkgs.tailscale];
 }

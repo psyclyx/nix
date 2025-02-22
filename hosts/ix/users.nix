@@ -20,7 +20,6 @@ in {
     modules = [
       ../../modules/home/base
       ../../modules/home/xdg.nix
-      ../../modules/home/programs/emacs
     ];
   };
 }

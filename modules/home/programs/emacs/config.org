@@ -76,6 +76,13 @@ set in a non-interactive shell.
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize)))
  #+end_src
+** Recentf
+#+begin_src emacs-lisp
+  (use-package recentf
+    :ensure nil
+    :config
+    (setq recentf-max-saved-items 128))
+#+end_src
 * Interface
 ** Simplify UI
 #+begin_src emacs-lisp

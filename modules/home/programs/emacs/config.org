@@ -752,6 +752,39 @@ set in a non-interactive shell.
     "p!" '(projectile-run-shell-command-in-root :which-key "run command")
     "p&" '(projectile-run-async-shell-command-in-root :which-key "run async command"))
 #+end_src
+** Perspective
+#+begin_src emacs-lisp
+  (use-package perspective
+    :init
+    (persp-mode)
+    :custom
+    (persp-initial-frame-name "main")
+    (persp-mode-prefix-key (kbd "C-c w"))
+    (persp-state-default-file
+     (no-littering-expand-var-file-name "perspectives"))
+    :config
+    ;; Save perspectives when exiting Emacs
+    (add-hook 'kill-emacs-hook #'persp-state-save))
+
+  (use-package persp-projectile
+    :after (perspective projectile)
+    :config
+    (define-key projectile-mode-map (kbd "C-c p p")
+                #'projectile-persp-switch-project))
+#+end_src
+*** Bindings
+#+begin_src emacs-lisp
+  (my-leader-def
+    "TAB" '(:ignore t :which-key "workspace")
+    "TAB TAB" '(persp-switch :which-key "switch workspace")
+    "TAB n" '(persp-new :which-key "new workspace")
+    "TAB d" '(persp-kill :which-key "delete workspace")
+    "TAB r" '(persp-rename :which-key "rename workspace")
+    "TAB s" '(persp-state-save :which-key "save workspaces")
+    "TAB l" '(persp-state-load :which-key "load workspaces")
+    "TAB b" '(persp-switch-to-buffer :which-key "switch workspace buffer")
+    "TAB p" '(projectile-persp-switch-project :which-key "switch project+workspace"))
+#+end_src
 ** Git (=magit=)
 #+begin_src emacs-lisp
   (use-package magit
@@ -1034,6 +1067,50 @@ set in a non-interactive shell.
     "ott" '(vterm :which-key "new terminal")
     "otv" '(vterm-other-window :which-key "terminal in split"))
 #+end_src
+** IRC (=erc=)
+;; IRC (ERC) configuration for Soju and Libera
+#+begin_src emacs-lisp
+  (defun my/read-token (fp)
+      (when (file-exists-p fp)
+        (string-trim (with-temp-buffer
+                       (insert-file-contents "~/.irc-soju.token")
+                       (buffer-string))))
+    )
+
+  (use-package erc
+    :ensure nil 
+    :commands (erc erc-tls)
+    :init
+
+    (setq erc-nick "psyclyx"
+          erc-nick-uniquifier "2"
+          erc-user-full-name "psyclyx pseudoangel")
+
+    (defun my/erc-connect-soju ()
+      (interactive)
+      (let ((soju-pass (my/read-token "~/.irc-soju.token")))
+        (erc-tls :server "ix"
+                 :port 6697
+                 :nick erc-nick
+                 :full-name erc-user-full-name
+                 :password soju-pass)))
+
+
+    :config
+    (add-hook 'erc-mode-hook 'evil-insert-state)
+
+    ;; Commented-out: NickServ auto-auth for Libera (uncomment and edit if needed)
+    ;; (add-to-list 'erc-modules 'services)        ;; enable the "services" (NickServ) module
+    ;; (setq erc-prompt-for-nickserv-password nil  ;; don't prompt, use saved password
+    ;;       erc-nickserv-passwords
+    ;;       '((Libera.Chat (("psyclyx" . "YOUR_LIBERA_NICKSERV_PASSWORD")))))
+    )
+
+
+  (my-leader-def
+    "oi" '(my/erc-connect-soju :which-key "Connect to IRC (ix soju)"))
+#+end_src
+
 ** =gptel=
 *** Packages
 #+begin_src emacs-lisp
@@ -1275,3 +1352,4 @@ set in a non-interactive shell.
     "d" '(org-deadline :which-key "set deadline")
     "s" '(org-schedule :which-key "schedule todo"))
 #+end_src
+

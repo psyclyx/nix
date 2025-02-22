@@ -50,6 +50,8 @@
       lispy
       lispyville
       magit
+      persp-projectile
+      perspective
       projectile
       treesit-grammars.with-all-grammars
       vterm

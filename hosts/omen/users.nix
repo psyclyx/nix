@@ -26,6 +26,7 @@ in {
     email = "me@psyclyx.xyz";
     modules = [
       ../../modules/home/base
+      ../../modules/home/secrets
       ../../modules/home/nixos
       ../../modules/home/xdg.nix
       ../../modules/home/programs/emacs

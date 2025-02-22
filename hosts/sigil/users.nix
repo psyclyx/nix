@@ -35,6 +35,7 @@ in {
           " ${lib.concatMapStrings (n: "{icon${toString n}}") (lib.range 0 31)}";
       }
       ../../modules/home/base
+      ../../modules/home/secrets
       ../../modules/home/nixos
       ../../modules/home/xdg.nix
       ../../modules/home/programs/emacs

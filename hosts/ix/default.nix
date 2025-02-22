@@ -6,6 +6,7 @@ in {
 
   imports = [
     ../../modules/platform/nixos/base
+    ../../modules/platform/nixos/services/soju.nix
 
     ./boot.nix
     ./filesystems.nix

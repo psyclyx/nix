@@ -1,5 +1,5 @@
-{...}: {
+{lib, ...}: {
   services.syncthing = {
-    enable = true;
+    enable = lib.mkDefault true;
   };
 }

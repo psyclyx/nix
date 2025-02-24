@@ -1,11 +1,13 @@
 {pkgs, ...}: {
-  system.stateVersion = 4;
+  system.stateVersion = 6;
 
   environment.systemPackages = with pkgs; [
     awscli2
     azure-cli
     kubelogin
     mkcert
+    nssTools
+    openjdk11
   ];
 
   imports = [

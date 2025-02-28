@@ -6,57 +6,78 @@
   config,
   pkgs,
   ...
-}: {
-  networking = {
-    useDHCP = false;
+}: let
+  isp = "2606:7940:32:26";
+in {
+  networking.useNetworkd = false;
+  networking.useDHCP = false;
 
-    defaultGateway6 = {
-      address = "2606:7940:32:26::1";
-      interface = "bond0";
-    };
+  # Enable systemd-networkd
+  systemd.network = {
+    enable = true;
+    wait-online.anyInterface = true;
 
-    bonds.bond0 = {
-      interfaces = ["ens1f0np0" "ens1f1np1"];
-      driverOptions = {
-        mode = "802.3ad";
-        miimon = "100";
-        lacp_rate = "fast";
-        xmit_hash_policy = "layer3+4";
+    # Define the bond device
+    netdevs."10-bond0" = {
+      netdevConfig = {
+        Name = "bond0";
+        Kind = "bond";
+      };
+      bondConfig = {
+        Mode = "balance-alb";
+        MIIMonitorSec = "100ms";
+        TransmitHashPolicy = "layer3+4";
+        FailOverMACPolicy = "active";
       };
     };
 
-    interfaces.bond0 = {
-      useDHCP = false;
-      ipv6 = {
-        addresses = [
-          {
-            address = "2606:7940:32:26::10";
-            prefixLength = 120;
-          }
-        ];
+    # Configure the physical interfaces
+    networks."20-eth0" = {
+      matchConfig.Name = "ens1f0np0";
+      networkConfig = {
+        Bond = "bond0";
+        DHCP = "no";
       };
     };
 
-    interfaces.eno2 = {
-      ipv6 = {
-        addresses = [
-          {
-            address = "2606:7940:32:26::11";
-            prefixLength = 120;
-          }
-        ];
+    networks."20-eth1" = {
+      matchConfig.Name = "ens1f1np1";
+      networkConfig = {
+        Bond = "bond0";
+        DHCP = "no";
       };
     };
 
-    firewall = {
-      enable = true;
-      interfaces = {
-        bond0.allowedTCPPorts = [
-          17891
-          443
-          80
-        ];
+    networks."30-bond0" = {
+      matchConfig.Name = "bond0";
+      networkConfig = {
+        DHCP = "no";
+        IPv6AcceptRA = false;
+        RequiredForOnline = "carrier";
+        LinkLocalAddressing = "no";
       };
+
+      address = [
+        "${isp}::10/128"
+        "${isp}::11/128"
+      ];
+
+      routes = [
+        {
+          Gateway = "${isp}::1";
+          Destination = "::/0";
+        }
+      ];
+
+      dns = [
+        "2606:4700:4700::1111" # Cloudflare IPv6 DNS
+        "2001:4860:4860::8888" # Google IPv6 DNS
+      ];
     };
+  };
+
+  boot.kernel.sysctl = {
+    "net.ipv6.conf.all.forwarding" = 1;
+    "net.ipv6.conf.default.forwarding" = 1;
   };
 }

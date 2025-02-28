@@ -1,83 +1,79 @@
-# ipv6 2606:7940:32:26::/120
-# gw 2606:7940:32:26::1
-# ipv4 199.255.18.171/32
-# gw 2606:7940:32:26::10
 {
-  config,
-  pkgs,
-  ...
-}: let
-  isp = "2606:7940:32:26";
-in {
-  networking.useNetworkd = false;
-  networking.useDHCP = false;
+  networking = {
+    enableIPv6 = true;
+    useNetworkd = true;
+    useDHCP = false;
+    dhcpcd.enable = false;
+  };
 
-  # Enable systemd-networkd
   systemd.network = {
     enable = true;
-    wait-online.anyInterface = true;
 
-    # Define the bond device
-    netdevs."10-bond0" = {
+    netdevs."25-br0" = {
       netdevConfig = {
-        Name = "bond0";
-        Kind = "bond";
-      };
-      bondConfig = {
-        Mode = "balance-alb";
-        MIIMonitorSec = "100ms";
-        TransmitHashPolicy = "layer3+4";
-        FailOverMACPolicy = "active";
+        Name = "br0";
+        Kind = "bridge";
       };
     };
 
-    # Configure the physical interfaces
-    networks."20-eth0" = {
-      matchConfig.Name = "ens1f0np0";
-      networkConfig = {
-        Bond = "bond0";
-        DHCP = "no";
+   networks."10-ens1f0np0" = {
+      matchConfig = {
+        Name = "ens1f0np0";
       };
-    };
-
-    networks."20-eth1" = {
-      matchConfig.Name = "ens1f1np1";
       networkConfig = {
-        Bond = "bond0";
-        DHCP = "no";
+        Bridge = "br0";
       };
-    };
+   };
 
-    networks."30-bond0" = {
-      matchConfig.Name = "bond0";
+   networks."11-ens1f1np1" = {
+      matchConfig = {
+        Name = "ens1f1np1";
+      };
+      networkConfig = {
+        Bridge = "br0";
+      };
+   };
+
+   networks."30-br0" = {
+      matchConfig = {
+        Name = "br0";
+      };
       networkConfig = {
         DHCP = "no";
-        IPv6AcceptRA = false;
-        RequiredForOnline = "carrier";
-        LinkLocalAddressing = "no";
+        IPv6AcceptRA = "no";
+        LinkLocalAddressing = "ipv6";
       };
-
       address = [
-        "${isp}::10/128"
-        "${isp}::11/128"
+        "2606:7940:32:26::10/120"
       ];
-
       routes = [
-        {
-          Gateway = "${isp}::1";
-          Destination = "::/0";
+        { routeConfig = {
+            Destination = "::/0";
+            Gateway = "2606:7940:32:26::1";
+          };
+        }
+{ routeConfig = {
+            Destination = "0.0.0.0/0";
+            Gateway = "2606:7940:32:26::1";
+            GatewayOnLink = true;
+          };
         }
       ];
-
+      # DNS configuration
       dns = [
-        "2606:4700:4700::1111" # Cloudflare IPv6 DNS
-        "2001:4860:4860::8888" # Google IPv6 DNS
+        "2001:4860:4860::8888"  # Google DNS
+        "2001:4860:4860::8844"  # Google DNS alternate
+      ];
+      domains = [
+        "~."  # Use these DNS servers for all domains
       ];
     };
   };
 
-  boot.kernel.sysctl = {
-    "net.ipv6.conf.all.forwarding" = 1;
-    "net.ipv6.conf.default.forwarding" = 1;
+  networking.nameservers = [];  # Clear any global nameservers as we're setting them in networkd
+
+  # Disable the firewall completely for now
+  networking.firewall = {
+    enable = false;
   };
 }

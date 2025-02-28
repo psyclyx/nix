@@ -121,7 +121,13 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         default = pkgs.mkShell {
-          packages = [pkgs.sops pkgs.nixd pkgs.alejandra];
+          packages = with pkgs; [
+            age
+            alejandra
+            nixd
+            sops
+            ssh-to-age
+          ];
         };
       });
 

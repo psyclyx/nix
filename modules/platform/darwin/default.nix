@@ -10,14 +10,14 @@
   inherit (inputs) nix-darwin;
 
   defaultModules = [
-    {
-      system.stateVersion = 4;
+    ({lib, ...}: {
+      system.stateVersion = lib.mkDefault 4;
       networking.hostName = hostName;
       nixpkgs = {
         inherit overlays hostPlatform;
         config.allowUnfree = true;
       };
-    }
+    })
   ];
 in
   nix-darwin.lib.darwinSystem {

@@ -28,6 +28,7 @@ in {
     email = "me@psyclyx.xyz";
     modules = [
       ../../modules/home/base
+      {services.syncthing.enable = lib.mkForce false;}
       ../../modules/home/xdg.nix
       ../../modules/home/programs/emacs
     ];

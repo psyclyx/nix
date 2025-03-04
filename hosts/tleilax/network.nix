@@ -1,79 +1,119 @@
-{
+{pkgs, ...}: let
+  prefix6 = "2606:7940:32:26::";
+  prefix4 = "199.255.18.171";
+in {
   networking = {
-    enableIPv6 = true;
     useNetworkd = true;
     useDHCP = false;
-    dhcpcd.enable = false;
   };
 
-  systemd.network = {
+  services.tailscale = {
     enable = true;
+    openFirewall = true;
+    interfaceName = "ts0";
+  };
 
-    netdevs."25-br0" = {
-      netdevConfig = {
-        Name = "br0";
-        Kind = "bridge";
-      };
-    };
+  systemd.network.wait-online.ignoredInterfaces = [ "ts0" ];
+  networking.firewall.trustedInterfaces = [ "ts0" ];
 
-   networks."10-ens1f0np0" = {
-      matchConfig = {
-        Name = "ens1f0np0";
-      };
-      networkConfig = {
-        Bridge = "br0";
-      };
-   };
+  systemd.services.tailscaled = {
+    after = [
+      "network-online.target"
+      "systemd-resolved.service"
+    ];
+    wants = [ "network-online.target" ];
+  };
 
-   networks."11-ens1f1np1" = {
-      matchConfig = {
-        Name = "ens1f1np1";
+  systemd = {
+    network = {
+      enable = true;
+      config.networkConfig = {
+        ManageForeignRoutingPolicyRules = false;
+        ManageForeignRoutes = false;
       };
-      networkConfig = {
-        Bridge = "br0";
-      };
-   };
 
-   networks."30-br0" = {
-      matchConfig = {
-        Name = "br0";
-      };
-      networkConfig = {
-        DHCP = "no";
-        IPv6AcceptRA = "no";
-        LinkLocalAddressing = "ipv6";
-      };
-      address = [
-        "2606:7940:32:26::10/120"
-      ];
-      routes = [
-        { routeConfig = {
-            Destination = "::/0";
-            Gateway = "2606:7940:32:26::1";
+      wait-online.anyInterface = true;
+
+      links = {
+        "04-bond" = {
+          matchConfig = {
+            Type = "bond";
           };
-        }
-{ routeConfig = {
-            Destination = "0.0.0.0/0";
-            Gateway = "2606:7940:32:26::1";
-            GatewayOnLink = true;
+          linkConfig = {
+            MACAddressPolicy = "none";
           };
-        }
-      ];
-      # DNS configuration
-      dns = [
-        "2001:4860:4860::8888"  # Google DNS
-        "2001:4860:4860::8844"  # Google DNS alternate
-      ];
-      domains = [
-        "~."  # Use these DNS servers for all domains
-      ];
+        };
+      };
+
+      netdevs = {
+        "10-bond0" = {
+          netdevConfig = {
+            Name = "bond0";
+            Kind = "bond";
+          };
+          bondConfig = {
+            Mode = "802.3ad";
+            LACPTransmitRate = "fast";
+            TransmitHashPolicy = "layer3+4";
+          };
+        };
+      };
+
+      networks = {
+        "30-ens1f0np0" = {
+          matchConfig = {
+            Name = "ens1f0np0";
+            PermanentMACAddress = "6c:b3:11:95:03:88";
+          };
+          networkConfig.Bond = "bond0";
+        };
+
+        "30-ens1f1np1" = {
+          matchConfig = {
+            Name = "ens1f1np1";
+            PermanentMACAddress = "6c:b3:11:95:03:89";
+          };
+          networkConfig.Bond = "bond0";
+        };
+
+        "40-bond0" = {
+          matchConfig.Name = "bond0";
+          linkConfig = {
+            MACAddress = "6c:b3:11:95:03:88";
+            RequiredForOnline = "routable";
+          };
+          address = [
+            "${prefix4}/32"
+            "${prefix6}10/120"
+          ];
+          gateway = [
+            "${prefix6}1"
+          ];
+          routes = [
+            {
+              Destination = "::/0";
+              Gateway = "${prefix6}1"; }
+            {
+              Destination = "0.0.0.0/0";
+              Gateway = "${prefix6}1";
+            }
+          ];
+          dns = [
+            "2606:4700:4700::1111"
+            "2001:4860:4860::8888"
+          ];
+          networkConfig = {
+            IPv6AcceptRA = false;
+            IPv6ProxyNDP = true;
+          };
+        };
+      };
     };
   };
 
-  networking.nameservers = [];  # Clear any global nameservers as we're setting them in networkd
-
-  # Disable the firewall completely for now
   networking.firewall = {
-    enable = false;
+    enable = true;
+    logRefusedPackets = false;
+    checkReversePath = "loose";
   };
 }

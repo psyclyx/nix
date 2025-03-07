@@ -2,26 +2,11 @@
   prefix6 = "2606:7940:32:26::";
   prefix4 = "199.255.18.171";
 in {
+  psyclyx.network.tailscale.enable = true;
+
   networking = {
     useNetworkd = true;
     useDHCP = false;
-  };
-
-  services.tailscale = {
-    enable = true;
-    openFirewall = true;
-    interfaceName = "ts0";
-  };
-
-  systemd.network.wait-online.ignoredInterfaces = [ "ts0" ];
-  networking.firewall.trustedInterfaces = [ "ts0" ];
-
-  systemd.services.tailscaled = {
-    after = [
-      "network-online.target"
-      "systemd-resolved.service"
-    ];
-    wants = [ "network-online.target" ];
   };
 
   systemd = {
@@ -113,7 +98,5 @@ in {
 
   networking.firewall = {
     enable = true;
-    logRefusedPackets = false;
-    checkReversePath = "loose";
   };
 }

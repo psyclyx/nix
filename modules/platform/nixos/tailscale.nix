@@ -38,12 +38,14 @@ in {
     # This supposedly mitigates some issues
     # around sleep/wake, boot, and system swtiches.
     # TODO: might be able to remove?
-    systemd.services.tailscaled = {
-      after = [
-        "network-online.target"
-        "systemd-resolved.service"
-      ];
-      wants = ["network-online.target"];
+    systemd.services = {
+      tailscaled = {
+        after = [
+          "network-online.target"
+          "systemd-resolved.service"
+        ];
+        wants = ["network-online.target"];
+      };
     };
   };
 }

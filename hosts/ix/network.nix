@@ -1,5 +1,9 @@
 {pkgs, ...}: {
-  networking.firewall.trustedInterfaces = ["tailscale0"];
+  psyclyx.network.tailscale = {
+    enable = true;
+    exitNode = true;
+  };
+
   networking.firewall.allowedTCPPorts = [22];
   networking.useNetworkd = true;
   services.resolved.enable = true;
@@ -22,7 +26,4 @@
       ];
     };
   };
-
-  services.tailscale = {enable = true;};
-  environment.systemPackages = [pkgs.tailscale];
 }

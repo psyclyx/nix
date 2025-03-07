@@ -4,16 +4,17 @@
   pkgs,
   ...
 }: {
+  psyclyx.network.tailscale = {
+    enable = true;
+    exitNode = true;
+  };
   services.resolved.enable = true;
   networking.useNetworkd = true;
   networking.networkmanager.enable = true;
   networking.useDHCP = false;
-  networking.firewall.trustedInterfaces = ["tailscale0"];
   networking.interfaces.enp6s0.useDHCP = true;
-  services.tailscale = {enable = true;};
   networking.firewall.allowedTCPPorts = [8123 3000 51103];
-  environment.systemPackages = [pkgs.tailscale];
-  networking.firewall.allowedUDPPorts = [41641 51820 6881 3000 51103];
+  networking.firewall.allowedUDPPorts = [51820 6881 3000 51103];
 
 
   # vpnNamespaces.wg-mvd = {

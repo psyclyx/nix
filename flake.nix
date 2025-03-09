@@ -48,8 +48,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
-
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;

@@ -7,7 +7,7 @@
   modules ? [],
   ...
 } @ args: let
-  inherit (inputs) darwin;
+  inherit (inputs) nix-darwin;
 
   defaultModules = [
     {
@@ -20,7 +20,7 @@
     }
   ];
 in
-  darwin.lib.darwinSystem {
+  nix-darwin.lib.darwinSystem {
     modules = defaultModules ++ modules;
     specialArgs = {inherit inputs;} // args;
   }

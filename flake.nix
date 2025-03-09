@@ -11,11 +11,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    rycee-nurpkgs = {
-      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     darwin = {
@@ -103,7 +98,7 @@
     overlays = [
       (import ./pkgs)
       nix-darwin-emacs.overlays.emacs
-      emacs-overlay.overlays.package
+      emacs-overlay.overlays.default
       nur.overlays.default
 
       # Temporary - tailscale is currently broken in `unstable`, but works in `master`

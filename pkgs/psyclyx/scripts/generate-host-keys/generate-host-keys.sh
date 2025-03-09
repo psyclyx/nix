@@ -2,8 +2,10 @@
 set -euo pipefail
 
 USAGE="$(basename "$0") [-f|--force] <hostname> <output_file>
-Generates a SOPS-encrypted JSON with two Ed25519 SSH key pairs (\"host\" and \"boot\"),
-embedding public fields in cleartext and encrypting private keys.
+Generates a SOPS-encrypted JSON with two Ed25519 SSH key pairs
+(\"host_key\" and \"boot_key\"), and an age keypair (\"host_age\")
+derived from \"host_key\", embedding public fields in cleartext and
+encrypting private keys.
 
 Options:
   -f, --force    Overwrite output file if it exists
@@ -64,6 +66,10 @@ for KEY_TYPE in host boot; do
   )"
 done
 
+echo "Generating age key pair from 'host_key'"
+KEYS["host_age_private"]="$(ssh-to-age -private-key <<< "${KEYS[host_private]}")"
+KEYS["host_age_public"]="$(ssh-to-age <<< "${KEYS[host_public]}")"
+
 # Create JSON with properly escaped strings for the keys
 TMPFILE="$TMPDIR/keys.json"
 
@@ -73,6 +79,10 @@ cat <<EOF > "$TMPFILE"
     "private": $(jq -Rs . <<<"${KEYS["host_private"]}"),
     "public_unencrypted": $(jq -Rs . <<<"${KEYS["host_public"]}"),
     "fingerprint_unencrypted": $(jq -Rs . <<<"${KEYS["host_fingerprint"]}")
+  },
+  "host_age": {
+    "private": $(jq -Rs . <<<"${KEYS["host_age_private"]}"),
+    "public_unencrypted": $(jq -Rs . <<<"${KEYS["host_age_public"]}")
   },
   "boot_key": {
     "private": $(jq -Rs . <<<"${KEYS["boot_private"]}"),
@@ -92,7 +102,9 @@ fi
 mv "$OUTPUT_FILE.tmp" "$OUTPUT_FILE"
 
 echo "Done! Created $OUTPUT_FILE."
-echo "Host public key:"
+echo "Host public key (ssh):"
 echo "${KEYS['host_public']}"
-echo "Boot public key:"
+echo "Boot public key (ssh):"
 echo "${KEYS['boot_public']}"
+echo "Host public key (age):"
+echo "${KEYS['host_age_public']}"

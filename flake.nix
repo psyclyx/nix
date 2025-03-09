@@ -200,7 +200,7 @@
     # For cache
     packages = {
       "aarch64-darwin".emacs = (pkgsFor "aarch64-darwin").emacs-30;
-      "x86_64-linux".emacs = (pkgsFor "x86_64-linux").emacs30-pgtk;
+      "x86_64-linux".emacs = (pkgsFor "x86_64-linux").emacs-unstable-pgtk;
     };
   };
 }

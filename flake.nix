@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
+
     nur = {
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -95,7 +97,7 @@
   };
 
   outputs = inputs: let
-    inherit (inputs) nixpkgs nix-darwin-emacs emacs-overlay nur;
+    inherit (inputs) nixpkgs nixpkgs-master nix-darwin-emacs emacs-overlay nur;
     inherit (nixpkgs) lib;
 
     overlays = [
@@ -103,6 +105,13 @@
       nix-darwin-emacs.overlays.emacs
       emacs-overlay.overlays.package
       nur.overlays.default
+
+      # Temporary - tailscale is currently broken in `unstable`, but works in `master`
+      (final: prev: let
+        system = prev.stdenv.hostPlatform.system;
+      in {
+        tailscale = nixpkgs-master.legacyPackages.${system}.tailscale;
+      })
     ];
 
     mkDarwinConfiguration = import ./modules/platform/darwin {inherit inputs overlays;};

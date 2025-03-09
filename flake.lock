@@ -354,6 +354,22 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-master": {
+      "locked": {
+        "lastModified": 1741508017,
+        "narHash": "sha256-tnuhEf5hnT2n2uEViGfElwHO93Uoq2OFqD//DIwLKJU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ecfc2f957fa2e2e53f6cf57818340b685b6f5d78",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1741332913,
@@ -441,6 +457,7 @@
         "nix-homebrew": "nix-homebrew",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-master": "nixpkgs-master",
         "nur": "nur",
         "powerlevel10k": "powerlevel10k",
         "rycee-nurpkgs": "rycee-nurpkgs",

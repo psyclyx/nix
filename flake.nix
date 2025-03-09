@@ -73,11 +73,6 @@
       flake = false;
     };
 
-    homebrew-nikitabobko = {
-      url = "github:nikitabobko/homebrew-tap";
-      flake = false;
-    };
-
     powerlevel10k = {
       url = "github:romkatv/powerlevel10k";
       flake = false;

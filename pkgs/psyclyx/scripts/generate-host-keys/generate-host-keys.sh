@@ -57,7 +57,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 declare -A KEYS
 for KEY_TYPE in host boot; do
   echo "Generating $KEY_TYPE Ed25519 SSH key pair for '$HOSTNAME'..." >&2
-  ssh-keygen -t ed25519 -N "" -C "nix_${KEY_TYPE}_ed25519_$HOSTNAME" \
+  ssh-keygen -t ed25519 -N "" -C "${HOSTNAME}_${KEY_TYPE}_ed25519" \
     -f "$TMPDIR/${KEY_TYPE}_ed25519" >/dev/null 2>&1
   KEYS["${KEY_TYPE}_private"]="$(< "$TMPDIR/${KEY_TYPE}_ed25519")"
   KEYS["${KEY_TYPE}_public"]="$(< "$TMPDIR/${KEY_TYPE}_ed25519.pub")"
@@ -101,10 +101,14 @@ fi
 # Only move the file into place if SOPS succeeded
 mv "$OUTPUT_FILE.tmp" "$OUTPUT_FILE"
 
-echo "Done! Created $OUTPUT_FILE."
-echo "Host public key (ssh):"
-echo "${KEYS['host_public']}"
-echo "Boot public key (ssh):"
-echo "${KEYS['boot_public']}"
-echo "Host public key (age):"
-echo "${KEYS['host_age_public']}"
+echo "
+Done! Created $OUTPUT_FILE
+
+Host public key (ssh):
+${KEYS['host_public']}
+
+Boot public key (ssh):
+${KEYS['boot_public']}
+
+Host public key (age):
+${KEYS['host_age_public']}"

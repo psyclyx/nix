@@ -8,8 +8,8 @@ in {
   system.stateVersion = "24.05";
   time.timeZone = "America/Los_Angeles";
   imports = [
-    ../../modules/platform/nixos/base
-    ../../modules/platform/nixos/tailscale.nix
+    ../../modules/nixos/base
+    ../../modules/nixos/tailscale.nix
     ./users.nix
     ./network.nix
     ./hardware.nix

@@ -123,7 +123,7 @@
     ];
 
     mkDarwinConfiguration = import ./modules/platform/darwin {inherit inputs overlays;};
-    mkNixosConfiguration = import ./modules/platform/nixos {inherit inputs overlays;};
+    mkNixosConfiguration = import ./modules/nixos {inherit inputs overlays;};
 
     pkgsFor = system:
       import nixpkgs {
@@ -191,7 +191,7 @@
         hostPlatform = "x86_64-linux";
         hostName = "tleilax";
         modules = [
-          ./modules/platform/nixos/iso.nix
+          ./modules/nixos/iso.nix
           ./hosts/tleilax
         ];
       };

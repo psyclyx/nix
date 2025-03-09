@@ -3,13 +3,13 @@ in {
   system.stateVersion = "24.05";
   time.timeZone = "America/Los_Angeles";
   imports = [
-    ../../modules/platform/nixos/tailscale.nix
-    ../../modules/platform/nixos/base
-    ../../modules/platform/nixos/physical
-    ../../modules/platform/nixos/graphical
-    ../../modules/platform/nixos/services/printing.nix
-    ../../modules/platform/nixos/programs/adb.nix
-    ../../modules/platform/nixos/programs/steam.nix
+    ../../modules/nixos/tailscale.nix
+    ../../modules/nixos/base
+    ../../modules/nixos/physical
+    ../../modules/nixos/graphical
+    ../../modules/nixos/services/printing.nix
+    ../../modules/nixos/programs/adb.nix
+    ../../modules/nixos/programs/steam.nix
 
     ./boot.nix
     ./filesystems.nix

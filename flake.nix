@@ -135,10 +135,11 @@
       lib.genAttrs
       ["x86_64-linux" "aarch64-darwin" "x86_64-darwin"]
       (system: let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = pkgsFor system;
       in {
         default = pkgs.mkShell {
-          packages = with pkgs; [
+          packages = with pkgsFor system; [
+            psyclyx.scripts.generate-host-keys
             age
             alejandra
             nixd

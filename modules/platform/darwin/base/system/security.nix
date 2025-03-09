@@ -1,5 +1,5 @@
 {...}: {
   security = {
-    pam.enableSudoTouchIdAuth = true;
+    pam.services.sudo_local.touchIdAuth = true;
   };
 }

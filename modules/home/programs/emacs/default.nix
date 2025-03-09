@@ -18,7 +18,7 @@
   emacs =
     if pkgs.stdenv.isDarwin
     then pkgs.emacs-30
-    else pkgs.emacs30-pgtk;
+    else pkgs.emacs-unstable-pgtk;
   emacsclient = pkgs.stdenv.mkDerivation {
     pname = "emacsclient";
     version = emacs.version;

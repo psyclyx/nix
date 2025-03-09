@@ -1,6 +1,31 @@
+keys:
+  - &home_psyc_halo age12rcxxtxtxdtpw9tze5ecyuj0krkkcvu7m85v4gslfgge8xdth5fqjkpsq0
+  - &home_psyc_sigil age185hx9ylpljvdh6g436xx9nn0f90j6e8ggxaju7uj8rhwds5xs59sfwrucc
+  - &home_psyc_omen age1w3pyz967m7hq3x483q5pp32xq7ujmkmlleywcud5ffkkl2hkp9aqcyfgc5
+  - &host_sigil age1nsnv2zdx3ww7gyvy0l2vql9quggewtuc3r849pzpjeddxk8l4yxs4ha8y0
+  - &host_ix age1vqk9p4vxn2y9lqzttxsgfkjc4w485qen6qlhda2q7el6r2qy54eqkrkfhp
+
 creation_rules:
-  - age: >-
-      age1w3pyz967m7hq3x483q5pp32xq7ujmkmlleywcud5ffkkl2hkp9aqcyfgc5,
-      age12rcxxtxtxdtpw9tze5ecyuj0krkkcvu7m85v4gslfgge8xdth5fqjkpsq0,
-      age185hx9ylpljvdh6g436xx9nn0f90j6e8ggxaju7uj8rhwds5xs59sfwrucc,
-      age1nsnv2zdx3ww7gyvy0l2vql9quggewtuc3r849pzpjeddxk8l4yxs4ha8y0
+  - path_regex: secrets/home/psyc/*
+    key_groups:
+    - age:
+      - *home_psyc_halo
+      - *home_psyc_sigil
+      - *home_psyc_omen
+
+  - path_regex: secrets/hosts/[^/].*/host_keys.enc.json
+    key_groups:
+    - age:
+      - *home_psyc_halo
+      - *home_psyc_sigil
+      - *home_psyc_omen
+
+  - path_regex: secrets/hosts/sigil/*
+    key_groups:
+    - age:
+      - *host_sigil
+
+  - path_regex: secrets/hosts/ix/*
+    key_groups:
+    - age:
+      - *host_ix

@@ -5,7 +5,7 @@ in {
   time.timeZone = "America/Los_Angeles";
 
   imports = [
-    ../../modules/nixos/tailscale.nix
+    ../../modules/nixos/network
     ../../modules/nixos/base
     ../../modules/nixos/services/soju.nix
 

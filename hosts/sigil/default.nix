@@ -3,7 +3,7 @@ in {
   system.stateVersion = "24.05";
   time.timeZone = "America/Los_Angeles";
   imports = [
-    ../../modules/nixos/tailscale.nix
+    ../../modules/nixos/network
     ../../modules/nixos/base
     ../../modules/nixos/physical
     ../../modules/nixos/graphical

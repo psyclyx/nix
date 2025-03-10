@@ -9,7 +9,7 @@ in {
   time.timeZone = "America/Los_Angeles";
   imports = [
     ../../modules/nixos/base
-    ../../modules/nixos/tailscale.nix
+    ../../modules/nixos/network
     ./users.nix
     ./network.nix
     ./hardware.nix

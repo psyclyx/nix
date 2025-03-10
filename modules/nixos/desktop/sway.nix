@@ -18,7 +18,7 @@ in {
   };
 
   config = lib.mkIf desktopCfg.sway.enable {
-    sway = {
+    programs.sway = {
       enable = true;
       wrapperFeatures = lib.mkDefault {
         base = true;

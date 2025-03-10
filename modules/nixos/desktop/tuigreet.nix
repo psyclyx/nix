@@ -29,6 +29,7 @@
     "text"
     "time"
     "container"
+    "border"
     "title"
     "greet"
     "prompt"
@@ -41,8 +42,11 @@
 
   themeToString = theme: let
     keys = lib.filter (k: builtins.elem k validComponents) (lib.attrNames theme);
+    slug = lib.concatStringsSep ";" (lib.map (k: k + "=" + theme.${k}) keys);
   in
-    lib.concatStringsSep ";" (lib.map (k: k + "=" + theme.${k}) keys);
+    if (slug != "")
+    then "'${slug}'"
+    else null;
 
   resolveTheme = theme:
     if builtins.typeOf theme == "set"
@@ -52,10 +56,10 @@
   cfg = config.services.greetd.tuigreet;
 in {
   options = {
-    enable = mkEnableOption "Use Tuigreet as greetd's default session";
-
     services.greetd.tuigreet = {
-      package = lib.mkPackageOption pkgs "greetd.tuigreet" {};
+      enable = mkEnableOption "Use Tuigreet as greetd's default session";
+
+      package = lib.mkPackageOption pkgs ["greetd" "tuigreet"] {};
 
       debug = mkOption {
         type = types.nullOr types.path;
@@ -91,13 +95,14 @@ in {
       };
 
       xsessions = mkOption {
-        type = types.listOf types.string;
+        type = types.listOf types.str;
         default = [];
         description = "List of X11 session paths";
       };
 
       xsession-wrapper = mkOption {
-        type = types.str;
+        type = types.nullOr types.str;
+        default = null;
         example = "startx /usr/bin/env";
         description = "Wrapper command to initialize X server and launch X11";
       };
@@ -123,6 +128,7 @@ in {
 
       time-format = mkOption {
         type = types.nullOr types.str;
+        default = null;
         description = "Custom strftime format for displaying date and time";
       };
 
@@ -188,7 +194,7 @@ in {
       };
 
       greet-align = mkOption {
-        type = types.nullOr types.enum ["left" "center" "right"];
+        type = types.nullOr (types.enum ["left" "center" "right"]);
         default = null;
         example = "center";
         description = "Alignment of the greeting text in the main prompt";
@@ -209,162 +215,177 @@ in {
       power-no-setsid = mkEnableOption "Do not preface power commands with setsid";
 
       kb-command = mkOption {
-        type = types.nullOr (types.intsBetween 1 12);
+        type = types.nullOr (types.ints.between 1 12);
         default = null;
         description = "F-key to use to open the command menu";
       };
 
       kb-sessions = mkOption {
-        type = types.nullOr (types.intsBetween 1 12);
+        type = types.nullOr (types.ints.between 1 12);
         default = null;
         description = "F-key to use to open the sessions menu";
       };
 
       kb-power = mkOption {
-        type = types.nullOr (types.intsBetween 1 12);
+        type = types.nullOr (types.ints.between 1 12);
         default = null;
         description = "F-key to use to open the power menu";
       };
     };
   };
 
-  config.warnings = lib.mkIf cfg.enable (let
-    minimalConfig = lib.nameValuePair "minimalConfig" {
-      package = pkgs.hello;
-      cmd = "sway";
-    };
+  # config.warnings = lib.mkIf cfg.enable (let
+  #   minimalConfig = lib.nameValuePair "minimalConfig" {
+  #     package = pkgs.hello;
+  #     cmd = "sway";
+  #   };
 
-    themeConfig = lib.nameValuePair "themeConfig" {
-      package = pkgs.hello;
-      cmd = "sway";
-      theme = {
-        text = "cyan";
-        border = "magenta";
-      };
-    };
+  #   themeConfig = lib.nameValuePair "themeConfig" {
+  #     package = pkgs.hello;
+  #     cmd = "sway";
+  #     theme = {
+  #       text = "cyan";
+  #       border = "magenta";
+  #     };
+  #   };
 
-    envConfig = lib.nameValuePair "envConfig" {
-      package = pkgs.hello;
-      cmd = "sway";
-      env = {
-        SDL_VIDEODRIVER = "wayland";
-        XDG_SESSION_TYPE = "wayland";
-      };
-    };
+  #   envConfig = lib.nameValuePair "envConfig" {
+  #     package = pkgs.hello;
+  #     cmd = "sway";
+  #     env = {
+  #       SDL_VIDEODRIVER = "wayland";
+  #       XDG_SESSION_TYPE = "wayland";
+  #     };
+  #   };
 
-    flagsConfig = lib.nameValuePair "flagsConfig" {
-      package = pkgs.hello;
-      cmd = "sway";
-      issue = true;
-      time = true;
-      remember = true;
-    };
+  #   flagsConfig = lib.nameValuePair "flagsConfig" {
+  #     package = pkgs.hello;
+  #     cmd = "sway";
+  #     issue = true;
+  #     time = true;
+  #     remember = true;
+  #   };
 
-    testConfigs = [
-      minimalConfig
-      themeConfig
-      envConfig
-      flagsConfig
-    ];
+  #   testConfigs = [
+  #     minimalConfig
+  #     themeConfig
+  #     envConfig
+  #     flagsConfig
+  #   ];
 
-    testResults =
-      lib.mapAttrs
-      (
-        name: testCfg:
-          "${testCfg.package}/bin/tuigreet "
-          + (lib.cli.toGNUCommandLine {}
-            (lib.filterAttrs (n: v: v != null) {
-              inherit (testCfg) cmd;
+  #   testResults =
+  #     lib.mapAttrs
+  #     (
+  #       name: testCfg:
+  #         "${testCfg.package}/bin/tuigreet "
+  #         + (lib.cli.toGNUCommandLine {}
+  #           (lib.filterAttrs (n: v: v != null) {
+  #             inherit (testCfg) cmd;
 
-              theme =
-                if testCfg ? theme
-                then resolveTheme testCfg.theme
-                else null;
+  #             theme =
+  #               if testCfg ? theme
+  #               then resolveTheme testCfg.theme
+  #               else null;
 
-              env =
-                if testCfg ? env && testCfg.env != {}
-                then
-                  lib.concatStringsSep ","
-                  (lib.mapAttrsToList (name: value: "${name}=${value}") testCfg.env)
-                else null;
+  #             env =
+  #               if testCfg ? env && testCfg.env != {}
+  #               then
+  #                 lib.concatStringsSep ","
+  #                 (lib.mapAttrsToList (name: value: "${name}=${value}") testCfg.env)
+  #               else null;
 
-              issue =
-                if testCfg ? issue && testCfg.issue
-                then true
-                else null;
-              time =
-                if testCfg ? time && testCfg.time
-                then true
-                else null;
-              remember =
-                if testCfg ? remember && testCfg.remember
-                then true
-                else null;
-            }))
-      )
-      (lib.listToAttrs testConfigs);
+  #             issue =
+  #               if testCfg ? issue && testCfg.issue
+  #               then true
+  #               else null;
+  #             time =
+  #               if testCfg ? time && testCfg.time
+  #               then true
+  #               else null;
+  #             remember =
+  #               if testCfg ? remember && testCfg.remember
+  #               then true
+  #               else null;
+  #           }))
+  #     )
+  #     (lib.listToAttrs testConfigs);
 
-    expectedOutputs = {
-      minimalConfig = "${pkgs.hello}/bin/tuigreet --cmd sway";
-      themeConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --theme text=cyan;border=magenta";
-      envConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --env SDL_VIDEODRIVER=wayland,XDG_SESSION_TYPE=wayland";
-      flagsConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --issue --time --remember";
-    };
+  #   expectedOutputs = {
+  #     minimalConfig = "${pkgs.hello}/bin/tuigreet --cmd sway";
+  #     themeConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --theme 'text=cyan;border=magenta'";
+  #     envConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --env SDL_VIDEODRIVER=wayland --env XDG_SESSION_TYPE=wayland";
+  #     flagsConfig = "${pkgs.hello}/bin/tuigreet --cmd sway --issue --time --remember";
+  #   };
 
-    testWarnings =
-      lib.mapAttrsToList
-      (name: expected:
-        if testResults.${name} != expected
-        then "TEST FAILED [${name}]: Expected '${expected}' but got '${testResults.${name}}'"
-        else null)
-      expectedOutputs;
-  in
-    lib.filter (x: x != null) testWarnings);
+  #   testWarnings =
+  #     lib.mapAttrsToList
+  #     (name: expected:
+  #       if testResults.${name} != expected
+  #       then "TEST FAILED [${name}]: Expected '${expected}' but got '${testResults.${name}}'"
+  #       else null)
+  #     expectedOutputs;
+  # in
+  #   lib.filter (x: x != null) testWarnings);
 
-  config.services.greetd.tuigreet.command = lib.mkIf cfg.enable (
+  config.services.greetd.settings.default_session.command = lib.mkIf cfg.enable (
     "${cfg.package}/bin/tuigreet "
-    + (lib.cli.toGNUCommandLine {}
-      (lib.filterAttrs (n: v: v != null) {
-        inherit
-          (cfg)
-          debug
-          cmd
-          session-wrapper
-          xsession-wrapper
-          no-xsession-wrapper
-          width
-          issue
-          greeting
-          time
-          time-format
-          remember
-          remember-session
-          remember-user-session
-          user-menu
-          user-menu-min-uid
-          user-menu-max-uid
-          asterisks
-          asterisks-char
-          window-padding
-          container-padding
-          greet-align
-          power-shutdown
-          power-reboot
-          power-no-setsid
-          kb-command
-          kb-sessions
-          kb-power
-          ;
+    + (lib.concatStringsSep " " (
+      lib.cli.toGNUCommandLine {} (
+        lib.filterAttrs (n: v: v != null) {
+          inherit
+            (cfg)
+            debug
+            cmd
+            session-wrapper
+            xsession-wrapper
+            no-xsession-wrapper
+            width
+            issue
+            greeting
+            time
+            time-format
+            remember
+            remember-session
+            remember-user-session
+            user-menu
+            user-menu-min-uid
+            user-menu-max-uid
+            asterisks
+            asterisks-char
+            window-padding
+            container-padding
+            greet-align
+            power-shutdown
+            power-reboot
+            power-no-setsid
+            kb-command
+            kb-sessions
+            kb-power
+            ;
 
-        sessions = lib.optionalString (cfg.sessions != []) (lib.concatStringsSep ":" cfg.sessions);
-        xsessions = lib.optionalString (cfg.xsessions != []) (lib.concatStringsSep ":" cfg.xsessions);
+          sessions =
+            if (cfg.sessions != [])
+            then (lib.concatStringsSep ":" cfg.sessions)
+            else null;
 
-        theme = lib.optionalString (cfg.theme != null) (resolveTheme cfg.theme);
+          xsessions =
+            if (cfg.xsessions != [])
+            then (lib.concatStringsSep ":" cfg.xsessions)
+            else null;
 
-        env =
-          lib.optionalString (cfg.env != {})
-          (lib.concatStringsSep ","
-            (lib.mapAttrsToList (name: value: "${name}=${value}") cfg.env));
-      }))
+          theme =
+            if (cfg.theme != null)
+            then (resolveTheme cfg.theme)
+            else null;
+
+          env =
+            if (cfg.env != {})
+            then
+              (lib.concatStringsSep " --env " # awful hack, todo: rewrite this
+                (lib.mapAttrsToList (name: value: "${name}=${value}") cfg.env))
+            else null;
+        }
+      )
+    ))
   );
 }

@@ -7,6 +7,7 @@
     # Main package repository
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11";
 
     # Simple NixOS modules for common hardware configurations
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -52,6 +53,7 @@
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
     };
 
     # Track newer versions of `emacs` on Darwin
@@ -106,7 +108,7 @@
   };
 
   outputs = inputs: let
-    inherit (inputs) nixpkgs nixpkgs-master nix-darwin-emacs emacs-overlay;
+    inherit (inputs) nixpkgs nixpkgs-master nixpkgs-stable nix-darwin-emacs emacs-overlay;
     inherit (nixpkgs) lib;
 
     overlays = [
@@ -119,6 +121,7 @@
         system = prev.stdenv.hostPlatform.system;
       in {
         tailscale = nixpkgs-master.legacyPackages.${system}.tailscale;
+        kitty = nixpkgs-stable.legacyPackages.${system}.kitty;
       })
     ];
 

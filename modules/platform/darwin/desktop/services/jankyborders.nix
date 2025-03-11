@@ -13,13 +13,13 @@ in {
     active_color = theme.wm.focused.border;
     inactive_color = theme.wm.unfocused.border;
 
-    width = 12.0;
-    blur_radius = 4.0;
-    style = "round";
-    order = "below";
+    width = 2.0;
+    #blur_radius = 4.0;
+    #style = "round";
+    #order = "below";
 
-    hidpi = false;
+    #hidpi = false;
 
-    background_color = "";
+    #background_color = "";
   };
 }

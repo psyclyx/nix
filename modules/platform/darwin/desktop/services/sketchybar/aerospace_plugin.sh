@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
 
+SID=$1
+
 if [ "${1}" = "${FOCUSED_WORKSPACE}" ]; then
   workspace=(
-    "background.color=${THEME_WM_FOCUSED_BACKGROUND}"
+    "label.background.drawing=on"
     "label.highlight=on"
   )
 else
   workspace=(
-    "background.color=${THEME_WM_UNFOCUSED_BACKGROUND}"
+    "label.background.drawing=off"
     "label.highlight=off"
   )
 fi
 
+sketchybar \
+  --set "${NAME}" "${workspace[@]}"
 
-sketchybar --set "${NAME}" "${workspace[@]}"
+
+if [[ -n $(aerospace list-windows --workspace "${SID}") ]]; then
+  sketchybar --set "${NAME}" label.highlight=on;
+fi

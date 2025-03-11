@@ -4,7 +4,7 @@
   ...
 }: let
   colors = import ../../../../../home/themes/angel.nix {inherit lib;};
-  themeEnv = with colors.colorUtils; mkThemeEnv [(transform.withAlpha 1.0) transform.withOx];
+  themeEnv = with colors.colorUtils; mkThemeEnv [(transform.withAlpha 0.8) transform.withOx];
   transparentTheme = with colors.colorUtils; mkTheme [(transform.withAlpha 0.4) transform.withOx];
 
   aerospacePlugin = pkgs.writeShellApplication rec {

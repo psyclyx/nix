@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       enable-normalization-flatten-containers = true;
-      enable-normalization-opposite-orientation-for-nested-containers = true;
+      enable-normalization-opposite-orientation-for-nested-containers = false;
 
       default-root-container-layout = "tiles";
       default-root-container-orientation = "auto";
@@ -13,18 +13,19 @@
         "-c"
         "${pkgs.sketchybar}/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
       ];
+
       automatically-unhide-macos-hidden-apps = true;
 
       gaps = {
-        inner.horizontal = 18;
-        inner.vertical = 18;
-        outer.left = 14;
-        outer.bottom = 14;
+        inner.horizontal = 4;
+        inner.vertical = 4;
+        outer.left = 6;
+        outer.bottom = 6;
         outer.top = [
-          {monitor."BenQ RD280U" = 42;}
-          4
+          {monitor."BenQ RD280U" = 38;}
+          2
         ];
-        outer.right = 14;
+        outer.right = 8;
       };
 
       key-mapping.preset = "qwerty";

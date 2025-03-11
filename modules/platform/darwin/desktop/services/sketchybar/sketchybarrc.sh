@@ -6,7 +6,7 @@ bar=(
   position=top
   padding_left=96
   padding_right=96
-  y_offset=8
+  y_offset="${Y_OFFSET}"
   color="#00000000"
   sticky=off
 )
@@ -24,6 +24,7 @@ default=(
   background.height=24
   background.border_color="${THEME_BORDER}"
   background.border_width=2
+  background.corner_radius=6
   blur_radius=2
 
   label.padding_left=4
@@ -80,7 +81,21 @@ sketchybar \
   background.color="${THEME_WM_UNFOCUSED_BORDER}" \
   background.height=24\
   background.padding_left=2\
-  background.padding_right=2
+  background.padding_right=2\
+  background.clip=1
+
+sketchybar \
+  --add item app_name left \
+  --set app_name \
+  background.color="${THEME_FOREGROUND}" \
+  label.padding_left=8 \
+  icon= \
+  icon.color="${THEME_BACKGROUND_ALT}" \
+  label.padding_right=8 \
+  padding_left=64 \
+  script="app_name_plugin" \
+  --subscribe app_name front_app_switched
+
 
 sketchybar \
   --add item battery right \
@@ -102,6 +117,7 @@ sketchybar \
   background.color="${THEME_FOREGROUND}" \
   padding_right=64 \
   script="clock_plugin"
+
 
 
 sketchybar --update

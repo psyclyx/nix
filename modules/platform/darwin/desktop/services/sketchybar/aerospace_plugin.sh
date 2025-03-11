@@ -3,21 +3,14 @@
 SID=$1
 
 if [ "${1}" = "${FOCUSED_WORKSPACE}" ]; then
-  workspace=(
-    "label.background.drawing=on"
-    "label.highlight=on"
-  )
+  sketchybar --set "${NAME}" label.background.drawing=on
 else
-  workspace=(
-    "label.background.drawing=off"
-    "label.highlight=off"
-  )
+  sketchybar --set "${NAME}" label.background.drawing=off
 fi
-
-sketchybar \
-  --set "${NAME}" "${workspace[@]}"
 
 
 if [[ -n $(aerospace list-windows --workspace "${SID}") ]]; then
-  sketchybar --set "${NAME}" label.highlight=on;
+  sketchybar --set "${NAME}" label.highlight=on
+else
+  sketchybar --set "${NAME}" label.highlight=off
 fi

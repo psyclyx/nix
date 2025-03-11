@@ -10,6 +10,8 @@
     openjdk11
   ];
 
+  psyclyx.sketchybar.yOffset = 5;
+
   imports = [
     ../../modules/platform/darwin/base
     ../../modules/platform/darwin/desktop

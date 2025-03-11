@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   ...
@@ -17,6 +18,12 @@
 
     runtimeInputs = derivationArgs.buildInputs;
     runtimeEnv = themeEnv;
+  };
+
+  appNamePlugin = pkgs.writeShellApplication rec {
+    name = "app_name_plugin";
+    text = builtins.readFile ./app_name_plugin.sh;
+    derivationArgs.buildInputs = [pkgs.sketchybar];
   };
 
   clockPlugin = pkgs.writeShellApplication rec {
@@ -53,6 +60,7 @@
       ])
       ++ [
         aerospacePlugin
+        appNamePlugin
         clockPlugin
         batteryPlugin
       ];
@@ -62,18 +70,29 @@
       themeEnv
       // {
         "BAR_BACKGROUND" = transparentTheme.background;
+        "Y_OFFSET" = config.psyclyx.sketchybar.yOffset;
       };
   };
 in {
-  services.sketchybar = {
-    enable = true;
-    config = "sketchybarrc";
-    extraPackages = [
-      aerospacePlugin
-      batteryPlugin
-      clockPlugin
-      pkgs.gnugrep
-      rc
-    ];
+  options = {
+    psyclyx.sketchybar.yOffset = lib.mkOption {
+      type = lib.types.ints.unsigned;
+      default = 8;
+    };
+  };
+
+  config = {
+    services.sketchybar = {
+      enable = true;
+      config = "sketchybarrc";
+      extraPackages = [
+        aerospacePlugin
+        appNamePlugin
+        batteryPlugin
+        clockPlugin
+        pkgs.gnugrep
+        rc
+      ];
+    };
   };
 }

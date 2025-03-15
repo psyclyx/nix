@@ -941,6 +941,32 @@ set in a non-interactive shell.
   (with-eval-after-load 'emacs-lisp-mode
     (setq lispy-eval-display-style 'overlay))
 #+end_src
+** Rust
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :mode "\\.rs\\'"
+    :hook (rust-mode . my/setup-language-defaults)
+    :config
+    ;; Use rust-analyzer with eglot
+    (add-to-list 'eglot-server-programs
+                 '(rust-mode . ("rust-analyzer")))
+
+    ;; Configure formatter
+    (with-eval-after-load 'apheleia
+      (setf (alist-get 'rust-mode apheleia-mode-alist) 'rustfmt)
+      (setf (alist-get 'rustfmt apheleia-formatters)
+            '("rustfmt" "--edition" "2021"))))
+
+  ;; Rust-specific keybindings
+  (my-local-leader-def
+    :keymaps 'rust-mode-map
+
+    ;; Build & Run
+    "b" '(:ignore t :which-key "build")
+    "bb" '(rust-compile :which-key "build")
+    "br" '(rust-run :which-key "run")
+    "bt" '(rust-test :which-key "test"))
+#+end_src
 ** Typescript (=typescript-ts-mode=)
 #+begin_src emacs-lisp
   (use-package typescript-ts-mode

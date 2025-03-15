@@ -62,11 +62,14 @@
       cider
       clojure-mode
 
-      ### Nix
-      nix-ts-mode
+      ### Rust
+      rust-mode
 
       ### Lua
       lua-mode
+
+      ### Nix
+      nix-ts-mode
 
       ### Zig
       zig-mode
@@ -106,6 +109,12 @@
         leiningen
         readline
         zlib
+
+        # rust
+        cargo
+        rust-analyzer
+        rustc
+        rustfmt
 
         # nix
         alejandra

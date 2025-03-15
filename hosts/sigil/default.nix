@@ -24,6 +24,8 @@ in {
     "--unsupported-gpu"
   ];
 
+  virtualisation.docker.enable = true;
+
   services.home-assistant = {
     enable = true;
     extraComponents = [

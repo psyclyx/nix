@@ -37,6 +37,7 @@
 
       # Notes
       gptel
+      evedel
       org
       org-superstar
       org-roam

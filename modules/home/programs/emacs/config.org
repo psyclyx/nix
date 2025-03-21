@@ -1196,21 +1196,65 @@ set in a non-interactive shell.
     (when (fboundp 'config:gptel)
       (config:gptel)))
 
-  (gptel-make-openai "llama-cpp"
-    :stream t
-    :protocol "http"
-    :host "localhost:10200"
-    :models '(local))
-
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    "a" '(:ignore t :which-key "gptel")
-    "as" '(gptel-send :which-key "send")
-    "an" '(gptel :which-key "new chat")
-    "am" '(gptel-menu :which-key "model menu")
-    "ar" '(gptel-rewrite :which-key "rewrite"))
+    "SPC" '(:ignore t :which-key "ai")
+    "SPC SPC" '(:ignore t :which-key "gptel")
+    "SPC SPC RET" '(gptel-send :which-key "send")
+    "SPC SPC n" '(gptel :which-key "new chat")
+    "SPC SPC m" '(gptel-menu :which-key "model menu")
+    "SPC SPC r" '(gptel-rewrite :which-key "rewrite"))
+#+end_src
+
+** Evedel
+#+begin_src emacs-lisp
+  (use-package evedel
+    :config
+    (customize-set-variable 'evedel-empty-tag-query-matches-all nil)
+
+    (my-leader-def
+      "SPC h" 'evedel-next-instruction
+      "SPC l" 'evedel-previous-instruction
+
+      "SPC j" 'evedel-next-directive
+      "SPC k" 'evedel-previous-directive
+
+      "SPC J" 'evedel-next-reference
+      "SPC K" 'evedel-previous-reference
+
+      "SPC ," 'evedel-cycle-instructions-at-point
+
+
+      "SPC d" '(:ignore t :which-key "directive")
+      "SPC d n" 'evedel-create-directive
+      "SPC d r" 'evedel-modify-directive
+
+      "SPC r" '(:ignore t :which-key "reference")
+      "SPC r n" 'evedel-create-reference
+      "SPC r r" 'evedel-modify-reference-commentary
+
+
+      "SPC i" '(:ignore t :which-key "instructions")
+      "SPC i e" 'evedel-load-instructions
+      "SPC i w" 'evedel-save-instructions
+      "SPC i x" 'evedel-delete-instructions
+      "SPC i c" 'evedel-convert-instructions
+      "SPC i X" 'evedel-delete-all-instructions
+      "SPC i l" 'evedel-link-instructions
+      "SPC i L" 'evedel-unlink-instructions
+
+
+      "SPC t" '(:ignore t "tags")
+      "SPC t t" 'evedel-add-tags
+      "SPC t T" 'evedel-remove-tags
+      "SPC t r" 'evedel-modify-directive-tag-query
+
+      "SPC v" 'evedel-preview-directive-prompt
+      "SPC u" 'evedel-directive-undo
+
+      "SPC RET" 'evedel-process-directives))
 #+end_src
 ** =direnv= & =envrc=
 #+begin_src emacs-lisp

@@ -22,8 +22,9 @@
         outer.left = 6;
         outer.bottom = 6;
         outer.top = [
-          {monitor."BenQ RD280U" = 38;}
-          2
+          #{monitor."BenQ RD280U" = 38;}
+          {monitor."Built-in Retina Display" = 2;}
+          38
         ];
         outer.right = 8;
       };

@@ -27,7 +27,6 @@
 
       # UI
       all-the-icons-nerd-fonts
-      dashboard
       doom-modeline
       doom-themes
       mixed-pitch
@@ -54,6 +53,7 @@
       persp-projectile
       perspective
       projectile
+      symex
       treesit-grammars.with-all-grammars
       vterm
 

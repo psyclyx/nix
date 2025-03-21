@@ -4,45 +4,49 @@
 #+STARTUP: content
 
 * Base
-** Disable GC
-*** During startup
 #+begin_src emacs-lisp
+    (require 'json)
+    (require 'url)
+#+end_src
+** Disable GC
+#+begin_src emacs-lisp
+  ;; startup
   (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
         gc-cons-percentage 0.6)
-  (defvar config:file-name-handler-alist-cache file-name-handler-alist)
+
+  (defvar my/file-name-handler-alist-cache file-name-handler-alist)
+
   (setq file-name-handler-alist nil)
-  (defun config:restore-post-init-settings ()
+
+  (defun my/restore-post-init-settings ()
     (setq gc-cons-threshold 16777216 ; 16mb
           gc-cons-percentage 0.1)
-    (setq file-name-handler-alist config:file-name-handler-alist-cache))
-  (add-hook 'emacs-startup-hook #'config:restore-post-init-settings)
-#+end_src
-*** In minibuffer
-#+begin_src emacs-lisp
-  (defun config:defer-gc ()
-    (setq gc-cons-threshold most-positive-fixnum))
-  (defun config:-do-restore-gc ()
-    (setq gc-cons-threshold 16777216))
-  (defun config:restore-gc ()
-    (run-at-time 1 nil #'config:-do-restore-gc))
+    (setq file-name-handler-alist my/file-name-handler-alist-cache))
 
-  (add-hook 'minibuffer-setup #'config:defer-gc)
-  (add-hook 'minibuffer-exit #'config:restore-gc)
+  (add-hook 'emacs-startup-hook #'my/restore-post-init-settings)
+
+  ;; minibuffer
+  (defun my/defer-gc ()
+    (setq gc-cons-threshold most-positive-fixnum))
+
+  (defun my/-do-restore-gc ()
+    (setq gc-cons-threshold 16777216))
+
+  (defun my/restore-gc ()
+    (run-at-time 1 nil #'my/-do-restore-gc))
+
+  (add-hook 'minibuffer-setup #'my/defer-gc)
+  (add-hook 'minibuffer-exit #'my/restore-gc)
 #+end_src
-Is this minibuffer gc bit actually helpful?
 ** Declutter
-*** Disable lockfiles
 #+begin_src emacs-lisp
   (setq create-lockfiles nil)
-#+end_src
-*** Place =custom.el= next to config
-#+begin_src emacs-lisp
+
   (setq custom-file (expand-file-name "custom.el" "~/.local/state/emacs/"))
+
   (when (file-exists-p custom-file)
     (load custom-file))
-#+end_src
-*** no-littering
-#+begin_src emacs-lisp
+
   (use-package no-littering
     :config
     (setq auto-save-file-name-transforms
@@ -76,13 +80,6 @@ set in a non-interactive shell.
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize)))
  #+end_src
-** Recentf
-#+begin_src emacs-lisp
-  (use-package recentf
-    :ensure nil
-    :config
-    (setq recentf-max-saved-items 128))
-#+end_src
 * Interface
 ** Simplify UI
 #+begin_src emacs-lisp
@@ -180,20 +177,14 @@ set in a non-interactive shell.
     (doom-modeline-project-name t)
     (doom-modeline-total-line-number t))
 #+end_src
-** Welcome screen
-#+begin_src emacs-lisp
-  (use-package dashboard
-    :config
-    (dashboard-setup-startup-hook)
-    (setq dashboard-startup-banner 'logo
-          dashboard-center-content t
-          dashboard-items '((recents . 5)
-                           (projects . 5)
-                           (agenda . 5))
-          dashboard-set-heading-icons t
-          dashboard-set-file-icons t))
-#+end_src
 * Editor
+** Recentf
+#+begin_src emacs-lisp
+  (use-package recentf
+    :ensure nil
+    :custom
+    (recentf-max-saved-items 128))
+#+end_src
 ** Spaces, not tabs
 #+begin_src emacs-lisp
   (setq-default indent-tabs-mode nil
@@ -254,10 +245,12 @@ set in a non-interactive shell.
      :prefix-map 'evilem-map)
     (general-define-key
      :keymaps 'evil-snipe-parent-transient-map
-     "C-;" (evilem-create 'evil-snipe-repeat
-                          :bind ((evil-snipe-scope 'buffer)
-                                 (evil-snipe-enable-highlight)
-                                 (evil-snipe-enable-incremental-highlight)))))
+     "C-;" (evilem-create
+            'evil-snipe-repeat
+            :bind
+            ((evil-snipe-scope 'buffer)
+             (evil-snipe-enable-highlight)
+             (evil-snipe-enable-incremental-highlight)))))
 #+end_src
 ** =undo-tree=
 #+begin_src emacs-lisp
@@ -306,10 +299,7 @@ set in a non-interactive shell.
     "b" '(:ignore t :which-key "buffer")
 
     "bb" '(consult-buffer :which-key "switch buffer")
-    "bd" '(kill-current-buffer :which-key "kill buffer")
-    "bn" '(next-buffer :which-key "next buffer")
-    "bp" '(previous-buffer :which-key "previous buffer")
-    "br" '(revert-buffer :which-key "revert buffer"))
+    "bd" '(kill-current-buffer :which-key "kill buffer"))
 #+end_src
 *** Files
 #+begin_src emacs-lisp
@@ -317,8 +307,6 @@ set in a non-interactive shell.
     "f" '(:ignore t :which-key "file")
 
     "ff" '(find-file :which-key "find file")
-    "fs" '(save-buffer :which-key "save file")
-    "fS" '(write-file :which-key "save as")
     "fr" '(consult-recent-file :which-key "recent files")
     "fR" '(my/reload-config :which-key "reload config"))
 #+end_src
@@ -391,6 +379,24 @@ set in a non-interactive shell.
             orderless-regexp)))
 #+end_src
 ** Minibuffer
+#+begin_src emacs-lisp
+  (general-setq enable-recursive-minibuffers t)
+
+  (minibuffer-depth-indicate-mode)
+
+  (general-setq minibuffer-prompt-properties
+         '(read-only t face minibuffer-prompt intangible t cursor-intangible t))
+  (general-add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  (defun helper:kill-minibuffer ()
+    "Exit the minibuffer if it is active."
+    (when (and (>= (recursion-depth) 1)
+               (active-minibuffer-window))
+      (abort-recursive-edit)))
+
+  (general-add-hook 'mouse-leave-buffer-hook #'helper:kill-minibuffer)
+#+end_src
+
 *** Menu (=vertico=)
 #+begin_src emacs-lisp
   (use-package vertico
@@ -715,6 +721,14 @@ set in a non-interactive shell.
         (newline-and-indent)
         (insert ";; => " result))))
 #+end_src
+** Symex
+#+begin_src emacs-lisp
+  (use-package symex
+    :config
+    (symex-initialize)
+    (my-leader-def
+     "lf" 'symex-mode-interface))
+#+end_src
 ** Formatting (=aphelia=)
 #+begin_src emacs-lisp
   (use-package apheleia)
@@ -871,7 +885,7 @@ set in a non-interactive shell.
     (with-eval-after-load 'apheleia
       (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
       (setf (alist-get 'cljstyle apheleia-formatters)
-        '("cljstyle" "pipe"))))
+            '("cljstyle" "pipe"))))
 
   (use-package cider
     :after clojure-mode
@@ -881,32 +895,111 @@ set in a non-interactive shell.
     (cider-auto-select-error-buffer t)
     (cider-repl-history-file (no-littering-expand-var-file-name "cider-history"))
     (cider-repl-wrap-history t)
-    (cider-repl-history-size 1000))
+    (cider-repl-history-size 1000)
 
-  (my-local-leader-def
-    :keymaps 'clojure-mode-map
-    ;; REPL
-    "'" '(cider-jack-in :which-key "jack in")
-    "\"" '(cider-jack-in-clj&cljs :which-key "jack in clj&cljs")
+    :config
+    (defvar my/clojure-evaluation-map (make-sparse-keymap))
+    (defvar my/clojure-navigation-map (make-sparse-keymap))
+    (defvar my/clojure-help-map (make-sparse-keymap))
+    (defvar my/clojure-inspect-map (make-sparse-keymap))
+    (defvar my/clojure-namespace-map (make-sparse-keymap))
+    (defvar my/clojure-pprint-map (make-sparse-keymap))
+    (defvar my/clojure-repl-map (make-sparse-keymap))
+    (defvar my/clojure-test-map (make-sparse-keymap))
 
-    ;; Evaluation
-    "e" '(:ignore t :which-key "eval")
-    "eb" '(cider-eval-buffer :which-key "eval buffer")
-    "ee" '(cider-eval-last-sexp :which-key "eval last sexp")
-    "ef" '(cider-eval-defun-at-point :which-key "eval defun")
-    "er" '(cider-eval-region :which-key "eval region")
+    (general-create-definer my/clojure-evaluation-def :keymaps 'my/clojure-evaluation-map)
+    (general-create-definer my/clojure-navigation-def :keymaps 'my/clojure-navigation-map)
+    (general-create-definer my/clojure-help-def :keymaps 'my/clojure-help-map)
+    (general-create-definer my/clojure-inspect-def :keymaps 'my/clojure-inspect-map)
+    (general-create-definer my/clojure-namespace-def :keymaps 'my/clojure-namespace-map)
+    (general-create-definer my/clojure-pprint-def :keymaps 'my/clojure-pprint-map)
+    (general-create-definer my/clojure-repl-def :keymaps 'my/clojure-repl-map)
+    (general-create-definer my/clojure-test-def :keymaps 'my/clojure-test-map)
 
-    ;; Testing
-    "t" '(:ignore t :which-key "test")
-    "ta" '(cider-test-run-loaded-tests :which-key "run loaded tests")
-    "tn" '(cider-test-run-ns-tests :which-key "run ns tests")
-    "tt" '(cider-test-run-test :which-key "run test at point"))
-#+end_src
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      "'" 'cider-jack-in-clj
+      "\"" 'cider-jack-in-cljs
+      "C" 'cider-connect-cljs
+      "c" 'cider-connect-clj
 
-#+begin_src emacs-lisp
+      "m" 'cider-macroexpand-1
+      "M" 'cider-macroexpand-all
+
+      "e" '("eval" . my/clojure-evaluation-map)
+      "g" '("go" . my/clojure-navigation-map)
+      "h" '("help" . my/clojure-help-map)
+      "i" '("inspect" . my/clojure-inspect-map)
+      "n" '("ns" . my/clojure-namespace-map)
+      "p" '("pprint" . my/clojure-pprint-map)
+      "r" '("repl" . my/clojure-repl-map)
+      "t" '("test" . my/clojure-test-map))
+
+    (my/clojure-evaluation-def
+      "D" 'cider-insert-defun-in-repl
+      "E" 'cider-insert-last-sexp-in-repl
+      "R" 'cider-insert-region-in-repl
+      "b" 'cider-eval-buffer
+      "d" 'cider-eval-defun-at-point
+      "e" 'cider-eval-last-sexp
+      "r" 'cider-eval-region
+      "u" 'cider-undef)
+
+    (my/clojure-navigation-def
+      "b" 'cider-pop-back
+      "g" 'cider-find-var
+      "n" 'cider-find-ns)
+
+    (my/clojure-help-def
+      "a" 'cider-apropos
+      "c" 'cider-clojuredocs
+      "d" 'cider-doc
+      "j" 'cider-javadoc
+      "n" 'cider-find-ns
+      "w" 'cider-clojuredocs-web)
+
+    (my/clojure-inspect-def
+      "e" 'cider-enlighten-mode
+      "i" 'cider-inspect
+      "r" 'cider-inspect-last-result)
+
+    (my/clojure-namespace-def
+      "N" 'cider-browse-ns-all
+      "n" 'cider-browse-ns
+      "r" 'cider-ns-refresh
+      "u" 'cider-undef)
+
+    (my/clojure-pprint-def
+      "d" 'cider-pprint-eval-defun-at-point
+      "D" 'cider-pprint-eval-defun-to-comment
+      "p" 'cider-pprint-eval-last-sexp
+      "P" 'cider-pprint-eval-last-sexp-to-comment
+      "r" 'cider-pprint-eval-last-sexp-to-repl)
+
+    (my/clojure-repl-def
+      "L" 'cider-load-buffer-and-switch-to-repl-buffer
+      "R" 'cider-restart
+      "b" 'cider-switch-to-repl-buffer
+      "c" 'cider-find-and-clear-repl-output
+      "l" 'cider-load-buffer
+      "n" 'cider-repl-set-ns
+      "q" 'cider-quit
+      "r" 'cider-ns-refresh
+      "i" 'cider-interrupt)
+
+    (my/clojure-test-def
+      "a" 'cider-test-rerun-test
+      "l" 'cider-test-run-loaded-tests
+      "n" 'cider-test-run-ns-tests
+      "p" 'cider-test-run-project-tests
+      "r" 'cider-test-rerun-failed-tests
+      "s" 'cider-test-run-ns-tests-with-filters
+      "t" 'cider-test-run-test))
+
   (with-eval-after-load 'clojure-mode
     (setq lispy-clojure-eval-method 'cider))
 #+end_src
+
 ** Nix (=nix-ts-mode=)
 #+begin_src emacs-lisp
   (use-package nix-ts-mode
@@ -1163,6 +1256,17 @@ set in a non-interactive shell.
         (string-trim (buffer-string))))
     (setq gptel-api-key 'read-openai-token))
 
+  (defun fetch-openrouter-models ()
+    (with-current-buffer
+        (url-retrieve-synchronously "https://openrouter.ai/api/v1/models")
+      (goto-char url-http-end-of-headers)
+      (let* ((json-object-type 'alist)
+             (json-data (json-read))
+             (models (alist-get 'data json-data)))
+        (mapcar (lambda (model)
+                  (cons (alist-get 'name model)
+                        (alist-get 'id model)))
+                models))))
 
   (when (file-exists-p "~/.openrouter-token")
     (defun read-openrouter-token ()
@@ -1170,26 +1274,14 @@ set in a non-interactive shell.
       (with-temp-buffer
         (insert-file-contents (expand-file-name "~/.openrouter-token"))
         (string-trim (buffer-string))))
-    (let ((openrouter (gptel-make-openai "OpenRouter"
-                        :host "openrouter.ai"
-                        :endpoint "/api/v1/chat/completions"
-                        :stream t
-                        :key 'read-openrouter-token
-                        :models '(mistralai/codestral-2501
-                                  (deepseek/deepseek-chat
-                                   :description "DeepSeek's powerful chat model optimized for dialogue")
-                                  (openai/o1
-                                   :description "OpenAI's cutting-edge multimodal model"
-                                   :capabilities (media))
-                                  (google/gemini-2.0-flash-thinking-exp:free
-                                   :description "Google's fast Gemini model with experimental features")
-                                  (anthropic/claude-3.5-sonnet:beta
-                                   :description "Anthropic's balanced Claude model for general tasks")
-                                  (anthropic/claude-3.5-haiku-20241022:beta
-                                   :description "Anthropic's smaller, faster Claude model")))))
-      (setq gptel-backend openrouter
-            gptel-model 'anthropic/claude-3.5-sonnet:beta)))
-
+    (gptel-make-openai "OpenRouter"
+      :host "openrouter.ai"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :key (read-openrouter-token)
+      :models (mapcar (lambda (model)
+                        (cdr model))
+                      (fetch-openrouter-models))))
 
   (when (file-exists-p "~/.gptel.el")
     (load-file "~/.gptel.el")

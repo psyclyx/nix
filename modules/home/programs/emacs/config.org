@@ -721,14 +721,6 @@ set in a non-interactive shell.
         (newline-and-indent)
         (insert ";; => " result))))
 #+end_src
-** Symex
-#+begin_src emacs-lisp
-  (use-package symex
-    :config
-    (symex-initialize)
-    (my-leader-def
-     "lf" 'symex-mode-interface))
-#+end_src
 ** Formatting (=aphelia=)
 #+begin_src emacs-lisp
   (use-package apheleia)
@@ -926,14 +918,14 @@ set in a non-interactive shell.
       "m" 'cider-macroexpand-1
       "M" 'cider-macroexpand-all
 
-      "e" '("eval" . my/clojure-evaluation-map)
-      "g" '("go" . my/clojure-navigation-map)
-      "h" '("help" . my/clojure-help-map)
-      "i" '("inspect" . my/clojure-inspect-map)
-      "n" '("ns" . my/clojure-namespace-map)
-      "p" '("pprint" . my/clojure-pprint-map)
-      "r" '("repl" . my/clojure-repl-map)
-      "t" '("test" . my/clojure-test-map))
+      "e" (cons "eval" my/clojure-evaluation-map)
+      "g" (cons "go" my/clojure-navigation-map)
+      "h" (cons "help" my/clojure-help-map)
+      "i" (cons "inspect" my/clojure-inspect-map)
+      "n" (cons "ns" my/clojure-namespace-map)
+      "p" (cons "pprint" my/clojure-pprint-map)
+      "r" (cons "repl" my/clojure-repl-map)
+      "t" (cons "test" my/clojure-test-map))
 
     (my/clojure-evaluation-def
       "D" 'cider-insert-defun-in-repl

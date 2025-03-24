@@ -53,7 +53,6 @@
       persp-projectile
       perspective
       projectile
-      symex
       treesit-grammars.with-all-grammars
       vterm
 

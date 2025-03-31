@@ -163,7 +163,7 @@ set in a non-interactive shell.
     :config
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
-    (load-theme 'doom-monokai-octagon t)
+    (load-theme 'doom-gruvbox-light t)
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 #+end_src

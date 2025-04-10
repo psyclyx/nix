@@ -26,6 +26,7 @@ in
       ../../modules/home/programs/emacs
       ../../modules/home/programs/kitty.nix
       ../../modules/home/programs/signal.nix
+      ../../modules/home/services/postgres.nix
     ];
   };
 

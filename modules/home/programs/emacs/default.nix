@@ -17,32 +17,47 @@
   packages = packageConfig.systemPackages pkgs;
   emacs =
     if pkgs.stdenv.isDarwin
-    then pkgs.emacs-git
+    then
+      (pkgs.emacs-30.override {
+        # https://github.com/NixOS/nixpkgs/issues/395169
+        withNativeCompilation = false;
+      })
     else pkgs.emacs-unstable-pgtk;
   emacsclient = pkgs.stdenv.mkDerivation {
     pname = "emacsclient";
     version = emacs.version;
     phases = ["installPhase"];
     installPhase = ''
-         mkdir -p $out/bin
+      mkdir -p $out/bin
       cp ${emacs}/bin/emacsclient $out/bin/
     '';
   };
 in
   lib.mkMerge [
     {
-      programs.emacs = {
-        enable = lib.mkDefault true;
-        package = lib.mkDefault emacs;
-        extraPackages = epkgs:
-          (packageConfig.emacsPackages epkgs)
-          ++ packages
-          ++ [emacsclient];
+      programs = {
+        emacs = {
+          enable = lib.mkDefault true;
+          package = lib.mkDefault emacs;
+          extraPackages = epkgs:
+            (packageConfig.emacsPackages epkgs)
+            ++ packages
+            ++ [emacsclient];
+        };
       };
+
+      services = {
+        emacs = {
+          defaultEditor = true;
+          enable = true;
+        };
+      };
+
       home = lib.mkIf config.programs.emacs.enable {
         file = {
           ".config/emacs/init.el".source = mkRepoFile ./init.el ./init.el;
           ".config/emacs/config.org".source = mkRepoFile ./config.org ./config.org;
+          "bin/emacsclient".source = "${emacsclient}/bin/emacsclient";
         };
         packages = packages;
       };

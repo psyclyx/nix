@@ -24,19 +24,6 @@
     (setq file-name-handler-alist my/file-name-handler-alist-cache))
 
   (add-hook 'emacs-startup-hook #'my/restore-post-init-settings)
-
-  ;; minibuffer
-  (defun my/defer-gc ()
-    (setq gc-cons-threshold most-positive-fixnum))
-
-  (defun my/-do-restore-gc ()
-    (setq gc-cons-threshold 16777216))
-
-  (defun my/restore-gc ()
-    (run-at-time 1 nil #'my/-do-restore-gc))
-
-  (add-hook 'minibuffer-setup #'my/defer-gc)
-  (add-hook 'minibuffer-exit #'my/restore-gc)
 #+end_src
 ** Declutter
 #+begin_src emacs-lisp
@@ -151,12 +138,6 @@ set in a non-interactive shell.
     :hook
     ((org-mode org-roam-mode text-mode) . mixed-pitch-mode))
 #+end_src
-** Distinguish real buffers (=solaire-mode=)
-#+begin_src emacs-lisp
-  (use-package solaire-mode
-    :after '(doom-themes)
-    :init (solaire-global-mode 1))
-#+end_src
 ** Theme (=doom-themes=)
 #+begin_src emacs-lisp
   (use-package doom-themes
@@ -167,23 +148,15 @@ set in a non-interactive shell.
     (doom-themes-visual-bell-config)
     (doom-themes-org-config))
 #+end_src
-** Modeline
-#+begin_src emacs-lisp
-  (use-package doom-modeline
-    :ensure t
-    :init (doom-modeline-mode 1)
-    :custom
-    (doom-modeline-enable-word-count t)
-    (doom-modeline-project-name t)
-    (doom-modeline-total-line-number t))
-#+end_src
 * Editor
 ** Recentf
 #+begin_src emacs-lisp
   (use-package recentf
     :ensure nil
     :custom
-    (recentf-max-saved-items 128))
+    (recentf-max-saved-items 512)
+    :init
+    (recentf-mode 1))
 #+end_src
 ** Spaces, not tabs
 #+begin_src emacs-lisp
@@ -446,23 +419,22 @@ set in a non-interactive shell.
     :custom
     (corfu-cycle t)
     (corfu-auto t)
-    (corfu-auto-delay 0.4)
+    (corfu-auto-delay 0.3)
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
     (corfu-quit-at-boundary nil)
-    (corfu-quit-no-match t)
-    (corfu-separator ?\s)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :bind
-    (:map corfu-map
-      ("TAB" . corfu-next)
-      ([tab] . corfu-next)
-      ("S-TAB" . corfu-previous)
-      ([backtab] . corfu-previous))
+    :general
+    (:keymaps 'corfu-map
+              "SPC" 'corfu-insert-separator
+              "TAB" 'corfu-next
+              "S-TAB" 'corfu-previous)
 
     :init
     (global-corfu-mode)
+
     :config
     (defun corfu-enable-always-in-minibuffer ()
       "Enable Corfu in the minibuffer if Vertico is not active."
@@ -475,7 +447,7 @@ set in a non-interactive shell.
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay '(0.8 . 0.5)))
+    (corfu-popupinfo-delay '(0.4 . 0.2)))
 #+end_src
 ** At point (=cape=)
 #+begin_src emacs-lisp
@@ -761,39 +733,6 @@ set in a non-interactive shell.
     "p!" '(projectile-run-shell-command-in-root :which-key "run command")
     "p&" '(projectile-run-async-shell-command-in-root :which-key "run async command"))
 #+end_src
-** Perspective
-#+begin_src emacs-lisp
-  (use-package perspective
-    :init
-    (persp-mode)
-    :custom
-    (persp-initial-frame-name "main")
-    (persp-mode-prefix-key (kbd "C-c w"))
-    (persp-state-default-file
-     (no-littering-expand-var-file-name "perspectives"))
-    :config
-    ;; Save perspectives when exiting Emacs
-    (add-hook 'kill-emacs-hook #'persp-state-save))
-
-  (use-package persp-projectile
-    :after (perspective projectile)
-    :config
-    (define-key projectile-mode-map (kbd "C-c p p")
-                #'projectile-persp-switch-project))
-#+end_src
-*** Bindings
-#+begin_src emacs-lisp
-  (my-leader-def
-    "TAB" '(:ignore t :which-key "workspace")
-    "TAB TAB" '(persp-switch :which-key "switch workspace")
-    "TAB n" '(persp-new :which-key "new workspace")
-    "TAB d" '(persp-kill :which-key "delete workspace")
-    "TAB r" '(persp-rename :which-key "rename workspace")
-    "TAB s" '(persp-state-save :which-key "save workspaces")
-    "TAB l" '(persp-state-load :which-key "load workspaces")
-    "TAB b" '(persp-switch-to-buffer :which-key "switch workspace buffer")
-    "TAB p" '(projectile-persp-switch-project :which-key "switch project+workspace"))
-#+end_src
 ** Git (=magit=)
 #+begin_src emacs-lisp
   (use-package magit
@@ -998,12 +937,12 @@ set in a non-interactive shell.
     :mode "\\.nix\\'"
     :hook (nix-ts-mode . my/setup-language-defaults)
     :custom
-    (nix-nixfmt-bin "alejandra")
+    (nix-nixfmt-bin "nixfmt")
     :config
     (with-eval-after-load 'apheleia
-      (setf (alist-get 'nix-ts-mode apheleia-mode-alist) 'alejandra)
-      (setf (alist-get 'alejandra apheleia-formatters)
-        '("alejandra" "-"))))
+      (setf (alist-get 'nix-ts-mode apheleia-mode-alist) 'nixfmt)
+      (setf (alist-get 'nixfmt apheleia-formatters)
+        '("nixfmt" "-"))))
 #+end_src
 ** Emacs Lisp
 #+begin_src emacs-lisp

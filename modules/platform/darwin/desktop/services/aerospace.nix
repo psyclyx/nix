@@ -1,4 +1,14 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  sb = "${pkgs.sketchybar}/bin/sketchybar";
+  modeBadge = label: drawing: "exec-and-forget ${sb} --set mode label=${label} drawing=${drawing}";
+
+  switch = mode: draw: [(modeBadge mode draw) "mode ${mode}"];
+
+  toMain = switch "main" "off";
+  toMove = switch "move" "on";
+  toCommand = switch "command" "on";
+  toService = switch "service" "on";
+in {
   services.aerospace = {
     enable = true;
     settings = {
@@ -11,7 +21,7 @@
       exec-on-workspace-change = [
         "/bin/bash"
         "-c"
-        "${pkgs.sketchybar}/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
+        "${sb} --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
       ];
 
       automatically-unhide-macos-hidden-apps = true;
@@ -32,61 +42,77 @@
       key-mapping.preset = "qwerty";
 
       mode.main.binding = {
-        alt-enter = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
+        alt-enter = toCommand;
+      };
 
-        alt-shift-q = "close";
-        alt-slash = "layout tiles horizontal vertical";
-        alt-comma = "layout accordion horizontal vertical";
-        alt-f = "fullscreen";
+      mode.command.binding = {
+        esc = toMain;
+        enter = toMove;
+        space = ["exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -r\""] ++ toMain;
+        shift-space = ["exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -c\""] ++ toMain;
 
-        alt-h = "focus left";
-        alt-j = "focus down";
-        alt-k = "focus up";
-        alt-l = "focus right";
-        alt-shift-h = "move left";
-        alt-shift-j = "move down";
-        alt-shift-k = "move up";
-        alt-shift-l = "move right";
-        alt-shift-minus = "resize smart -50";
-        alt-shift-equal = "resize smart +50";
+        shift-semicolon = toService;
 
-        alt-1 = "workspace 1";
-        alt-2 = "workspace 2";
-        alt-3 = "workspace 3";
-        alt-4 = "workspace 4";
-        alt-5 = "workspace 5";
-        alt-6 = "workspace 6";
-        alt-7 = "workspace 7";
-        alt-8 = "workspace 8";
-        alt-9 = "workspace 9";
-        alt-shift-1 = "move-node-to-workspace 1";
-        alt-shift-2 = "move-node-to-workspace 2";
-        alt-shift-3 = "move-node-to-workspace 3";
-        alt-shift-4 = "move-node-to-workspace 4";
-        alt-shift-5 = "move-node-to-workspace 5";
-        alt-shift-6 = "move-node-to-workspace 6";
-        alt-shift-7 = "move-node-to-workspace 7";
-        alt-shift-8 = "move-node-to-workspace 8";
-        alt-shift-9 = "move-node-to-workspace 9";
+        #o = ["exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~"] ++ toMain;
+        o = ["exec-and-forget open -a Ghostty -n"] ++ toMain;
 
-        alt-tab = "workspace-back-and-forth";
-        alt-shift-tab = "move-workspace-to-monitor --wrap-around next";
+        x = ["close"] ++ toMain;
 
-        alt-shift-semicolon = "mode service";
+        m = ["fullscreen"] ++ toMain;
+        comma = ["layout floating tiling"] ++ toMain;
+        period = ["layout tiles horizontal vertical"] ++ toMain;
+        slash = ["layout accordion horizontal vertical"] ++ toMain;
+
+        h = ["focus left"] ++ toMain;
+        j = ["focus down"] ++ toMain;
+        k = ["focus up"] ++ toMain;
+        l = ["focus right"] ++ toMain;
+
+        q = ["workspace 1q"] ++ toMain;
+        w = ["workspace 2w"] ++ toMain;
+        e = ["workspace 3e"] ++ toMain;
+        r = ["workspace 4r"] ++ toMain;
+        a = ["workspace 5a"] ++ toMain;
+        s = ["workspace 6s"] ++ toMain;
+        d = ["workspace 7d"] ++ toMain;
+        f = ["workspace 8f"] ++ toMain;
+
+        tab = ["workspace-back-and-forth"] ++ toMain;
+
+      };
+
+      mode.move.binding = {
+        esc = toMain;
+
+        enter = ["move-workspace-to-monitor --wrap-around next"] ++ toMain;
+
+        up = "resize smart -50";
+        down = "resize smart +50";
+
+        q = ["move-node-to-workspace 1q"] ++ toMain;
+        w = ["move-node-to-workspace 2w"] ++ toMain;
+        e = ["move-node-to-workspace 3e"] ++ toMain;
+        r = ["move-node-to-workspace 4r"] ++ toMain;
+        a = ["move-node-to-workspace 5a"] ++ toMain;
+        s = ["move-node-to-workspace 6s"] ++ toMain;
+        d = ["move-node-to-workspace 7d"] ++ toMain;
+        f = ["move-node-to-workspace 8f"] ++ toMain;
+
+        h = ["move left"] ++ toMain;
+        j = ["move down"] ++ toMain;
+        k = ["move up"]  ++ toMain;
+        l = ["move right"] ++ toMain;
+
+        shift-h = ["join-with left"] ++ toMain;
+        shift-j = ["join-with down"] ++ toMain;
+        shift-k = ["join-with up"] ++ toMain;
+        shift-l = ["join-with right"] ++ toMain;
       };
 
       mode.service.binding = {
-        esc = ["reload-config" "mode main"];
-
-        r = ["flatten-workspace-tree" "mode main"];
-        f = ["layout floating tiling" "mode main"];
-
-        backspace = ["close-all-windows-but-current" "mode main"];
-
-        alt-shift-h = ["join-with left" "mode main"];
-        alt-shift-j = ["join-with down" "mode main"];
-        alt-shift-k = ["join-with up" "mode main"];
-        alt-shift-l = ["join-with right" "mode main"];
+        esc = ["reload-config"] ++ toMain;
+        r = ["flatten-workspace-tree"] ++ toMain;
+        backspace = ["close-all-windows-but-current"] ++ toMain;
       };
     };
   };

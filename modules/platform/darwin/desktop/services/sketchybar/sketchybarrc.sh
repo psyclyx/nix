@@ -69,7 +69,7 @@ for sid in ${WORKSPACES}; do
              --set space."${sid}" \
              "${workspace[@]}" \
              script="aerospace_plugin ${sid}" \
-             label="${sid}" \
+             label="${sid:1}" \
              --subscribe space."${sid}" aerospace_workspace_change
 
   FOCUSED_WORKSPACE="${FOCUSED}" NAME="space.${sid}" aerospace_plugin "${sid}" &
@@ -118,6 +118,13 @@ sketchybar \
   padding_right=64 \
   script="clock_plugin"
 
-
+sketchybar \
+  --add item mode right \
+  --set mode \
+  background.color="${THEME_FOREGROUND}" \
+  label.color="${THEME_TERMINAL_BRIGHT_RED}" \
+  icon.drawing=off \
+  padding_right=64 \
+  drawing=off
 
 sketchybar --update

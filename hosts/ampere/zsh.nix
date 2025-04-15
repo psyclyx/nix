@@ -1,11 +1,19 @@
 {lib, ...}: {
-  programs.zsh = {
+  home = {
     shellAliases = {
       watch = "shadow-cljs watch";
       lr = "lein refresh";
       lrr = "lein refresh repl";
     };
+    sessionVariables = {
+      NODE_OPTIONS = "--openssl-legacy-provider";
+      VAULT_ADDR = "https://vault.amperity.top:8200";
+      GODEBUG = "asyncpreemptoff=1";
+      TFENV_ARCH = "amd64";
+    };
+  };
 
+  programs.zsh = {
     initExtra = lib.mkAfter ''
       path_append "''${HOME}/projects/app/bin"
       export NODE_OPTIONS=--openssl-legacy-provider

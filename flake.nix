@@ -9,6 +9,12 @@
     nixpkgs-master.url = "github:NixOS/nixpkgs/master";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11";
 
+    # Nix user repository
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Simple NixOS modules for common hardware configurations
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -44,9 +50,7 @@
     # (`nix-darwin` can manage packages/casks from homebrew OOTB,
     #  but doesn't have support for installing homebrew itself)
     nix-homebrew = {
-      # url = "github:zhaofengli-wip/nix-homebrew";
-      url = "git+https://github.com/zhaofengli/nix-homebrew?ref=refs/pull/71/merge";
-
+      url = "github:zhaofengli-wip/nix-homebrew";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.nix-darwin.follows = "nix-darwin";
     };
@@ -110,20 +114,19 @@
   };
 
   outputs = inputs: let
-    inherit (inputs) nixpkgs nixpkgs-master nixpkgs-stable nix-darwin-emacs emacs-overlay;
+    inherit (inputs) nixpkgs nixpkgs-master nur nix-darwin-emacs emacs-overlay;
     inherit (nixpkgs) lib;
 
     overlays = [
       (import ./pkgs)
+      nur.overlays.default
       nix-darwin-emacs.overlays.emacs
       emacs-overlay.overlays.default
 
-      # Temporary - tailscale is currently broken in `unstable`, but works in `master`
       (final: prev: let
         system = prev.stdenv.hostPlatform.system;
       in {
         tailscale = nixpkgs-master.legacyPackages.${system}.tailscale;
-        kitty = nixpkgs-stable.legacyPackages.${system}.kitty;
       })
     ];
 
@@ -145,7 +148,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             age
-            alejandra
+            nixfmt-rfc-style
             nixd
             sops
             ssh-to-age

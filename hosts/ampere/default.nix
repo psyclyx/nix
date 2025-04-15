@@ -2,6 +2,8 @@
 {
   system.stateVersion = 6;
 
+  nix.channel.enable = false;
+
   environment.systemPackages = with pkgs; [
     nur.repos.DimitarNestorov.ghostty
     awscli2

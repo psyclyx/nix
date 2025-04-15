@@ -4,7 +4,8 @@
   inputs,
   ...
 }:
-with lib; let
+with lib;
+let
   inherit (inputs) powerlevel10k;
 
   cfg = config.programs.zsh.powerlevel10k;
@@ -21,7 +22,8 @@ with lib; let
       source "''${XDG_CACHE_HOME:-''$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
     fi
   '';
-in {
+in
+{
   options.programs.zsh.powerlevel10k = {
     enable = mkEnableOption "Powerlevel10k zsh theme";
 
@@ -29,36 +31,34 @@ in {
 
     config = mkOption {
       type = types.attrsOf types.anything;
-      default = {};
+      default = { };
       example = "./path/to/your/.p10k.zsh";
       description = "Path to your Powerlevel10k configuration file (.p10k.zsh)";
     };
   };
 
-  config =
-    mkIf cfg.enable
-    {
-      # disable default direnv zsh integration
+  config = mkIf cfg.enable {
+    # disable default direnv zsh integration
 
-      warnings = optional (direnvCfg.enable && direnvCfg.enableZshIntegration) [
-        ("programs.direnv.enable and programs.direnv.enableZshIntegration are both true. "
-          + "p10k-hm is providing custom direnv integration for zsh. You probably want to disable direnv's integration.")
-      ];
+    warnings = optional (direnvCfg.enable && direnvCfg.enableZshIntegration) [
+      (
+        "programs.direnv.enable and programs.direnv.enableZshIntegration are both true. "
+        + "p10k-hm is providing custom direnv integration for zsh. You probably want to disable direnv's integration."
+      )
+    ];
 
-      home.file.".p10k-config.zsh" = cfg.config;
+    home.file.".p10k-config.zsh" = cfg.config;
 
-      programs.zsh = {
-        initExtraFirst = mkBefore (
-          # p10k friendly direnvZshIntegration replacement
-          if direnvCfg.enable
-          then wrapDirenv instantPromptConfig
-          else instantPromptConfig
-        );
+    programs.zsh = {
+      initExtraFirst = mkBefore (
+        # p10k friendly direnvZshIntegration replacement
+        if direnvCfg.enable then wrapDirenv instantPromptConfig else instantPromptConfig
+      );
 
-        initExtra = ''
-          source ${powerlevel10k}/powerlevel10k.zsh-theme
-          source ~/.p10k-config.zsh
-        '';
-      };
+      initExtra = ''
+        source ${powerlevel10k}/powerlevel10k.zsh-theme
+        source ~/.p10k-config.zsh
+      '';
     };
+  };
 }

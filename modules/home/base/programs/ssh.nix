@@ -2,17 +2,19 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-in {
+in
+{
   programs = {
     ssh = {
       enable = true;
       compression = true;
       addKeysToAgent = "yes";
-      extraOptionOverrides =
-        {"UpdateHostKeys" = "no";}
-        // lib.optionalAttrs isDarwin {"useKeychain" = "yes";};
+      extraOptionOverrides = {
+        "UpdateHostKeys" = "no";
+      } // lib.optionalAttrs isDarwin { "useKeychain" = "yes"; };
       matchBlocks = {
         "alice157.github.com" = {
           identityFile = "~/.ssh/id_alice157";

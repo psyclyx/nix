@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   xdg = {
     userDirs = {
       enable = true;
@@ -17,47 +18,55 @@
       "mimeapps.list".force = true;
     };
 
-    mimeApps = let
-      nvim = "nvim.desktop";
-      firefox = "firefox.desktop";
-      obsidian = "obsidian.desktop";
-    in {
-      enable = true;
-      associations.added = {
-        "application/pdf" = [firefox];
-        "application/x-extension-htm" = [firefox];
-        "application/x-extension-html" = [firefox];
-        "application/x-extension-shtml" = [firefox];
-        "application/x-extension-xht" = [firefox];
-        "application/x-extension-xhtml" = [firefox];
-        "application/xhtml+xml" = [firefox];
-        "text/html" = [firefox];
-        "text/markdown" = [nvim obsidian];
-        "text/plain" = [nvim];
-        "x-scheme-handler/ftp" = [firefox];
-        "x-scheme-handler/http" = [firefox];
-        "x-scheme-handler/https" = [firefox];
-        "x-scheme-handler/unknown" = [firefox];
-        "x-scheme-handler/about" = [firefox];
-      };
+    mimeApps =
+      let
+        nvim = "nvim.desktop";
+        firefox = "firefox.desktop";
+        obsidian = "obsidian.desktop";
+      in
+      {
+        enable = true;
+        associations.added = {
+          "application/pdf" = [ firefox ];
+          "application/x-extension-htm" = [ firefox ];
+          "application/x-extension-html" = [ firefox ];
+          "application/x-extension-shtml" = [ firefox ];
+          "application/x-extension-xht" = [ firefox ];
+          "application/x-extension-xhtml" = [ firefox ];
+          "application/xhtml+xml" = [ firefox ];
+          "text/html" = [ firefox ];
+          "text/markdown" = [
+            nvim
+            obsidian
+          ];
+          "text/plain" = [ nvim ];
+          "x-scheme-handler/ftp" = [ firefox ];
+          "x-scheme-handler/http" = [ firefox ];
+          "x-scheme-handler/https" = [ firefox ];
+          "x-scheme-handler/unknown" = [ firefox ];
+          "x-scheme-handler/about" = [ firefox ];
+        };
 
-      defaultApplications = {
-        "application/pdf" = [firefox];
-        "application/x-extension-htm" = [firefox];
-        "application/x-extension-html" = [firefox];
-        "application/x-extension-shtml" = [firefox];
-        "application/x-extension-xht" = [firefox];
-        "application/x-extension-xhtml" = [firefox];
-        "application/xhtml+xml" = [firefox];
-        "text/html" = [firefox];
-        "text/markdown" = [nvim obsidian];
-        "text/plain" = [nvim];
-        "x-scheme-handler/ftp" = [firefox];
-        "x-scheme-handler/http" = [firefox];
-        "x-scheme-handler/https" = [firefox];
-        "x-scheme-handler/unknown" = [firefox];
-        "x-scheme-handler/about" = [firefox];
+        defaultApplications = {
+          "application/pdf" = [ firefox ];
+          "application/x-extension-htm" = [ firefox ];
+          "application/x-extension-html" = [ firefox ];
+          "application/x-extension-shtml" = [ firefox ];
+          "application/x-extension-xht" = [ firefox ];
+          "application/x-extension-xhtml" = [ firefox ];
+          "application/xhtml+xml" = [ firefox ];
+          "text/html" = [ firefox ];
+          "text/markdown" = [
+            nvim
+            obsidian
+          ];
+          "text/plain" = [ nvim ];
+          "x-scheme-handler/ftp" = [ firefox ];
+          "x-scheme-handler/http" = [ firefox ];
+          "x-scheme-handler/https" = [ firefox ];
+          "x-scheme-handler/unknown" = [ firefox ];
+          "x-scheme-handler/about" = [ firefox ];
+        };
       };
-    };
   };
 }

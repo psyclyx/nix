@@ -3,11 +3,18 @@
   pkgs,
   inputs,
   ...
-}: let
-  inherit (inputs) nix-homebrew homebrew-bundle homebrew-core homebrew-cask;
+}:
+let
+  inherit (inputs)
+    nix-homebrew
+    homebrew-bundle
+    homebrew-core
+    homebrew-cask
+    ;
   inherit (pkgs.stdenv) hostPlatform;
-in {
-  imports = [nix-homebrew.darwinModules.nix-homebrew];
+in
+{
+  imports = [ nix-homebrew.darwinModules.nix-homebrew ];
 
   homebrew = {
     enable = true;
@@ -22,7 +29,13 @@ in {
       cleanup = "zap";
     };
 
-    taps = builtins.attrNames (builtins.removeAttrs config.nix-homebrew.taps ["homebrew/bundle" "homebrew/core" "homebrew/cask"]);
+    taps = builtins.attrNames (
+      builtins.removeAttrs config.nix-homebrew.taps [
+        "homebrew/bundle"
+        "homebrew/core"
+        "homebrew/cask"
+      ]
+    );
   };
 
   nix-homebrew = {

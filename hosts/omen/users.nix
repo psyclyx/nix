@@ -1,7 +1,9 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   mkHome = import ../../modules/home;
-in {
-  nix.settings.trusted-users = ["psyc"];
+in
+{
+  nix.settings.trusted-users = [ "psyc" ];
   users = {
     users = {
       psyc = {
@@ -16,7 +18,9 @@ in {
           "adbusers"
           "builders"
         ];
-        openssh.authorizedKeys.keys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEwUKqMso49edYpzalH/BFfNlwmLDmcUaT00USWiMoFO me@psyclyx.xyz"];
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEwUKqMso49edYpzalH/BFfNlwmLDmcUaT00USWiMoFO me@psyclyx.xyz"
+        ];
       };
     };
   };

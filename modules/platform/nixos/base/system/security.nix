@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   security = {
     pam = {
       loginLimits = [

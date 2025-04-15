@@ -1,6 +1,8 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   mod = "Mod4";
-in {
+in
+{
   imports = [
     ./theme.nix
     ./keybindings.nix
@@ -20,7 +22,7 @@ in {
     config = {
       floating = {
         criteria = [
-          {app_id = "xdg-desktop-portal-gtk";}
+          { app_id = "xdg-desktop-portal-gtk"; }
           {
             app_id = "firefox";
             title = "Library";
@@ -29,7 +31,7 @@ in {
       };
 
       bars = [
-        {command = "${pkgs.waybar}/bin/waybar";}
+        { command = "${pkgs.waybar}/bin/waybar"; }
       ];
 
       defaultWorkspace = "workspace number 1";
@@ -42,19 +44,19 @@ in {
       assigns = {
         "1" = [
           # code
-          {instance = "vscodium";}
+          { instance = "vscodium"; }
         ];
         "2" = [
           # web
-          {app_id = "firefox";}
+          { app_id = "firefox"; }
         ];
         "3" = [
           # notes
-          {instance = "obsidian";}
+          { instance = "obsidian"; }
         ];
         "4" = [
           # chat
-          {instance = "signal";}
+          { instance = "signal"; }
         ];
       };
 

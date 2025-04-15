@@ -1,6 +1,8 @@
-{...}: let
+{ ... }:
+let
   c = import ../../../colors.nix;
-in {
+in
+{
   programs.waybar = {
     style = ''
       * {

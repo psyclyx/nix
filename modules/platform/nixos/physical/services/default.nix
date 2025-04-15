@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   imports = [
     ./devmon.nix
     ./fwupd.nix

@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   programs.kitty = {
     enable = true;
     themeFile = "Doom_One";

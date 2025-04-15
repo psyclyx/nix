@@ -1,6 +1,8 @@
-{...}: let
+{ ... }:
+let
   c = import ../../colors.nix;
-in {
+in
+{
   wayland.windowManager.sway = {
     config = {
       colors = {
@@ -38,7 +40,7 @@ in {
       };
 
       fonts = {
-        names = ["NotoMono Nerd Font"];
+        names = [ "NotoMono Nerd Font" ];
         size = 12.0;
       };
 

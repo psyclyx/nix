@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   fonts = {
     packages = with pkgs; [
       nerd-fonts.noto
@@ -14,10 +15,10 @@
 
     fontconfig = {
       defaultFonts = {
-        monospace = ["NotoMono Nerd Font"];
-        serif = ["NotoSerif Nerd Font"];
-        sansSerif = ["NotoSans Nerd Font"];
-        emoji = ["Twitter Color Emoji"];
+        monospace = [ "NotoMono Nerd Font" ];
+        serif = [ "NotoSerif Nerd Font" ];
+        sansSerif = [ "NotoSans Nerd Font" ];
+        emoji = [ "Twitter Color Emoji" ];
       };
     };
   };

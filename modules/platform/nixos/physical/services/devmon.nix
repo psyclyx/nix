@@ -1,3 +1,4 @@
-{...}: {
+{ ... }:
+{
   services.devmon.enable = true;
 }

@@ -2,10 +2,17 @@
   lib,
   pkgs,
   ...
-}: let
-  colors = import ../../../../home/themes/angel.nix {inherit lib;};
-  theme = with colors.colorUtils; mkTheme [(transform.withAlpha 0.9) transform.withOx];
-in {
+}:
+let
+  colors = import ../../../../home/themes/angel.nix { inherit lib; };
+  theme =
+    with colors.colorUtils;
+    mkTheme [
+      (transform.withAlpha 0.9)
+      transform.withOx
+    ];
+in
+{
   services.jankyborders = {
     enable = true;
     package = pkgs.jankyborders;

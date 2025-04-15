@@ -1,7 +1,8 @@
-{...}: {
+{ ... }:
+{
   nix = {
     settings = {
-      trusted-users = ["@staff"];
+      trusted-users = [ "@staff" ];
 
       substituters = [
         "https://nix-community.cachix.org"

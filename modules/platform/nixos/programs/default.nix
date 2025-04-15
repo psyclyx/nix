@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   imports = [
     ./adb.nix
     ./light.nix

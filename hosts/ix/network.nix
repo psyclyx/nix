@@ -1,10 +1,11 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   psyclyx.network.tailscale = {
     enable = true;
     exitNode = true;
   };
 
-  networking.firewall.allowedTCPPorts = [22];
+  networking.firewall.allowedTCPPorts = [ 22 ];
   networking.useNetworkd = true;
   services.resolved.enable = true;
 
@@ -22,7 +23,7 @@
           Gateway = "172.31.1.1";
           GatewayOnLink = true;
         }
-        {Gateway = "fe80::1";}
+        { Gateway = "fe80::1"; }
       ];
     };
   };

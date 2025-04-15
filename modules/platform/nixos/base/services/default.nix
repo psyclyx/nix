@@ -1,3 +1,4 @@
-{...}: {
-  imports = [./openssh.nix];
+{ ... }:
+{
+  imports = [ ./openssh.nix ];
 }

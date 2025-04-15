@@ -2,16 +2,19 @@
   lib,
   stdenv,
   fetchzip,
-}: let
+}:
+let
   version = "0.16.626";
   archMap = {
     "x86_64-linux" = "linux_amd64_static";
     "x86_64-darwin" = "macos_amd64";
     "aarch64-darwin" = "macos_arm64";
   };
-  getBinary = system: let
-    arch = archMap.${system} or (throw "Unsupported system: ${system}");
-  in
+  getBinary =
+    system:
+    let
+      arch = archMap.${system} or (throw "Unsupported system: ${system}");
+    in
     fetchzip {
       url = "http://github.com/greglook/cljstyle/releases/download/${version}/cljstyle_${version}_${arch}.zip";
       sha256 =
@@ -23,21 +26,21 @@
         .${arch};
     };
 in
-  stdenv.mkDerivation {
-    pname = "cljstyle";
-    inherit version;
-    src = getBinary stdenv.hostPlatform.system;
+stdenv.mkDerivation {
+  pname = "cljstyle";
+  inherit version;
+  src = getBinary stdenv.hostPlatform.system;
 
-    installPhase = ''
-      mkdir -p $out/bin
-      cp $src/$pname $out/bin/$pname
-      chmod +x $out/bin/$pname
-    '';
+  installPhase = ''
+    mkdir -p $out/bin
+    cp $src/$pname $out/bin/$pname
+    chmod +x $out/bin/$pname
+  '';
 
-    meta = with lib; {
-      description = "A tool for formatting Clojure code";
-      homepage = "https://github.com/greglook/cljstyle";
-      license = licenses.epl10;
-      platforms = builtins.attrNames archMap;
-    };
-  }
+  meta = with lib; {
+    description = "A tool for formatting Clojure code";
+    homepage = "https://github.com/greglook/cljstyle";
+    license = licenses.epl10;
+    platforms = builtins.attrNames archMap;
+  };
+}

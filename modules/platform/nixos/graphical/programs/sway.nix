@@ -1,5 +1,6 @@
-{pkgs, ...}: {
-  environment.systemPackages = [pkgs.dbus];
+{ pkgs, ... }:
+{
+  environment.systemPackages = [ pkgs.dbus ];
   programs = {
     sway = {
       enable = true;

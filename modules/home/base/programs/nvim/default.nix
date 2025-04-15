@@ -1,9 +1,11 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   grammarsPath = pkgs.symlinkJoin {
     name = "nvim-treesitter-grammars";
     paths = pkgs.vimPlugins.nvim-treesitter.withAllGrammars.dependencies;
   };
-in {
+in
+{
   home.file.".config/nvim/init.lua".text = ''
     vim.opt.runtimepath:prepend("${grammarsPath}")
     require("config")

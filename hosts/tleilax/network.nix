@@ -1,7 +1,9 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   prefix6 = "2606:7940:32:26::";
   prefix4 = "199.255.18.171";
-in {
+in
+{
   psyclyx.network.tailscale.enable = true;
   psyclyx.network.tailscale.exitNode = true;
 
@@ -78,7 +80,8 @@ in {
           routes = [
             {
               Destination = "::/0";
-              Gateway = "${prefix6}1"; }
+              Gateway = "${prefix6}1";
+            }
             {
               Destination = "0.0.0.0/0";
               Gateway = "${prefix6}1";

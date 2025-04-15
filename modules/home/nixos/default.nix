@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   imports = [
     ./gtk.nix
     ./programs

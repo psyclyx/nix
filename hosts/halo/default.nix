@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   imports = [
     ../../modules/platform/darwin/base
     ../../modules/platform/darwin/desktop

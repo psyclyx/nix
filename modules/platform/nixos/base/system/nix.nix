@@ -1,7 +1,8 @@
-{...}: {
+{ ... }:
+{
   nix = {
     settings = {
-      trusted-users = ["@builders"];
+      trusted-users = [ "@builders" ];
       substituters = [
         "https://nix-community.cachix.org"
         "https://psyclyx.cachix.org"
@@ -21,7 +22,7 @@
 
     optimise = {
       automatic = true;
-      dates = ["05:00"];
+      dates = [ "05:00" ];
     };
 
     extraOptions = ''

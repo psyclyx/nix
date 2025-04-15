@@ -1,5 +1,6 @@
-{inputs, ...}: {
-  imports = [inputs.disko.nixosModules.disko];
+{ inputs, ... }:
+{
+  imports = [ inputs.disko.nixosModules.disko ];
   disko.devices = {
     disk.disk1 = {
       device = "/dev/disk/by-id/ata-CT2000MX500SSD1_2403E88EF849";
@@ -14,7 +15,7 @@
               type = "filesystem";
               format = "vfat";
               mountpoint = "/boot";
-              mountOptions = ["umask=0077"];
+              mountOptions = [ "umask=0077" ];
             };
           };
           root = {

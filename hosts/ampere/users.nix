@@ -2,14 +2,20 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   userName = "alice";
   userHome = "/Users/alice";
   mkHome = import ../../modules/home;
-in {
-  nix.settings.trusted-users = ["root" "@admin" userName];
+in
+{
+  nix.settings.trusted-users = [
+    "root"
+    "@admin"
+    userName
+  ];
 
-  users.knownUsers = [userName];
+  users.knownUsers = [ userName ];
   users.users.alice = {
     name = userName;
     uid = 501;
@@ -22,12 +28,12 @@ in {
     email = "me@psyclyx.xyz";
     modules = [
       ../../modules/home/base
-      {services.syncthing.enable = lib.mkForce false;}
+      { services.syncthing.enable = lib.mkForce false; }
       ../../modules/home/programs/emacs
       ../../modules/home/programs/kitty.nix
       ./zsh.nix
       {
-        home.sessionPath = ["$HOME/bin"];
+        home.sessionPath = [ "$HOME/bin" ];
       }
       {
         programs = {

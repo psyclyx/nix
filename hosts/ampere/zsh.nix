@@ -1,4 +1,5 @@
-{lib, ...}: {
+{ lib, ... }:
+{
   home = {
     shellAliases = {
       watch = "shadow-cljs watch";

@@ -1,6 +1,6 @@
 {
-  emacsPackages = epkgs:
-    with epkgs; [
+  emacsPackages =
+    epkgs: with epkgs; [
       # Emacs
       exec-path-from-shell
       no-littering
@@ -75,65 +75,66 @@
       zig-mode
     ];
 
-  systemPackages = pkgs:
+  systemPackages =
+    pkgs:
     with pkgs;
-      [
-        # UI
-        etBook
-        fontconfig
-        nerd-fonts.hack
-        nerd-fonts.noto
-        nerd-fonts.symbols-only
-        symbola
-        dejavu_fonts
-        noto-fonts
+    [
+      # UI
+      etBook
+      fontconfig
+      nerd-fonts.hack
+      nerd-fonts.noto
+      nerd-fonts.symbols-only
+      symbola
+      dejavu_fonts
+      noto-fonts
 
-        # Development
-        direnv
-        git
+      # Development
+      direnv
+      git
 
-        ## Search/Completion
-        fd
-        gnugrep
-        ripgrep
-        silver-searcher
+      ## Search/Completion
+      fd
+      gnugrep
+      ripgrep
+      silver-searcher
 
-        # Language support
-        ## text
-        ispell
+      # Language support
+      ## text
+      ispell
 
-        # clojure
-        babashka
-        clj-kondo
-        cljfmt
-        leiningen
-        readline
-        zlib
+      # clojure
+      babashka
+      clj-kondo
+      cljfmt
+      leiningen
+      readline
+      zlib
 
-        # rust
-        cargo
-        rust-analyzer
-        rustc
-        rustfmt
+      # rust
+      cargo
+      rust-analyzer
+      rustc
+      rustfmt
 
-        # nix
-        nixfmt-rfc-style
-        nixd
+      # nix
+      nixfmt-rfc-style
+      nixd
 
-        # shell
-        shellcheck
-        shfmt
+      # shell
+      shellcheck
+      shfmt
 
-        # typescript
-        eclint
-        nodePackages.prettier
-        nodePackages.typescript
-        nodePackages.typescript-language-server
-        nodejs
+      # typescript
+      eclint
+      nodePackages.prettier
+      nodePackages.typescript
+      nodePackages.typescript-language-server
+      nodejs
 
-        # zig
-        zls
-      ]
-      ++ lib.optionals stdenv.isDarwin []
-      ++ lib.optionals stdenv.isLinux [];
+      # zig
+      zls
+    ]
+    ++ lib.optionals stdenv.isDarwin [ ]
+    ++ lib.optionals stdenv.isLinux [ ];
 }

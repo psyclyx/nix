@@ -1,7 +1,9 @@
-{...}: let
+{ ... }:
+let
   c = import ../../../colors.nix;
-in {
-  imports = [./style.nix];
+in
+{
+  imports = [ ./style.nix ];
   programs.waybar = {
     enable = true;
     settings = {
@@ -44,7 +46,10 @@ in {
           };
         };
         "sway/scratchpad" = {
-          format-icons = ["" "󰼜"];
+          format-icons = [
+            ""
+            "󰼜"
+          ];
         };
 
         "pulseaudio" = {
@@ -65,15 +70,17 @@ in {
             ];
           };
         };
-        "network" = let
-          format_speed = "󰶡 {bandwidthDownBytes} 󰶣 {bandwidthUpBytes}";
-        in {
-          format-wifi = "󰖩 {signalStrength}% ${format_speed}";
-          tooltip = "{essid} {ifname} {ipaddr}/{cidr}";
-          format-ethernet = "󰈁 ${format_speed}";
-          format-linked = "󰲚 {ifname} (No IP) ${format_speed}";
-          format-disconnected = "";
-        };
+        "network" =
+          let
+            format_speed = "󰶡 {bandwidthDownBytes} 󰶣 {bandwidthUpBytes}";
+          in
+          {
+            format-wifi = "󰖩 {signalStrength}% ${format_speed}";
+            tooltip = "{essid} {ifname} {ipaddr}/{cidr}";
+            format-ethernet = "󰈁 ${format_speed}";
+            format-linked = "󰲚 {ifname} (No IP) ${format_speed}";
+            format-disconnected = "";
+          };
         "backlight" = {
           format = "{icon} {percent}%";
           format-icons = [
@@ -95,23 +102,25 @@ in {
           tooltip = false;
           format = "󰥔 {:%I:%M %m/%d/%y}";
         };
-        "cpu" = let
-          cpuIcon = "";
-        in {
-          interval = 4;
-          format = "${cpuIcon} {icon0}{icon1}{icon2}{icon3}";
-          format-icons = [
-            "<span color='${c.blue2}'>▁</span>"
-            "<span color='${c.blue3}'>▂</span>"
-            "<span color='${c.slate1}'>▃</span>"
-            "<span color='${c.slate2}'>▄</span>"
-            "<span color='${c.slate3}'>▅</span>"
-            "<span color='${c.red2}'>▆</span>"
-            "<span color='${c.red3}'>▇</span>"
-            "<span color='${c.red4}'>█</span>"
-          ];
-          tooltip = false;
-        };
+        "cpu" =
+          let
+            cpuIcon = "";
+          in
+          {
+            interval = 4;
+            format = "${cpuIcon} {icon0}{icon1}{icon2}{icon3}";
+            format-icons = [
+              "<span color='${c.blue2}'>▁</span>"
+              "<span color='${c.blue3}'>▂</span>"
+              "<span color='${c.slate1}'>▃</span>"
+              "<span color='${c.slate2}'>▄</span>"
+              "<span color='${c.slate3}'>▅</span>"
+              "<span color='${c.red2}'>▆</span>"
+              "<span color='${c.red3}'>▇</span>"
+              "<span color='${c.red4}'>█</span>"
+            ];
+            tooltip = false;
+          };
         "memory" = {
           interval = 4;
           format = " {icon}";

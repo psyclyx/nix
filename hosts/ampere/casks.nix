@@ -2,7 +2,8 @@
   inputs,
   lib,
   ...
-}: {
+}:
+{
   nix-homebrew = {
     taps = with inputs; {
       "conductorone/cone" = homebrew-conductorone;

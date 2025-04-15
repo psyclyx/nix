@@ -1,4 +1,5 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   mod = "Mod4";
 
   left = "h";
@@ -11,7 +12,8 @@
   rofi = "${pkgs.rofi}/bin/rofi";
   bemoji = "${pkgs.bemoji}/bin/bemoji";
   kitty = "${pkgs.kitty}/bin/kitty";
-in {
+in
+{
   wayland.windowManager.sway = {
     config = {
       modifier = mod;

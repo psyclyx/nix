@@ -1,3 +1,4 @@
-{...}: {
-  homebrew.casks = ["raycast"];
+{ ... }:
+{
+  homebrew.casks = [ "raycast" ];
 }

@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   system.stateVersion = "24.05";
   time.timeZone = "America/Los_Angeles";
   imports = [
@@ -18,7 +19,9 @@
   services.resolved.enable = true;
   networking.useDHCP = true;
   networking.interfaces.tailscale0.useDHCP = false;
-  services.tailscale = {enable = true;};
-  networking.firewall.allowedUDPPorts = [41641];
-  environment.systemPackages = [pkgs.tailscale];
+  services.tailscale = {
+    enable = true;
+  };
+  networking.firewall.allowedUDPPorts = [ 41641 ];
+  environment.systemPackages = [ pkgs.tailscale ];
 }

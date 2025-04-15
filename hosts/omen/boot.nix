@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
     initrd = {
@@ -10,7 +11,7 @@
       ];
     };
 
-    kernelModules = ["kvm-intel"];
+    kernelModules = [ "kvm-intel" ];
 
     kernelParams = [
       "snd-intel-dspcfg.dsp_driver=1" # fix pipewire audio

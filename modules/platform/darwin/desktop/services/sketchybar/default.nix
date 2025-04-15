@@ -3,10 +3,21 @@
   pkgs,
   lib,
   ...
-}: let
-  colors = import ../../../../../home/themes/angel.nix {inherit lib;};
-  themeEnv = with colors.colorUtils; mkThemeEnv [(transform.withAlpha 0.8) transform.withOx];
-  transparentTheme = with colors.colorUtils; mkTheme [(transform.withAlpha 0.4) transform.withOx];
+}:
+let
+  colors = import ../../../../../home/themes/angel.nix { inherit lib; };
+  themeEnv =
+    with colors.colorUtils;
+    mkThemeEnv [
+      (transform.withAlpha 0.8)
+      transform.withOx
+    ];
+  transparentTheme =
+    with colors.colorUtils;
+    mkTheme [
+      (transform.withAlpha 0.4)
+      transform.withOx
+    ];
 
   aerospacePlugin = pkgs.writeShellApplication rec {
     name = "aerospace_plugin";
@@ -23,7 +34,7 @@
   appNamePlugin = pkgs.writeShellApplication rec {
     name = "app_name_plugin";
     text = builtins.readFile ./app_name_plugin.sh;
-    derivationArgs.buildInputs = [pkgs.sketchybar];
+    derivationArgs.buildInputs = [ pkgs.sketchybar ];
   };
 
   clockPlugin = pkgs.writeShellApplication rec {
@@ -66,14 +77,13 @@
       ];
 
     runtimeInputs = derivationArgs.buildInputs;
-    runtimeEnv =
-      themeEnv
-      // {
-        "BAR_BACKGROUND" = transparentTheme.background;
-        "Y_OFFSET" = config.psyclyx.sketchybar.yOffset;
-      };
+    runtimeEnv = themeEnv // {
+      "BAR_BACKGROUND" = transparentTheme.background;
+      "Y_OFFSET" = config.psyclyx.sketchybar.yOffset;
+    };
   };
-in {
+in
+{
   options = {
     psyclyx.sketchybar.yOffset = lib.mkOption {
       type = lib.types.ints.unsigned;

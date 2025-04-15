@@ -1,7 +1,9 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   swaylock = pkgs.swaylock;
-in {
-  home.packages = [swaylock];
+in
+{
+  home.packages = [ swaylock ];
   services = {
     swayidle = {
       enable = true;

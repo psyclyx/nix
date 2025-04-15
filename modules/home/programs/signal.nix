@@ -1,3 +1,4 @@
-{pkgs, ...}: {
-  home.packages = [pkgs.signal-desktop];
+{ pkgs, ... }:
+{
+  home.packages = [ pkgs.signal-desktop ];
 }

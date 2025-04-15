@@ -1,6 +1,6 @@
-{pkgs, ...}: {
-  home.packages = with pkgs;
-  [
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
     # clojure
     babashka
     clj-kondo

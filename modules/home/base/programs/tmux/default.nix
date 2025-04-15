@@ -1,4 +1,5 @@
-{pkgs, ...}: {
-  home.packages = with pkgs; [tmux];
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [ tmux ];
   home.file.".tmux.conf".source = ./tmux.conf;
 }

@@ -2,11 +2,13 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-in {
-  imports = [./p10k-hm.nix];
-  home.packages = with pkgs; [jq];
+in
+{
+  imports = [ ./p10k-hm.nix ];
+  home.packages = with pkgs; [ jq ];
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;

@@ -1,4 +1,5 @@
-{lib}: let
+{ lib }:
+let
   baseColors = {
     background = "FFFFFF";
     background_alt = "F2F2F2";
@@ -62,52 +63,56 @@
       hex = hex: hex;
       withHash = hex: "#" + hex;
       withOx = hex: "0x" + hex;
-      withAlpha = alpha: hex: let
-        a = lib.toHexString (builtins.floor (alpha * 255));
-      in
-        (
-          if (builtins.stringLength a) == 1
-          then "0${a}"
-          else a
-        )
-        + hex;
+      withAlpha =
+        alpha: hex:
+        let
+          a = lib.toHexString (builtins.floor (alpha * 255));
+        in
+        (if (builtins.stringLength a) == 1 then "0${a}" else a) + hex;
 
-      rgb = hex: let
-        c = toRGB hex;
-      in "rgb(${toString c.r}, ${toString c.g}, ${toString c.b})";
+      rgb =
+        hex:
+        let
+          c = toRGB hex;
+        in
+        "rgb(${toString c.r}, ${toString c.g}, ${toString c.b})";
 
-      rgba = alpha: hex: let
-        c = toRGB hex;
-      in "rgba(${toString c.r}, ${toString c.g}, ${toString c.b}, ${toString alpha})";
+      rgba =
+        alpha: hex:
+        let
+          c = toRGB hex;
+        in
+        "rgba(${toString c.r}, ${toString c.g}, ${toString c.b}, ${toString alpha})";
     };
 
     compose = fs: hex: builtins.foldl' (acc: f: f acc) hex fs;
 
-    mkTheme = transforms: let
-      formatValue = value:
-        if builtins.isAttrs value
-        then lib.mapAttrs (name: val: formatValue val) value
-        else compose transforms value;
-    in
+    mkTheme =
+      transforms:
+      let
+        formatValue =
+          value:
+          if builtins.isAttrs value then
+            lib.mapAttrs (name: val: formatValue val) value
+          else
+            compose transforms value;
+      in
       formatValue baseColors;
-    mkThemeEnv = transforms: let
-      formatValue = prefix: value:
-        if builtins.isAttrs value
-        then
-          lib.concatMapAttrs
-          (name: val:
-            formatValue
-            (
-              if prefix == ""
-              then name
-              else "${prefix}_${name}"
-            )
-            val)
-          value
-        else {"THEME_${lib.toUpper prefix}" = compose transforms value;};
-    in
+    mkThemeEnv =
+      transforms:
+      let
+        formatValue =
+          prefix: value:
+          if builtins.isAttrs value then
+            lib.concatMapAttrs (
+              name: val: formatValue (if prefix == "" then name else "${prefix}_${name}") val
+            ) value
+          else
+            { "THEME_${lib.toUpper prefix}" = compose transforms value; };
+      in
       formatValue "" baseColors;
   };
-in {
+in
+{
   inherit baseColors colorUtils;
 }

@@ -1,4 +1,5 @@
-{lib, ...}: {
+{ lib, ... }:
+{
   options.my.user = {
     name = lib.mkOption {
       type = lib.types.str;

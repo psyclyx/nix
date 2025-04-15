@@ -1,5 +1,7 @@
-{inputs, ...}: let
-in {
+{ inputs, ... }:
+let
+in
+{
   system.stateVersion = "24.05";
   time.timeZone = "America/Los_Angeles";
   imports = [
@@ -39,7 +41,7 @@ in {
     config = {
       # Includes dependencies for a basic setup
       # https://www.home-assistant.io/integrations/default_config/
-      default_config = {};
+      default_config = { };
     };
   };
 }

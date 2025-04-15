@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   boot = {
     loader = {
       systemd-boot.enable = true;
@@ -18,6 +19,6 @@
       "nvidia_uvm"
     ];
 
-    blacklistedKernelModules = ["nouveau"];
+    blacklistedKernelModules = [ "nouveau" ];
   };
 }

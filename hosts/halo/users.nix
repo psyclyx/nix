@@ -1,9 +1,15 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   userName = "psyc";
   userHome = "/Users/psyc";
   mkHome = import ../../modules/home;
-in {
-  nix.settings.trusted-users = ["root" "@admin" userName];
+in
+{
+  nix.settings.trusted-users = [
+    "root"
+    "@admin"
+    userName
+  ];
 
   users.users.psyc = {
     name = userName;

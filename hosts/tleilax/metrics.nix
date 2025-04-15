@@ -1,4 +1,5 @@
-{config, ...}: {
+{ config, ... }:
+{
   services.grafana = {
     enable = true;
     settings.server.http_addr = "0.0.0.0";
@@ -16,18 +17,22 @@
           "systemd"
           "processes"
         ];
-          enable = true;
+        enable = true;
       };
     };
 
-    scrapeConfigs = [{
-      job_name = "nodes";
-      static_configs = [{
-        targets = [
-          "127.0.0.1:${toString config.services.prometheus.exporters.node.port}"
+    scrapeConfigs = [
+      {
+        job_name = "nodes";
+        static_configs = [
+          {
+            targets = [
+              "127.0.0.1:${toString config.services.prometheus.exporters.node.port}"
+            ];
+          }
         ];
-      }];
-    }];
+      }
+    ];
   };
 
   services.loki = {
@@ -108,14 +113,13 @@
     };
   };
 
-
-services.promtail = {
+  services.promtail = {
     enable = false;
     configuration = {
       server = {
         http_listen_port = "127.0.0.1";
         http_listen_address = 3040;
-        instance_interface_names = ["lo"];
+        instance_interface_names = [ "lo" ];
         grpc_listen_address = "127.0.0.1";
         grpc_listen_port = 3041;
 
@@ -123,23 +127,29 @@ services.promtail = {
       positions = {
         filename = "/tmp/positions.yaml";
       };
-      clients = [{
-        url = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
-      }];
-      scrape_configs = [{
-        job_name = "journal";
-        journal = {
-          max_age = "12h";
-          labels = {
-            job = "systemd-journal";
-            host = "tleilax";
+      clients = [
+        {
+          url = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
+        }
+      ];
+      scrape_configs = [
+        {
+          job_name = "journal";
+          journal = {
+            max_age = "12h";
+            labels = {
+              job = "systemd-journal";
+              host = "tleilax";
+            };
           };
-        };
-        relabel_configs = [{
-          source_labels = [ "__journal__systemd_unit" ];
-          target_label = "unit";
-        }];
-      }];
+          relabel_configs = [
+            {
+              source_labels = [ "__journal__systemd_unit" ];
+              target_label = "unit";
+            }
+          ];
+        }
+      ];
     };
   };
 }

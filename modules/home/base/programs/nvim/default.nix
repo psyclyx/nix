@@ -12,7 +12,7 @@ in {
   programs.neovim = {
     enable = true;
     extraPackages = with pkgs; [
-      alejandra
+      nixfmt-rfc-style
       clang
       cljstyle
       gnumake

@@ -117,7 +117,7 @@
         rustfmt
 
         # nix
-        alejandra
+        nixfmt-rfc-style
         nixd
 
         # shell

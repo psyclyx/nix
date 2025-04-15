@@ -19,7 +19,6 @@
     lua-language-server
 
     # nix
-    alejandra
     nixd
     nixfmt-rfc-style
 

@@ -42,6 +42,9 @@ in
             shellInit = lib.optionalString pkgs.stdenv.isDarwin ''
               eval (/opt/homebrew/bin/brew shellenv)
             '';
+            interactiveShellInit = ''
+              set -g fish_key_bindings fish_vi_key_bindings
+            '';
           };
           bash.enable = true;
           starship = {

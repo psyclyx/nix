@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   sb = "${pkgs.sketchybar}/bin/sketchybar";
-  modeBadge = label: drawing: "exec-and-forget ${sb} --set mode label=${label} drawing=${drawing}";
+  modeBadge = icon: drawing: "exec-and-forget ${sb} --set mode icon=${icon} drawing=${drawing}";
 
   switch = mode: draw: [
     (modeBadge mode draw)
@@ -12,6 +12,22 @@ let
   toMove = switch "move" "on";
   toCommand = switch "command" "on";
   toService = switch "service" "on";
+
+  ghostty-new-window = pkgs.writeScriptBin "ghostty-new-window" ''
+    #!/usr/bin/env osascript
+    tell application "Ghostty"
+        if it is running then
+            activate
+            tell application "System Events" to keystroke "n" using {command down}
+        else
+            activate
+        end if
+    end tell
+  '';
+  term = "${ghostty-new-window}/bin/ghostty-new-window";
+  trigger-workspace-change = "${sb} --trigger aerospace_workspace_change";
+  exec-twc = "exec-and-forget ${trigger-workspace-change}";
+
 in
 {
   services.aerospace = {
@@ -26,7 +42,7 @@ in
       exec-on-workspace-change = [
         "/bin/bash"
         "-c"
-        "${sb} --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
+        "${trigger-workspace-change} FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE"
       ];
 
       automatically-unhide-macos-hidden-apps = true;
@@ -53,13 +69,13 @@ in
       mode.command.binding = {
         esc = toMain;
         enter = toMove;
-        space = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -r\"" ] ++ toMain;
-        shift-space = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -c\"" ] ++ toMain;
+        i = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -r\"" ] ++ toMain;
+        shift-i = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -c\"" ] ++ toMain;
 
         shift-semicolon = toService;
 
         #o = ["exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~"] ++ toMain;
-        o = [ "exec-and-forget open -a Ghostty -n" ] ++ toMain;
+        o = [ "exec-and-forget ${term}" ] ++ toMain;
 
         x = [ "close" ] ++ toMain;
 
@@ -94,14 +110,38 @@ in
         up = "resize smart -50";
         down = "resize smart +50";
 
-        q = [ "move-node-to-workspace 1q" ] ++ toMain;
-        w = [ "move-node-to-workspace 2w" ] ++ toMain;
-        e = [ "move-node-to-workspace 3e" ] ++ toMain;
-        r = [ "move-node-to-workspace 4r" ] ++ toMain;
-        a = [ "move-node-to-workspace 5a" ] ++ toMain;
-        s = [ "move-node-to-workspace 6s" ] ++ toMain;
-        d = [ "move-node-to-workspace 7d" ] ++ toMain;
-        f = [ "move-node-to-workspace 8f" ] ++ toMain;
+        q = [
+          "move-node-to-workspace 1q"
+          exec-twc
+        ] ++ toMain;
+        w = [
+          "move-node-to-workspace 2w"
+          exec-twc
+        ] ++ toMain;
+        e = [
+          "move-node-to-workspace 3e"
+          exec-twc
+        ] ++ toMain;
+        r = [
+          "move-node-to-workspace 4r"
+          exec-twc
+        ] ++ toMain;
+        a = [
+          "move-node-to-workspace 5a"
+          exec-twc
+        ] ++ toMain;
+        s = [
+          "move-node-to-workspace 6s"
+          exec-twc
+        ] ++ toMain;
+        d = [
+          "move-node-to-workspace 7d"
+          exec-twc
+        ] ++ toMain;
+        f = [
+          "move-node-to-workspace 8f"
+          exec-twc
+        ] ++ toMain;
 
         h = [ "move left" ] ++ toMain;
         j = [ "move down" ] ++ toMain;

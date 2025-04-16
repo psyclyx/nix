@@ -2,35 +2,35 @@
 set -x
 
 bar=(
-  height=24
+  height=36
   position=top
-  padding_left=96
-  padding_right=96
-  y_offset="${Y_OFFSET}"
-  color="#00000000"
+  padding_left=16
+  padding_right=16
+  #y_offset="${Y_OFFSET}"
+  color="${THEME_BACKGROUND}"
   sticky=off
+  blur_radius=2
 )
 
 default=(
-  icon.font="NotoMono Nerd Font Propo:Regular:16.0"
-  icon.color="${THEME_BACKGROUND}"
-  icon.highlight_color="${THEME_WM_FOCUSED_BACKGROUND}"
+  icon.font="notomono Nerd Font Propo:Regular:12.0"
+  icon.color="${THEME_FOREGROUND}"
+  icon.highlight_color="${THEME_BORDER_ACTIVE}"
 
-  label.font="NotoMono Nerd Font Propo: Regular:16.0"
-  label.color="${THEME_WM_UNFOCUSED_BACKGROUND}"
-  label.highlight_color="${THEME_WM_FOCUSED_BACKGROUND}"
+  label.font="NotoMono Nerd Font Propo:Regular:18.0"
+  label.color="${THEME_FOREGROUND}"
+  label.highlight_color="${THEME_BORDER_ACTIVE}"
 
-  label.background.height=20
-  background.height=24
-  background.border_color="${THEME_BORDER}"
-  background.border_width=2
-  background.corner_radius=6
-  blur_radius=2
+  #background.border_width=0
 
+  background.padding_left=4
+  background.padding_right=4
   label.padding_left=4
-  label.padding_right=8
-  icon.padding_left=8
+  label.padding_right=4
+  icon.padding_left=4
   icon.padding_right=4
+  padding_left=12
+  padding_right=12
 )
 
 sketchybar \
@@ -39,17 +39,12 @@ sketchybar \
 
 
 workspace=(
-  "icon.drawing=off"
-  "label.font=NotoMono Nerd Font Propo: Regular:16.0"
-  "icon.font=NotoMono Nerd Font Propo: Regular:16.0"
-  "label.highlight_color=${THEME_WM_FOCUSED_BACKGROUND}"
-  "label.color=${THEME_WM_UNFOCUSED_INDICATOR}"
-  "label.width=28"
-  "label.align=center"
-  "background.padding_left=2"
-  "background.padding_right=2"
-  "label.background.color=${THEME_WM_FOCUSED_BORDER}"
-  "label.background.drawing=off"
+  label.color="${THEME_WM_UNFOCUSED_TEXT}"
+  label.highlight_color="${THEME_WM_FOCUSED_TEXT}"
+  label.background.color="${THEME_WM_FOCUSED_BACKGROUND}"
+  label.background.drawing="off"
+  padding_left=6
+  padding_right=6
 )
 
 sketchybar --add event aerospace_workspace_change
@@ -70,6 +65,7 @@ for sid in ${WORKSPACES}; do
              "${workspace[@]}" \
              script="aerospace_plugin ${sid}" \
              label="${sid:1}" \
+             update_freq=30 \
              --subscribe space."${sid}" aerospace_workspace_change
 
   FOCUSED_WORKSPACE="${FOCUSED}" NAME="space.${sid}" aerospace_plugin "${sid}" &
@@ -78,53 +74,43 @@ done
 sketchybar \
   --add bracket spaces '/space\..*/' \
   --set spaces \
-  background.color="${THEME_WM_UNFOCUSED_BORDER}" \
-  background.height=24\
-  background.padding_left=2\
-  background.padding_right=2\
-  background.clip=1
+  padding_left=6 \
+  padding_right=6
+
 
 sketchybar \
   --add item app_name left \
   --set app_name \
-  background.color="${THEME_FOREGROUND}" \
-  label.padding_left=8 \
-  icon= \
-  icon.color="${THEME_BACKGROUND_ALT}" \
-  label.padding_right=8 \
-  padding_left=64 \
+  icon=APP \
   script="app_name_plugin" \
   --subscribe app_name front_app_switched
+
+sketchybar \
+  --add item mode left \
+  --set mode \
+  background.color="${THEME_TERMINAL_RED}" \
+  label.color="${THEME_FOREGROUND}" \
+  label.drawing=off \
+  drawing=off
 
 
 sketchybar \
   --add item battery right \
   --set battery \
-  update_freq=4 \
-  icon=BAT_INIT \
-  icon.color="${THEME_TERMINAL_WHITE}" \
-  icon.highlight_color="${THEME_TERMINAL_BRIGHT_GREEN}" \
-  icon.font.size=15 \
-  background.color="${THEME_FOREGROUND}" \
+  update_freq=15 \
+  icon=BAT \
   script="battery_plugin"
 
 sketchybar \
   --add item clock right \
   --set clock \
-  update_freq=4 \
-  icon= \
-  icon.color="${THEME_TERMINAL_RED}" \
-  background.color="${THEME_FOREGROUND}" \
-  padding_right=64 \
-  script="clock_plugin"
+  update_freq=15 \
+  script="clock_plugin 2>/tmp/sbar"
 
 sketchybar \
-  --add item mode right \
-  --set mode \
-  background.color="${THEME_FOREGROUND}" \
-  label.color="${THEME_TERMINAL_BRIGHT_RED}" \
-  icon.drawing=off \
-  padding_right=64 \
-  drawing=off
+  --add item clock_utc right \
+  --set clock_utc \
+  update_freq=15 \
+  script="clock_plugin true"
 
 sketchybar --update

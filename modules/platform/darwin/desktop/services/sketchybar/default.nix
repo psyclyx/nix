@@ -9,13 +9,13 @@ let
   themeEnv =
     with colors.colorUtils;
     mkThemeEnv [
-      (transform.withAlpha 0.8)
+      (transform.withAlpha 1.0)
       transform.withOx
     ];
   transparentTheme =
     with colors.colorUtils;
     mkTheme [
-      (transform.withAlpha 0.4)
+      (transform.withAlpha 0.3)
       transform.withOx
     ];
 

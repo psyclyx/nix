@@ -1,53 +1,85 @@
 { lib }:
 let
-  baseColors = {
-    background = "FFFFFF";
-    background_alt = "F2F2F2";
-    foreground = "295573";
-    foreground_alt = "6C6C6C";
-    border = "B0D0E4";
-    border_active = "295573";
+  white = "F7FBFF";
+
+  blue_lighter = "AFC1E9";
+  blue_light = "7C8BAC";
+  blue = "404F72A";
+  blue_dark = "212C47";
+  blue_darker = "0A101D";
+
+  red_lighter = "FFAD8F";
+  red_light = "FF8B61";
+  red = "DE6335";
+  red_dark = "963815";
+  red_darker = "351104";
+
+  yellow_lighter = "FFE28F";
+  yellow_light = "FFD661";
+  yellow = "DEB335";
+  yellow_dark = "967515";
+  yellow_darker = "352804";
+
+  magenta_lighter = "F488C3";
+  magenta_light = "D8529B";
+  magenta = "B42B76";
+  magenta_dark = "79114A";
+  magenta_darker = "2B0319";
+
+  green_lighter = "87F199";
+  green_light = "4ECF65";
+  green = "29AA3F";
+  green_dark = "107221";
+  green_darker = "03290A";
+
+  baseColors = rec {
+    background = blue_darker;
+    background_alt = blue_dark;
+    foreground = blue_lighter;
+    foreground_alt = blue_light;
+    border = blue;
+    border_active = blue_light;
 
     terminal = {
-      black = "445B70";
-      red = "B79574";
-      green = "93A9BE";
-      yellow = "CEB293";
-      blue = "295573";
-      magenta = "B0D0E4";
-      cyan = "93A9BE";
-      white = "F2F2F2";
+      black = blue_darker;
+      red = red;
+      green = green_dark;
+      yellow = yellow;
+      blue = blue;
+      magenta = magenta;
+      cyan = green_light;
+      white = foreground;
 
-      bright_black = "6C6C6C";
-      bright_red = "CEB293";
-      bright_green = "B0D0E4";
-      bright_yellow = "DFC4A7";
-      bright_blue = "5B87A5";
-      bright_magenta = "C4E4F8";
-      bright_cyan = "A7BDD2";
-      bright_white = "FFFFFF";
+      bright_black = blue_dark;
+      bright_red = red_light;
+      bright_green = green;
+      bright_yellow = yellow_light;
+      bright_blue = blue_light;
+      bright_magenta = magenta_light;
+      bright_cyan = green_lighter;
+      bright_white = white;
     };
 
     wm = {
       focused = {
-        border = "295573";
-        background = "B0D0E4";
-        text = "295573";
-        indicator = "93A9BE";
+        border = border_active;
+        background = background_alt;
+        text = foreground;
+        indicator = border_active;
       };
 
       unfocused = {
-        border = "6C6C6C";
-        background = "F2F2F2";
-        text = "6C6C6C";
-        indicator = "CEB293";
+        border = border;
+        background = background;
+        text = foreground_alt;
+        indicator = border;
       };
 
       urgent = {
-        border = "B79574";
-        background = "CEB293";
-        text = "295573";
-        indicator = "B79574";
+        border = red_light;
+        background = red_dark;
+        text = foreground;
+        indicator = red_light;
       };
     };
   };

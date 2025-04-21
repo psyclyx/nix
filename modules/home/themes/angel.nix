@@ -7,7 +7,7 @@ let
   blue_light = "7C8BAC";
   blue = "577AA9";
   blue_dark = "212C47";
-  blue_darker = "0A101D";
+  blue_darker = "050510";
 
   red_lighter = "FFAD8F";
   red_light = "FF8B61";

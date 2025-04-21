@@ -51,7 +51,7 @@
   (defun my/reload-config ()
     "Reload the literate config."
     (interactive)
-    (org-babel-load-file (expand-file-name "~/.config/emacs/config.org")))
+    (org-babel-load-file (expand-file-name "~/projects/nix/modules/home/programs/emacs/config.org")))
 #+end_src
 ** Exec path
 On darwin, I often launch =Emacs.app= instead of =emacs=. However, MacOS

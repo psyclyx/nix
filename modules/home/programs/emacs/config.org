@@ -68,6 +68,11 @@ set in a non-interactive shell.
       (exec-path-from-shell-initialize)))
  #+end_src
 * Interface
+** Pixelwise sizing
+#+begin_src emacs-lisp
+  (setq frame-resize-pixelwise t
+        window-resize-pixelwise t)
+#+end_src
 ** Simplify UI
 #+begin_src emacs-lisp
   (menu-bar-mode -1)

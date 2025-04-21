@@ -14,7 +14,7 @@ let
 in
 {
   services.jankyborders = {
-    enable = true;
+    enable = false;
     package = pkgs.jankyborders;
 
     active_color = theme.wm.focused.border;

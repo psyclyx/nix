@@ -40,16 +40,15 @@ in
       automatically-unhide-macos-hidden-apps = true;
 
       gaps = {
-        inner.horizontal = 4;
-        inner.vertical = 4;
-        outer.left = 6;
-        outer.bottom = 6;
+        inner.horizontal = 0;
+        inner.vertical = 0;
+        outer.left = 0;
+        outer.bottom = 0;
         outer.top = [
           #{monitor."BenQ RD280U" = 38;}
-          { monitor."Built-in Retina Display" = 2; }
+          { monitor."Built-in Retina Display" = 0; }
           38
         ];
-        outer.right = 8;
       };
 
       key-mapping.preset = "qwerty";

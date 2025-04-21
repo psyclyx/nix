@@ -2,7 +2,7 @@
 set -x
 
 bar=(
-  height=36
+  height=38
   position=top
   padding_left=16
   padding_right=16

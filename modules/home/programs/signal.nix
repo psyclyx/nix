@@ -1,4 +1,4 @@
 { pkgs, ... }:
 {
-  home.packages = [ pkgs.signal-desktop ];
+  home.packages = [ pkgs.signal-desktop-bin ];
 }

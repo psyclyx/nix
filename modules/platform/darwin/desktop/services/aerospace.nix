@@ -13,18 +13,10 @@ let
   toCommand = switch "command" "on";
   toService = switch "service" "on";
 
-  ghostty-new-window = pkgs.writeScriptBin "ghostty-new-window" ''
-    #!/usr/bin/env osascript
-    tell application "Ghostty"
-        if it is running then
-            activate
-            tell application "System Events" to keystroke "n" using {command down}
-        else
-            activate
-        end if
-    end tell
-  '';
-  term = "${ghostty-new-window}/bin/ghostty-new-window";
+  _kitty = "exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~";
+  alacritty = "exec-and-forget ${pkgs.alacritty}/bin/alacritty";
+  term = alacritty;
+
   trigger-workspace-change = "${sb} --trigger aerospace_workspace_change";
   exec-twc = "exec-and-forget ${trigger-workspace-change}";
 
@@ -75,7 +67,7 @@ in
         shift-semicolon = toService;
 
         #o = ["exec-and-forget ${pkgs.kitty}/bin/kitty --single-instance -d ~"] ++ toMain;
-        o = [ "exec-and-forget ${term}" ] ++ toMain;
+        o = [ term ] ++ toMain;
 
         x = [ "close" ] ++ toMain;
 

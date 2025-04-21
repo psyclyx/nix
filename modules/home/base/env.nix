@@ -1,0 +1,6 @@
+{ ... }:
+{
+  home = {
+    sessionPath = [ "~/bin" ];
+  };
+}

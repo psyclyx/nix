@@ -1,10 +1,11 @@
 { lib }:
 let
   white = "F7FBFF";
+  white_light = "FFFFFF";
 
   blue_lighter = "AFC1E9";
   blue_light = "7C8BAC";
-  blue = "404F72A";
+  blue = "577AA9";
   blue_dark = "212C47";
   blue_darker = "0A101D";
 
@@ -35,10 +36,10 @@ let
   baseColors = rec {
     background = blue_darker;
     background_alt = blue_dark;
-    foreground = blue_lighter;
-    foreground_alt = blue_light;
-    border = blue;
-    border_active = blue_light;
+    foreground = white;
+    foreground_alt = blue_lighter;
+    border = blue_light;
+    border_active = blue_lighter;
 
     terminal = {
       black = blue_darker;
@@ -48,7 +49,7 @@ let
       blue = blue;
       magenta = magenta;
       cyan = green_light;
-      white = foreground;
+      white = blue_lighter;
 
       bright_black = blue_dark;
       bright_red = red_light;

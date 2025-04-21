@@ -14,7 +14,8 @@ in
   users.users.psyc = {
     name = userName;
     home = userHome;
-    shell = pkgs.zsh;
+    uid = 501;
+    shell = pkgs.fish;
   };
 
   home-manager.users.psyc = mkHome {
@@ -25,6 +26,7 @@ in
       ../../modules/home/secrets
       ../../modules/home/programs/emacs
       ../../modules/home/programs/kitty.nix
+      ../../modules/home/programs/alacritty.nix
       ../../modules/home/programs/signal.nix
       ../../modules/home/services/postgres.nix
     ];

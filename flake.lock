@@ -119,22 +119,6 @@
         "type": "github"
       }
     },
-    "homebrew-borkdude": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1744040110,
-        "narHash": "sha256-GenNDSvxj1E/qoxw+8m+afOBx8dZvpFRCA0jxkx16qo=",
-        "owner": "borkdude",
-        "repo": "homebrew-brew",
-        "rev": "5769e7b12556062b107c6196780557138b8e546b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "borkdude",
-        "repo": "homebrew-brew",
-        "type": "github"
-      }
-    },
     "homebrew-bundle": {
       "flake": false,
       "locked": {
@@ -387,7 +371,6 @@
         "disko": "disko",
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
-        "homebrew-borkdude": "homebrew-borkdude",
         "homebrew-bundle": "homebrew-bundle",
         "homebrew-cask": "homebrew-cask",
         "homebrew-conductorone": "homebrew-conductorone",

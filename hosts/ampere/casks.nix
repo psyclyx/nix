@@ -13,7 +13,6 @@
   };
 
   homebrew.brews = [
-    "borkdude/brew/jet"
     "conductorone/cone/cone"
     "docker-compose"
     "hashicorp/tap/vault"

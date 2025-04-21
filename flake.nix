@@ -103,14 +103,6 @@
       url = "github:conductorone/cone";
       flake = false;
     };
-
-    # Includes `jet`, like `jq` for EDN
-    # TODO: write/upstream a derivation to do this through nix,
-    # no fundamental reason this needs to come through homebrew
-    homebrew-borkdude = {
-      url = "github:borkdude/homebrew-brew";
-      flake = false;
-    };
   };
 
   outputs =

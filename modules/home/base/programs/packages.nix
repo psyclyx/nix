@@ -32,8 +32,10 @@
     # tools
     fd
     htop
+    jet
     jq
     ripgrep
+    yq
 
     # zig
     zig

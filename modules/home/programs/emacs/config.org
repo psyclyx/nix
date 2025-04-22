@@ -61,11 +61,10 @@ set in a non-interactive shell.
 
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
+    :custom
+    (exec-path-from-shell-argument nil)
     :init
-    ;; ensure shell is non-interactive
-    (setq exec-path-from-shell-arguments nil)
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize)))
+    (exec-path-from-shell-initialize))
  #+end_src
 * Interface
 ** Pixelwise sizing
@@ -249,6 +248,7 @@ set in a non-interactive shell.
 
     ;; Create our leader key definer
     (general-create-definer my-leader-def
+      :prefix-map 'my/leader-map
       :keymaps 'override
       :states '(normal visual insert emacs)
       :prefix "SPC"
@@ -257,6 +257,7 @@ set in a non-interactive shell.
 *** Local leader (bindings for major modes)
 #+begin_src emacs-lisp
   (general-create-definer my-local-leader-def
+    :prefix-map 'my/local-leader-map
     :keymaps 'override
     :states '(normal visual insert emacs)
     :prefix "SPC m"
@@ -347,14 +348,13 @@ set in a non-interactive shell.
     (completion-styles '(orderless basic))
     (completion-category-overrides '((file (styles . (partial-completion basic)))
                                    (project-file (styles . (partial-completion basic)))))
-    (orderless-component-separator #'orderless-escapable-split-on-space)
     :config
     ;; Recognize more completion styles
     (setq orderless-matching-styles
           '(orderless-literal
             orderless-prefixes
-            orderless-initialism
-            orderless-regexp)))
+            orderless-initialism)))
+
 #+end_src
 ** Minibuffer
 #+begin_src emacs-lisp
@@ -594,7 +594,23 @@ set in a non-interactive shell.
     (eglot-events-buffer-size 0)
     (eglot-sync-connect nil)
     (eglot-connect-timeout 300)
-    (eglot-auto-display-help-buffer nil))
+    (eglot-auto-display-help-buffer nil)
+
+    :config
+    (defvar my/eglot-init-map (make-sparse-keymap))
+    (defvar my/eglot-map (make-sparse-keymap))
+    
+    (general-def
+      :keymaps 'my/eglot-init-map
+      "l" 'eglot
+      "s" 'eglot-shutdown)
+    
+    (general-def
+      :keymaps 'my/eglot-map
+      "r" 'eglot-reconnect)
+
+    (my-leader-def "l" (cons "lsp*" my/eglot-init-map))
+    (my-leader-def :keymaps 'eglot-mode-map "l" (cons "lsp" my/eglot-map)))
 #+end_src
 ** Syntax checking (=flycheck=)
 #+begin_src emacs-lisp
@@ -620,82 +636,186 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package lispy
     :hook ((emacs-lisp-mode
-            clojure-mode
             lisp-mode
-            scheme-mode) . lispy-mode)
+            scheme-mode
+            clojure-mode) . lispy-mode)
     :custom
     (lispy-close-quotes-at-end-p t)
-    (lispy-colon-p nil)
-    :config
-    ;; Customize special chars
-    (setq lispy-outline "^;; \\(?:[*]+ \\)"
-          lispy-outline-header ";; "
-          lispy-safe-delete t
-          lispy-safe-copy t
-          lispy-safe-paste t
-          lispy-safe-actions-no-pull-delimiters-into-comments t))
+    (lispy-colon-p nil))
 
   (use-package lispyville
     :after (evil lispy)
     :hook (lispy-mode . lispyville-mode)
-    :custom
-    (lispyville-key-theme
-     '(operators
-       c-w
-       (escape insert)
-       (additional-movement normal visual motion)
-       prettify
-       text-objects
-       (atom-movement t)
-       commentary
-       slurp/barf-cp))
     :config
-    (lispyville-set-key-theme)
-    (setq lispy-compat '(magit-blame-mode edebug cider))
+    (general-create-definer my/lispyville-define-key
+      :keymaps 'lispyville-mode-map)
 
-    (general-define-key
-     :states '(normal visual)
-     :keymaps 'lispyville-mode-map
-     "[" 'lispyville-previous-opening
-     "]" 'lispyville-next-opening
-     "(" 'lispyville-backward-up-list
-     ")" 'lispyville-up-list
-     "M-(" 'lispyville-wrap-round
-     "M-[" 'lispyville-wrap-brackets
-     "M-{" 'lispyville-wrap-braces)
+    ;; operators
+    (my/lispyville-define-key
+      [remap evil-yank] 'lispyville-yank
+      [remap evil-delete] 'lispyville-delete
+      [remap evil-change] 'lispyville-change
+      [remap evil-yank-line] 'lispyville-yank-line
+      [remap evil-delete-line] 'lispyville-delete-line
+      [remap evil-change-line] 'lispyville-change-line
+      [remap evil-delete-char] 'lispyville-delete-char-or-splice
+      [remap evil-delete-backward-char] 'lispyville-delete-char-or-splice-backwards
+      [remap evil-substitute] 'lispyville-substitute
+      [remap evil-change-whole-line] 'lispyville-change-whole-line
+      [remap evil-join] 'lispyville-join)
 
-    (my-leader-def
-      :keymaps 'lispyville-mode-map
-      "l" '(:ignore t :which-key "lispy")
+    ;; c-w
+    (my/lispyville-define-key
+      [remap evil-delete-backward-word] 'lispyville-delete-backward-word)
 
-      "lw" '(:ignore t :which-key "wrap")
-      "lwr" '(lispy-wrap-round :which-key "wrap ()")
-      "lwb" '(lispy-wrap-brackets :which-key "wrap []")
-      "lwc" '(lispy-wrap-braces :which-key "wrap {}")
-      "lwq" '(lispy-quotes :which-key "wrap quotes")
-      "lwt" '(lispy-backtick :which-key "wrap backtick")
+    ;; c-u
+    ;; (my/lispyville-define-key
+    ;;   [remap evil-delete-back-to-indentation] 'lispyville-delete-back-to-indentation)
 
-      "ls" '(lispy-splice :which-key "splice sexp")
-      "lr" '(lispy-raise-sexp :which-key "raise sexp")
-      "lc" '(lispy-clone :which-key "clone sexp")
-      "lj" '(lispy-join :which-key "join sexps")
-      "l>" '(lispyville-drag-forward :which-key "slurp")
-      "l<" '(lispyville-drag-backward :which-key "barf")
-      "lk" '(lispy-kill :which-key "kill sexp"))
+    ;; prettify
+    (my/lispyville-define-key
+      [remap evil-indent] #'lispyville-prettify)
 
-    (add-to-list 'mode-line-format
-                 '(:eval (when (and (boundp 'lispy-mode)
-                                   lispy-mode)
-                          " Lispy"))
-                 t))
+    ;; text-objects
+    (my/lispyville-define-key
+      :keymaps 'evil-inner-text-objects-map
+      "a" 'lispyville-inner-atom
+      "l" 'lispyville-inner-list
+      "x" 'lispyville-inner-sexp
+      "f" 'lispyville-inner-function
+      "c" 'lispyville-inner-comment
+      "S" 'lispyville-inner-string)
 
-  (defun my/lispy-eval-and-comment ()
-    "Evaluate the current sexp and insert the result as a comment."
-    (interactive)
-    (save-excursion
-      (let ((result (lispy-eval-and-insert)))
-        (newline-and-indent)
-        (insert ";; => " result))))
+    (my/lispyville-define-key
+      :keymaps 'evil-outer-text-objects-map
+      "a" 'lispyville-a-atom
+      "l" 'lispyville-a-list
+      "x" 'lispyville-a-sexp
+      "f" 'lispyville-a-function
+      "c" 'lispyville-a-comment
+      "S" 'lispyville-a-string)
+
+    ;; atom-movements
+    ;; (my/lispyville-define-key
+    ;;  [remap evil-forward-WORD-begin] 'lispyville-forward-atom-begin
+    ;;  [remap evil-forward-WORD-end] 'lispyville-forward-atom-end
+    ;;  [remap evil-backward-WORD-begin] 'lispyville-backward-atom-begin
+    ;;  [remap evil-backward-WORD-end] 'lispyville-backward-atom-end)
+    (my/lispyville-define-key
+      [remap evil-forward-word-begin] 'lispyville-forward-atom-begin
+      [remap evil-forward-word-end] 'lispyville-forward-atom-end
+      [remap evil-backward-word-begin] 'lispyville-backward-atom-begin
+      [remap evil-backward-word-end] 'lispyville-backward-atom-end)
+    
+    ;; additional-movement
+    (my/lispyville-define-key
+      :states '(motion)
+      "H" 'lispyville-backward-sexp
+      "L" 'lispyville-forward-sexp
+      (kbd "M-h") 'lispyville-beginning-of-defun
+      (kbd "M-l") 'lispyville-end-of-defun
+      ;; reverse of lispy-flow
+      "[" 'lispyville-previous-opening
+      "]" 'lispyville-next-closing
+      ;; like lispy-flow
+      "{" 'lispyville-next-opening
+      "}" 'lispyville-previous-closing
+      ;; like lispy-left and lispy-right
+      "(" 'lispyville-backward-up-list
+      ")" 'lispyville-up-list)
+
+    ;; commentary
+    (my/lispyville-define-key
+      :states '(normal)
+      "gc" 'lispyville-comment-or-uncomment
+      "gy" 'lispyville-comment-and-clone-dwim
+      (kbd "s-/") 'lispyville-comment-or-uncomment-line)
+
+    ;; slurp/barf-cp
+    (my/lispyville-define-key
+      :states '(normal)
+      ">" 'lispyville->
+      "<" 'lispyville-<)
+
+    ;; slurp/barf-lispy
+    ;; (my/lispyville-define-key
+    ;;  :states '(normal)
+    ;;  ">" 'lispyville-slurp
+    ;;  "<" 'lispyville-barf)
+
+    ;; wrap
+    (my/lispyville-define-key
+      :states '(normal)
+      (kbd "M-(") 'lispyville-wrap-with-round
+      (kbd "M-[") 'lispyville-wrap-with-brackets
+      (kbd "M-{") 'lispyville-wrap-with-braces)
+
+    ;; additional
+    (my/lispyville-define-key
+      :states '(normal)
+      (kbd "M-j") 'lispyville-drag-forward
+      (kbd "M-k") 'lispyville-drag-backward
+      (kbd "M-J") 'lispy-join
+      (kbd "M-s") 'lispy-splice
+      (kbd "M-S") 'lispy-split
+      (kbd "M-r") 'lispy-raise-sexp
+      (kbd "M-R") 'lispyville-raise-list
+      (kbd "M-t") 'transpose-sexps
+      (kbd "M-v") 'lispy-convolute-sexp)
+
+    ;; additional-insert
+    (my/lispyville-define-key
+      :states '(normal)
+      (kbd "M-i") 'lispyville-insert-at-beginning-of-list
+      (kbd "M-a") 'lispyville-insert-at-end-of-list
+      (kbd "M-o") 'lispyville-open-below-list
+      (kbd "M-O") 'lispyville-open-above-list)
+
+    ;; additional-wrap
+    ;; (my/lispyville-define-key
+    ;;  :states '(normal)
+    ;;  (kbd "M-(") 'lispyville-wrap-round
+    ;;  (kbd "M-[") 'lispyville-wrap-brackets
+    ;;  (kbd "M-{") 'lispyville-wrap-braces)
+
+    ;; arrows
+    ;; (my/lispyville-define-key
+    ;;  :states '(normal)
+    ;;  "<i" 'lispyville-insert-at-beginning-of-list
+    ;;  ">i" 'lispyville-insert-at-end-of-list)
+
+    ;; insert
+    ;; (lispyville-space-after-insert)
+
+    ;;escape
+    (my/lispyville-define-key
+      :states '(insert emacs)
+      (kbd "<escape>") 'lispyville-normal-state)
+
+
+    ;; mark
+    (my/lispyville-define-key
+      :states '(normal visual)
+      "v" (lispyville-wrap-command lispy-mark-symbol visual)
+      "V" (lispyville-wrap-command lispy-mark visual)
+      (kbd "C-v") 'lispyville-wrap-lispy-mark-visual)
+
+    ;; mark-special
+    ;; (my/lispyville-define-key
+    ;;  :states '(normal visual)
+    ;;  "v" (lispyville-wrap-command lispy-mark-symbol special)
+    ;;  "V" (lispyville-wrap-command lispy-mark special)
+    ;;  (kbd "C-v") 'lispyville-wrap-lispy-mark-special)
+
+    ;; mark-toggle
+    (my/lispyville-define-key
+      :states '(visual)
+      "v" 'lispyville-toggle-mark-type)
+    (my/lispyville-define-key
+      :states '(insert emacs)
+      (kbd "<escape>") 'lispyville-escape)
+
+    (setq lispy-compat '(magit-blame-mode edebug cider)))
 #+end_src
 ** Formatting (=aphelia=)
 #+begin_src emacs-lisp
@@ -712,9 +832,9 @@ set in a non-interactive shell.
     :custom
     (projectile-completion-system 'default)
     (projectile-enable-caching t)
-    (projectile-auto-discover t)
+    
     (projectile-globally-ignored-directories
-     '(".git" ".log" "tmp" "dist" "node_modules" ".direnv" "target" ".lsp" ".clj-kondo"))
+     '(".git" ".log" "tmp" "dist" "*node_modules" ".direnv" "*target" "*.lsp" "*.clj-kondo"))
     :config
     (add-to-list 'projectile-project-root-files "package.json")
     (add-to-list 'projectile-project-root-files "flake.nix")
@@ -785,15 +905,6 @@ set in a non-interactive shell.
 
   ;; Global development bindings
   (my-leader-def
-    "L" '(:ignore t :which-key "lsp")
-    "Lh" '(eldoc :which-key "documentation")
-
-    ;; LSP/Eglot
-    "Ll" '(:ignore t :which-key "lsp")
-    "Llr" '(eglot-reconnect :which-key "reconnect")
-    "Lls" '(eglot-shutdown :which-key "shutdown")
-    "Lll" '(eglot :which-key "start lsp")
-
     ;; Error checking
     "Le" '(:ignore t :which-key "errors")
     "Lel" '(flycheck-list-errors :which-key "list errors")
@@ -813,14 +924,13 @@ set in a non-interactive shell.
 ** Clojure (=cider=)
 #+begin_src emacs-lisp
   (use-package clojure-mode
-    :after (lispyville)
+    :after (aphelia flycheck lispy)
+    :hook (clojure-mode . #'my/setup-language-defaults) 
     :mode "\\.clj\\'"
-    :hook (clojure-mode . my/setup-language-defaults)
+    
     :config
-    (with-eval-after-load 'apheleia
-      (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
-      (setf (alist-get 'cljstyle apheleia-formatters)
-            '("cljstyle" "pipe"))))
+    (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
+    (setf (alist-get 'cljstyle apheleia-formatters) '("cljstyle" "pipe")))
 
   (use-package cider
     :after clojure-mode

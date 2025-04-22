@@ -24,8 +24,8 @@ in
     global.autoUpdate = true;
 
     onActivation = {
-      upgrade = true;
-      autoUpdate = true;
+      upgrade = false;
+      autoUpdate = false;
       cleanup = "zap";
     };
 

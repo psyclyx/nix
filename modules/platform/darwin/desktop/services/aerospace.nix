@@ -60,8 +60,6 @@ in
       mode.command.binding = {
         esc = toMain;
         enter = toMove;
-        i = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -r\"" ] ++ toMain;
-        shift-i = [ "exec-and-forget /bin/bash -c \"~/bin/emacsclient -n -c\"" ] ++ toMain;
 
         shift-semicolon = toService;
 

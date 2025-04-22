@@ -8,7 +8,6 @@
     taps = with inputs; {
       "conductorone/cone" = homebrew-conductorone;
       "hashicorp/tap" = homebrew-hashicorp;
-      "borkdude/brew" = homebrew-borkdude;
     };
   };
 

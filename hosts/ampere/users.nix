@@ -31,30 +31,8 @@ in
       { services.syncthing.enable = lib.mkForce false; }
       ../../modules/home/programs/emacs
       ../../modules/home/programs/kitty.nix
+      ../../modules/home/programs/alacritty.nix
       ./zsh.nix
-      {
-        home.sessionPath = [ "$HOME/bin" ];
-      }
-      {
-        programs = {
-          fish = {
-            enable = true;
-            shellInit = lib.optionalString pkgs.stdenv.isDarwin ''
-              eval (/opt/homebrew/bin/brew shellenv)
-            '';
-            interactiveShellInit = ''
-              set -g fish_key_bindings fish_vi_key_bindings
-            '';
-          };
-          bash.enable = true;
-          starship = {
-            enable = true;
-            enableTransience = true;
-            enableZshIntegration = false;
-            enableFishIntegration = true;
-          };
-        };
-      }
     ];
   };
 

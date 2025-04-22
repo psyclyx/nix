@@ -23,15 +23,6 @@ let
       })
     else
       pkgs.emacs-unstable-pgtk;
-  emacsclient = pkgs.stdenv.mkDerivation {
-    pname = "emacsclient";
-    version = emacs.version;
-    phases = [ "installPhase" ];
-    installPhase = ''
-      mkdir -p $out/bin
-      cp ${emacs}/bin/emacsclient $out/bin/
-    '';
-  };
 in
 lib.mkMerge [
   {
@@ -39,14 +30,7 @@ lib.mkMerge [
       emacs = {
         enable = lib.mkDefault true;
         package = lib.mkDefault emacs;
-        extraPackages = epkgs: (packageConfig.emacsPackages epkgs) ++ packages ++ [ emacsclient ];
-      };
-    };
-
-    services = {
-      emacs = {
-        defaultEditor = true;
-        enable = true;
+        extraPackages = epkgs: (packageConfig.emacsPackages epkgs) ++ packages;
       };
     };
 
@@ -54,7 +38,6 @@ lib.mkMerge [
       file = {
         ".config/emacs/init.el".source = mkRepoFile ./init.el ./init.el;
         ".config/emacs/config.org".source = mkRepoFile ./config.org ./config.org;
-        "bin/emacsclient".source = "${emacsclient}/bin/emacsclient";
       };
       packages = packages;
     };

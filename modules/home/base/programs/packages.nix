@@ -35,7 +35,6 @@
     jet
     jq
     ripgrep
-    yq
 
     # zig
     zig

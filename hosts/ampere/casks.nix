@@ -16,6 +16,7 @@
     "docker-compose"
     "hashicorp/tap/vault"
     "tfenv"
+    "yq"
   ];
 
   homebrew.casks = [

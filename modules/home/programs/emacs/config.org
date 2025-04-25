@@ -19,7 +19,7 @@
   (setq file-name-handler-alist nil)
 
   (defun my/restore-post-init-settings ()
-    (setq gc-cons-threshold 16777216 ; 16mb
+    (setq gc-cons-threshold  (* 128 1024 1024) ; 128mb
           gc-cons-percentage 0.1)
     (setq file-name-handler-alist my/file-name-handler-alist-cache))
 
@@ -266,79 +266,56 @@ set in a non-interactive shell.
 *** Quick bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    "." '(find-file :which-key "find file")
-    "," '(consult-buffer :which-key "switch buffer")
-    "/" '(consult-ripgrep :which-key "search project")
-    ";" '(eval-expression :which-key "eval expression")
-    ":" '(execute-extended-command :which-key "M-x"))
+    "." 'find-file
+    "," 'consult-buffer
+    "/" 'consult-ripgrep
+    ";" 'eval-expression
+    ":" 'execute-extended-command)
 #+end_src
 *** Buffers
 #+begin_src emacs-lisp
-  (my-leader-def
-    "b" '(:ignore t :which-key "buffer")
+  (general-def
+    :prefix-map 'my/leader-b-map
+    "b" 'consult-buffer
+    "d" 'kill-current-buffer)
 
-    "bb" '(consult-buffer :which-key "switch buffer")
-    "bd" '(kill-current-buffer :which-key "kill buffer"))
+  (my-leader-def "b" (cons "buffer" my/leader-b-map))
 #+end_src
 *** Files
 #+begin_src emacs-lisp
-  (my-leader-def
-    "f" '(:ignore t :which-key "file")
+  (general-def
+    :prefix-map 'my/leader-f-map
+    "f" 'find-file
+    "r" 'consult-recent-file
+    "R" 'my/reload-config)
 
-    "ff" '(find-file :which-key "find file")
-    "fr" '(consult-recent-file :which-key "recent files")
-    "fR" '(my/reload-config :which-key "reload config"))
+  (my-leader-def "f" (cons "file" my/leader-f-map))
 #+end_src
 *** Search
 #+begin_src emacs-lisp
-  (my-leader-def
-    "s" '(:ignore t :which-key "search")
+  (general-def
+    :prefix-map 'my/leader-s-map
+    "s" 'consult-line
+    "S" 'consult-line-multi
+    "p" 'consult-ripgrep
+    "f" 'consult-find
+    "h" 'consult-org-heading
+    "m" 'consult-mark
+    "i" 'consult-imenu
+    "r" 'consult-recent-file
+    "g" 'consult-git-grep
+    "d" 'consult-dir
+    "o" 'consult-outline)
 
-    "ss" '(consult-line :which-key "search in buffer")
-    "sS" '(consult-line-multi :which-key "search in buffers")
-    "sp" '(consult-ripgrep :which-key "search in project")
-    "sf" '(consult-find :which-key "find files")
-    "sh" '(consult-org-heading :which-key "search headings")
-    "sm" '(consult-mark :which-key "search marks")
-    "si" '(consult-imenu :which-key "search symbols")
-    "sr" '(consult-recent-file :which-key "search recent")
-    "sg" '(consult-git-grep :which-key "search git files")
-    "sd" '(consult-dir :which-key "search directories")
-    "so" '(consult-outline :which-key "search outline"))
-#+end_src
-*** Window Management
-#+begin_src emacs-lisp
-  (my-leader-def
-    "w" '(:ignore t :which-key "window")
-
-    "wh" '(evil-window-left :which-key "window left")
-    "wj" '(evil-window-down :which-key "window down")
-    "wk" '(evil-window-up :which-key "window up")
-    "wl" '(evil-window-right :which-key "window right")
-    "ws" '(evil-window-split :which-key "split horizontal")
-    "wv" '(evil-window-vsplit :which-key "split vertical")
-    "wd" '(evil-window-delete :which-key "delete window")
-    "wm" '(delete-other-windows :which-key "maximize window"))
+  (my-leader-def "s" (cons "search" my/leader-s-map))
 #+end_src
 *** Help
 #+begin_src emacs-lisp
-  (my-leader-def
-    "h" '(:ignore t :which-key "help")
-
-    "hf" '(describe-function :which-key "describe function")
-    "hv" '(describe-variable :which-key "describe variable")
-    "hk" '(describe-key :which-key "describe key")
-    "hm" '(describe-mode :which-key "describe mode"))
+  (my-leader-def "h" 'help-command)
 #+end_src
-*** Tweak
+*** Toggle
 #+begin_src emacs-lisp
-  (my-leader-def
-    "t" '(:ignore t :which-key "toggle")
-    "tf" '(:ignore t :which-key "font size")
-    "tfj" '(config:decrease-font-size :which-key "decrease")
-    "tfk" '(config:increase-font-size :which-key "increase")
-    "tf0" '(config:reset-font-size :which-key "reset")
-    "tw" '(visual-line-mode :which-key "toggle visual-line-mode"))
+  (my-leader-def "S" 'global-text-scale-adjust)
 #+end_src
 * Completion
 ** Matching (=orderless=)
@@ -353,8 +330,8 @@ set in a non-interactive shell.
     (setq orderless-matching-styles
           '(orderless-literal
             orderless-prefixes
-            orderless-initialism)))
-
+            orderless-initialism
+            orderless-regexp)))
 #+end_src
 ** Minibuffer
 #+begin_src emacs-lisp
@@ -380,14 +357,11 @@ set in a non-interactive shell.
   (use-package vertico
     :init
     (vertico-mode)
+
     :custom
     (vertico-cycle t)
     (vertico-count 15)
-    (vertico-resize t)
-    :config
-    ;; Hide commands in M-x which don't apply to current mode
-    (setq read-extended-command-predicate
-          #'command-completion-default-include-p))
+    (vertico-resize t))
 
   ;; Persist history over Emacs restarts
   (use-package savehist
@@ -430,24 +404,17 @@ set in a non-interactive shell.
     (corfu-quit-at-boundary nil)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
-    :bind
-    :general
-    (:keymaps 'corfu-map
-              "SPC" 'corfu-insert-separator
-              "TAB" 'corfu-next
-              "S-TAB" 'corfu-previous)
-
     :init
     (global-corfu-mode)
 
     :config
-    (defun corfu-enable-always-in-minibuffer ()
-      "Enable Corfu in the minibuffer if Vertico is not active."
-      (unless (bound-and-true-p vertico--input)
-        (corfu-mode 1)))
-    (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer))
+    (general-def
+      :keymaps 'corfu-map
+      "SPC" 'corfu-insert-separator
+      "TAB" 'corfu-next
+      "S-TAB" 'corfu-previous))
 
-  ;; Make Corfu pop-ups prettier
+
   (use-package corfu-popupinfo
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
@@ -458,19 +425,16 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package cape
     :init
-    ;; Add useful completion sources
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
     (add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-file)
 
-    ;; Silence the pcomplete capf, no errors or messages!
     (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure =completion-at-point-function'
     (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
-    :bind ("C-c p" . cape-prefix-map)
+
     :config
-    ;; Enable richer annotations in completion items
+    (general-def "C-c p" 'cape-prefix-map)
+
     (setq completion-annotate-function #'cape-annotate-prompt))
 #+end_src
 ** Command menu (=consult=)
@@ -486,7 +450,6 @@ set in a non-interactive shell.
           xref-show-definitions-function #'consult-xref)
 
     :config
-    ;; Enhance register preview and make it consistent
     (consult-customize
      consult-theme :preview-key '(:debounce 0.1 any)
      consult-ripgrep consult-git-grep consult-grep consult-man
@@ -583,8 +546,7 @@ set in a non-interactive shell.
 * Development
 ** Highlight matching parentheses (=rainbow-delimiters=)
 #+begin_src emacs-lisp
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+  (use-package rainbow-delimiters)
 #+end_src
 ** LSP (=eglot=)
 #+begin_src emacs-lisp
@@ -597,40 +559,30 @@ set in a non-interactive shell.
     (eglot-auto-display-help-buffer nil)
 
     :config
-    (defvar my/eglot-init-map (make-sparse-keymap))
-    (defvar my/eglot-map (make-sparse-keymap))
-    
     (general-def
-      :keymaps 'my/eglot-init-map
+      :prefix-map 'my/eglot-map
       "l" 'eglot
+      "r" 'eglot-reconnect
       "s" 'eglot-shutdown)
-    
-    (general-def
-      :keymaps 'my/eglot-map
-      "r" 'eglot-reconnect)
 
-    (my-leader-def "l" (cons "lsp*" my/eglot-init-map))
-    (my-leader-def :keymaps 'eglot-mode-map "l" (cons "lsp" my/eglot-map)))
+    (my-leader-def "l" (cons "lsp" my/eglot-map)))
 #+end_src
 ** Syntax checking (=flycheck=)
 #+begin_src emacs-lisp
   (use-package flycheck
-    :hook (prog-mode . flycheck-mode)
     :custom
     (flycheck-display-errors-delay 0.1)
     (flycheck-indication-mode 'left-margin)
-    :config
-    (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-#+end_src
-*** Bindings
-#+begin_src emacs-lisp
-  (my-leader-def
-    "e" '(:ignore t :which-key "errors")
 
-    "el" '(flycheck-list-errors :which-key "list errors")
-    "en" '(flycheck-next-error :which-key "next error")
-    "ep" '(flycheck-previous-error :which-key "previous error")
-    "eb" '(flycheck-buffer :which-key "check buffer"))
+    :config
+    (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc))
+    (general-def
+      :prefix-map 'my/leader-e-map
+      "l" 'flycheck-list-errors
+      "n" 'flycheck-next-error
+      "p" 'flycheck-previous-error
+      "b" 'flycheck-buffer)
+    (my-leader-def "e" (cons "errors" my/leader-e-map)))
 #+end_src
 ** Structural Editing (=lispy= and =lispyville=)
 #+begin_src emacs-lisp
@@ -819,57 +771,52 @@ set in a non-interactive shell.
 #+end_src
 ** Formatting (=aphelia=)
 #+begin_src emacs-lisp
-  (use-package apheleia)
-
-  (my-leader-def
-    "=" '(apheleia-format-buffer :which-key "format (apheleia)"))
+  (use-package apheleia
+    :config
+    (my-leader-def "=" '(apheleia-format-buffer :which-key "format (apheleia)")))
 #+end_src
 ** Project management (=projectile=)
 #+begin_src emacs-lisp
   (use-package projectile
     :init
     (projectile-mode +1)
+
     :custom
-    (projectile-completion-system 'default)
     (projectile-enable-caching t)
-    
     (projectile-globally-ignored-directories
      '(".git" ".log" "tmp" "dist" "*node_modules" ".direnv" "*target" "*.lsp" "*.clj-kondo"))
+
     :config
     (add-to-list 'projectile-project-root-files "package.json")
     (add-to-list 'projectile-project-root-files "flake.nix")
     (add-to-list 'projectile-project-root-files "shadow-cljs.edn")
     (add-to-list 'projectile-project-root-files "project.clj")
-    (add-to-list 'projectile-project-root-files "deps.edn"))
-#+end_src
-*** Bindings
-#+begin_src emacs-lisp
-  (my-leader-def
-    "p"  '(:ignore t :which-key "project")
-    "pa" '(projectile-add-known-project :which-key "add known project")
-    "pp" '(projectile-switch-project :which-key "switch project")
-    "pf" '(projectile-find-file :which-key "find file")
-    "pd" '(projectile-find-dir :which-key "find directory")
-    "pb" '(projectile-switch-to-buffer :which-key "switch buffer")
-    "pk" '(projectile-kill-buffers :which-key "kill buffers")
-    "pt" '(projectile-run-vterm :which-key "terminal")
-    "pc" '(projectile-compile-project :which-key "compile")
-    "p!" '(projectile-run-shell-command-in-root :which-key "run command")
-    "p&" '(projectile-run-async-shell-command-in-root :which-key "run async command"))
+    (add-to-list 'projectile-project-root-files "deps.edn")
+
+    (general-def
+      :prefix-map 'my/leader-p-map
+      "a" 'projectile-add-known-project
+      "p" 'projectile-switch-project
+      "f" 'projectile-find-file
+      "d" 'projectile-find-dir
+      "b" 'projectile-switch-to-buffer
+      "k" 'projectile-kill-buffers
+      "t" 'projectile-run-vterm
+      "c" 'projectile-compile-project
+      "!" 'projectile-run-shell-command-in-root
+      "&" 'projectile-run-async-shell-command-in-root)
+    (my-leader-def "p" (cons "project" my/leader-p-map)))
 #+end_src
 ** Git (=magit=)
 #+begin_src emacs-lisp
   (use-package magit
     :custom
-    (magit-display-buffer-function
-     #'magit-display-buffer-fullframe-status-v1)
-    (magit-bury-buffer-function
-     #'magit-restore-window-configuration)
+    (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+    (magit-bury-buffer-function #'magit-restore-window-configuration)
     (magit-save-repository-buffers 'dontask)
-    (magit-no-confirm '(stage-all-changes
-                        unstage-all-changes))
+    (magit-no-confirm '(stage-all-changes unstage-all-changes))
+    
     :config
-    ;; Use Projectile for repository discovery
     (setq magit-repository-directories
           (mapcar (lambda (dir)
                     (cons dir 1))
@@ -877,22 +824,23 @@ set in a non-interactive shell.
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp
-  (my-leader-def
-    "g"  '(:ignore t :which-key "git")
-    "gg" '(magit-status :which-key "status")
-    "gb" '(magit-blame :which-key "blame")
-    "gc" '(magit-commit :which-key "commit")
-    "gC" '(magit-clone :which-key "clone")
-    "gf" '(magit-file-dispatch :which-key "file dispatch")
-    "gl" '(magit-log-buffer-file :which-key "file log")
-    "gL" '(magit-log-current :which-key "branch log")
-    "gs" '(magit-stage-file :which-key "stage file")
-    "gS" '(magit-stage-modified :which-key "stage all")
-    "gu" '(magit-unstage-file :which-key "unstage file")
-    "gp" '(magit-push :which-key "push")
-    "gP" '(magit-pull :which-key "pull")
-    "gx" '(magit-reset-quickly :which-key "reset")
-    "g/" '(magit-dispatch :which-key "dispatch"))
+  (general-def
+    :prefix-map 'my/leader-g-map
+    "g" 'magit-status
+    "b" 'magit-blame
+    "c" 'magit-commit
+    "C" 'magit-clone
+    "f" 'magit-file-dispatch
+    "l" 'magit-log-buffer-file
+    "L" 'magit-log-current
+    "s" 'magit-stage-file
+    "S" 'magit-stage-modified
+    "u" 'magit-unstage-file
+    "p" 'magit-push
+    "P" 'magit-pull
+    "x" 'magit-reset-quickly
+    "/" 'magit-dispatch)
+  (my-leader-def "g" (cons "git" my/leader-g-map))
 #+end_src
 * Languages
 ** Common
@@ -901,16 +849,10 @@ set in a non-interactive shell.
     "Set up common language support features."
     (flycheck-mode)
     (electric-pair-local-mode)
+    (rainbow-delimiters-mode)
     (show-paren-mode))
 
-  ;; Global development bindings
-  (my-leader-def
-    ;; Error checking
-    "Le" '(:ignore t :which-key "errors")
-    "Lel" '(flycheck-list-errors :which-key "list errors")
-    "Len" '(flycheck-next-error :which-key "next error")
-    "Lep" '(flycheck-previous-error :which-key "previous error")
-    "Leb" '(flycheck-buffer :which-key "check buffer"))
+  (add-hook 'prog-mode-hook #'my/setup-language-defaults)
 
   ;; Navigation bindings for all programming modes
   (my-local-leader-def
@@ -924,8 +866,7 @@ set in a non-interactive shell.
 ** Clojure (=cider=)
 #+begin_src emacs-lisp
   (use-package clojure-mode
-    :after (aphelia flycheck lispy)
-    :hook (clojure-mode . #'my/setup-language-defaults) 
+    :after (lispyville)
     :mode "\\.clj\\'"
     
     :config
@@ -943,15 +884,6 @@ set in a non-interactive shell.
     (cider-repl-history-size 1000)
 
     :config
-    (defvar my/clojure-evaluation-map (make-sparse-keymap))
-    (defvar my/clojure-navigation-map (make-sparse-keymap))
-    (defvar my/clojure-help-map (make-sparse-keymap))
-    (defvar my/clojure-inspect-map (make-sparse-keymap))
-    (defvar my/clojure-namespace-map (make-sparse-keymap))
-    (defvar my/clojure-pprint-map (make-sparse-keymap))
-    (defvar my/clojure-repl-map (make-sparse-keymap))
-    (defvar my/clojure-test-map (make-sparse-keymap))
-
     (general-create-definer my/clojure-evaluation-def :keymaps 'my/clojure-evaluation-map)
     (general-create-definer my/clojure-navigation-def :keymaps 'my/clojure-navigation-map)
     (general-create-definer my/clojure-help-def :keymaps 'my/clojure-help-map)
@@ -988,7 +920,8 @@ set in a non-interactive shell.
       "d" 'cider-eval-defun-at-point
       "e" 'cider-eval-last-sexp
       "r" 'cider-eval-region
-      "u" 'cider-undef)
+      "u" 'cider-undef
+      "i" 'cider-debug-defun-at-point)
 
     (my/clojure-navigation-def
       "b" 'cider-pop-back
@@ -1044,12 +977,10 @@ set in a non-interactive shell.
   (with-eval-after-load 'clojure-mode
     (setq lispy-clojure-eval-method 'cider))
 #+end_src
-
 ** Nix (=nix-ts-mode=)
 #+begin_src emacs-lisp
   (use-package nix-ts-mode
     :mode "\\.nix\\'"
-    :hook (nix-ts-mode . my/setup-language-defaults)
     :custom
     (nix-nixfmt-bin "nixfmt")
     :config
@@ -1060,19 +991,13 @@ set in a non-interactive shell.
 #+end_src
 ** Emacs Lisp
 #+begin_src emacs-lisp
-  (use-package emacs-lisp-mode
-    :ensure nil  ; built-in
-    :hook ((emacs-lisp-mode . my/setup-language-defaults))
-    :config
-    (setq lisp-indent-function #'lisp-indent-function))
-
-  (my-local-leader-def
-    :keymaps 'emacs-lisp-mode-map
-    "e" '(:ignore t :which-key "eval")
-    "eb" '(eval-buffer :which-key "eval buffer")
-    "ee" '(eval-last-sexp :which-key "eval last sexp")
-    "ef" '(eval-defun :which-key "eval defun")
-    "er" '(eval-region :which-key "eval region"))
+  (general-def
+    :prefix-map 'my/emacs-eval-map
+    "b" 'eval-buffer
+    "e" 'eval-last-sexp
+    "f" 'eval-defun
+    "r" 'eval-region)
+  (my-local-leader-def :keymaps 'emacs-lisp-mode-map "e" (cons "eval" my/emacs-eval-map))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1083,35 +1008,27 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package rust-mode
     :mode "\\.rs\\'"
-    :hook (rust-mode . my/setup-language-defaults)
     :config
-    ;; Use rust-analyzer with eglot
     (add-to-list 'eglot-server-programs
                  '(rust-mode . ("rust-analyzer")))
 
-    ;; Configure formatter
     (with-eval-after-load 'apheleia
       (setf (alist-get 'rust-mode apheleia-mode-alist) 'rustfmt)
       (setf (alist-get 'rustfmt apheleia-formatters)
-            '("rustfmt" "--edition" "2021"))))
+            '("rustfmt" "--edition" "2021")))
 
-  ;; Rust-specific keybindings
-  (my-local-leader-def
-    :keymaps 'rust-mode-map
-
-    ;; Build & Run
-    "b" '(:ignore t :which-key "build")
-    "bb" '(rust-compile :which-key "build")
-    "br" '(rust-run :which-key "run")
-    "bt" '(rust-test :which-key "test"))
+    (general-def
+      :prefix-map 'my/rust-build-map
+      "b" 'rust-compile
+      "r" 'rust-run
+      "t" 'rust-test)
+     (my-local-leader-def :keymaps 'rust-mode-map "b" (cons my/rust-build-map)))
 #+end_src
 ** Typescript (=typescript-ts-mode=)
 #+begin_src emacs-lisp
   (use-package typescript-ts-mode
     :mode (("\\.ts\\'" . typescript-ts-mode)
            ("\\.tsx\\'" . tsx-ts-mode))
-    :hook ((typescript-ts-mode . my/setup-language-defaults)
-           (tsx-ts-mode . my/setup-language-defaults))
     :config
     (add-to-list 'eglot-server-programs
                  '((typescript-ts-mode . ("typescript-language-server" "--stdio"))
@@ -1121,7 +1038,6 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (use-package sh-script
     :ensure nil  ; built-in
-    :hook (sh-mode . my/setup-language-defaults)
     :custom
     (sh-basic-offset 2)
     (sh-indentation 2))
@@ -1131,7 +1047,6 @@ set in a non-interactive shell.
   (use-package lua-mode
     :mode "\\.lua\\'"
     :interpreter "lua"
-    :hook (lua-mode . my/setup-language-defaults)
     :custom
     (lua-indent-level 2)
     (lua-indent-string-contents t)
@@ -1529,7 +1444,7 @@ set in a non-interactive shell.
           (when (file-directory-p path)
             (my/org-insert-directory-structure path (1+ level)))))))
 #+end_src
-*** Bindings
+Screenshot 2025-04-19 at 10.56.18 PM.png*** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
     "n" '(:ignore t :which-key "notes")

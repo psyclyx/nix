@@ -225,7 +225,6 @@ set in a non-interactive shell.
 
     ;; Create our leader key definer
     (general-create-definer my-leader-def
-      :prefix-map 'my/leader-map
       :keymaps 'override
       :states '(normal visual insert emacs)
       :prefix "SPC"
@@ -234,7 +233,6 @@ set in a non-interactive shell.
 *** Local leader (bindings for major modes)
 #+begin_src emacs-lisp
   (general-create-definer my-local-leader-def
-    :prefix-map 'my/local-leader-map
     :keymaps 'override
     :states '(normal visual insert emacs)
     :prefix "SPC m"
@@ -251,27 +249,23 @@ set in a non-interactive shell.
 #+end_src
 *** Buffers
 #+begin_src emacs-lisp
-  (general-def
-    :prefix-map 'my/leader-b-map
+  (my-leader-def
+    :infix "b"
     "b" 'consult-buffer
     "d" 'kill-current-buffer)
-
-  (my-leader-def "b" (cons "buffer" my/leader-b-map))
 #+end_src
 *** Files
 #+begin_src emacs-lisp
-  (general-def
-    :prefix-map 'my/leader-f-map
+  (my-leader-def
+    :infix "f"
     "f" 'find-file
     "r" 'consult-recent-file
     "R" 'my/reload-config)
-
-  (my-leader-def "f" (cons "file" my/leader-f-map))
 #+end_src
 *** Search
 #+begin_src emacs-lisp
-  (general-def
-    :prefix-map 'my/leader-s-map
+  (my-leader-def
+    :infix "s"
     "s" 'consult-line
     "S" 'consult-line-multi
     "p" 'consult-ripgrep
@@ -283,8 +277,6 @@ set in a non-interactive shell.
     "g" 'consult-git-grep
     "d" 'consult-dir
     "o" 'consult-outline)
-
-  (my-leader-def "s" (cons "search" my/leader-s-map))
 #+end_src
 *** Help
 #+begin_src emacs-lisp
@@ -536,13 +528,11 @@ set in a non-interactive shell.
     (eglot-auto-display-help-buffer nil)
 
     :config
-    (general-def
-      :prefix-map 'my/eglot-map
+    (my-leader-def
+      :infix "l"
       "l" 'eglot
       "r" 'eglot-reconnect
-      "s" 'eglot-shutdown)
-
-    (my-leader-def "l" (cons "lsp" my/eglot-map)))
+      "s" 'eglot-shutdown))
 #+end_src
 ** Syntax checking (=flycheck=)
 #+begin_src emacs-lisp
@@ -553,13 +543,12 @@ set in a non-interactive shell.
 
     :config
     (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc))
-    (general-def
-      :prefix-map 'my/leader-e-map
+    (my-leader-def
+      :infix "e"
       "l" 'flycheck-list-errors
       "n" 'flycheck-next-error
       "p" 'flycheck-previous-error
-      "b" 'flycheck-buffer)
-    (my-leader-def "e" (cons "errors" my/leader-e-map)))
+      "b" 'flycheck-buffer))
 #+end_src
 ** Structural Editing (=lispy= and =lispyville=)
 #+begin_src emacs-lisp
@@ -625,16 +614,16 @@ set in a non-interactive shell.
       "S" 'lispyville-a-string)
 
     ;; atom-movements
-    ;; (my/lispyville-define-key
-    ;;  [remap evil-forward-WORD-begin] 'lispyville-forward-atom-begin
-    ;;  [remap evil-forward-WORD-end] 'lispyville-forward-atom-end
-    ;;  [remap evil-backward-WORD-begin] 'lispyville-backward-atom-begin
-    ;;  [remap evil-backward-WORD-end] 'lispyville-backward-atom-end)
     (my/lispyville-define-key
-      [remap evil-forward-word-begin] 'lispyville-forward-atom-begin
-      [remap evil-forward-word-end] 'lispyville-forward-atom-end
-      [remap evil-backward-word-begin] 'lispyville-backward-atom-begin
-      [remap evil-backward-word-end] 'lispyville-backward-atom-end)
+      [remap evil-forward-WORD-begin] 'lispyville-forward-atom-begin
+      [remap evil-forward-WORD-end] 'lispyville-forward-atom-end
+      [remap evil-backward-WORD-begin] 'lispyville-backward-atom-begin
+      [remap evil-backward-WORD-end] 'lispyville-backward-atom-end)
+    ;; (my/lispyville-define-key
+    ;;   [remap evil-forward-word-begin] 'lispyville-forward-atom-begin
+    ;;   [remap evil-forward-word-end] 'lispyville-forward-atom-end
+    ;;   [remap evil-backward-word-begin] 'lispyville-backward-atom-begin
+    ;;   [remap evil-backward-word-end] 'lispyville-backward-atom-end)
     
     ;; additional-movement
     (my/lispyville-define-key
@@ -723,26 +712,27 @@ set in a non-interactive shell.
 
 
     ;; mark
-    (my/lispyville-define-key
-      :states '(normal visual)
-      "v" (lispyville-wrap-command lispy-mark-symbol visual)
-      "V" (lispyville-wrap-command lispy-mark visual)
-      (kbd "C-v") 'lispyville-wrap-lispy-mark-visual)
+    ;; (my/lispyville-define-key
+    ;;   :states '(normal visual)
+    ;;   "v" (lispyville-wrap-command lispy-mark-symbol visual)
+    ;;   "V" (lispyville-wrap-command lispy-mark visual)
+    ;;   (kbd "C-v") 'lispyville-wrap-lispy-mark-visual)
 
     ;; mark-special
     ;; (my/lispyville-define-key
-    ;;  :states '(normal visual)
-    ;;  "v" (lispyville-wrap-command lispy-mark-symbol special)
-    ;;  "V" (lispyville-wrap-command lispy-mark special)
-    ;;  (kbd "C-v") 'lispyville-wrap-lispy-mark-special)
+    ;;   :states '(normal visual)
+    ;;   "v" (lispyville-wrap-command lispy-mark-symbol special)
+    ;;   "V" (lispyville-wrap-command lispy-mark special)
+    ;;   (kbd "C-v") 'lispyville-wrap-lispy-mark-special)
 
     ;; mark-toggle
-    (my/lispyville-define-key
-      :states '(visual)
-      "v" 'lispyville-toggle-mark-type)
-    (my/lispyville-define-key
-      :states '(insert emacs)
-      (kbd "<escape>") 'lispyville-escape)
+    ;; (my/lispyville-define-key
+    ;;   :states '(visual)
+    ;;   "" 'lispyville-toggle-mark-type)
+
+    ;; (my/lispyville-define-key
+    ;;   :states '(insert emacs)
+    ;;   (kbd "<escape>") 'lispyville-escape)
 
     (setq lispy-compat '(magit-blame-mode edebug cider)))
 #+end_src
@@ -770,8 +760,8 @@ set in a non-interactive shell.
     (add-to-list 'projectile-project-root-files "project.clj")
     (add-to-list 'projectile-project-root-files "deps.edn")
 
-    (general-def
-      :prefix-map 'my/leader-p-map
+    (my-leader-def
+      :infix "p"
       "a" 'projectile-add-known-project
       "p" 'projectile-switch-project
       "f" 'projectile-find-file
@@ -781,8 +771,7 @@ set in a non-interactive shell.
       "t" 'projectile-run-vterm
       "c" 'projectile-compile-project
       "!" 'projectile-run-shell-command-in-root
-      "&" 'projectile-run-async-shell-command-in-root)
-    (my-leader-def "p" (cons "project" my/leader-p-map)))
+      "&" 'projectile-run-async-shell-command-in-root))
 #+end_src
 ** Git (=magit=)
 #+begin_src emacs-lisp
@@ -797,27 +786,24 @@ set in a non-interactive shell.
     (setq magit-repository-directories
           (mapcar (lambda (dir)
                     (cons dir 1))
-                  projectile-known-projects)))
-#+end_src
-*** Bindings
-#+begin_src emacs-lisp
-  (general-def
-    :prefix-map 'my/leader-g-map
-    "g" 'magit-status
-    "b" 'magit-blame
-    "c" 'magit-commit
-    "C" 'magit-clone
-    "f" 'magit-file-dispatch
-    "l" 'magit-log-buffer-file
-    "L" 'magit-log-current
-    "s" 'magit-stage-file
-    "S" 'magit-stage-modified
-    "u" 'magit-unstage-file
-    "p" 'magit-push
-    "P" 'magit-pull
-    "x" 'magit-reset-quickly
-    "/" 'magit-dispatch)
-  (my-leader-def "g" (cons "git" my/leader-g-map))
+                  projectile-known-projects))
+
+    (my-leader-def
+      :infix "g"
+      "g" 'magit-status
+      "b" 'magit-blame
+      "c" 'magit-commit
+      "C" 'magit-clone
+      "f" 'magit-file-dispatch
+      "l" 'magit-log-buffer-file
+      "L" 'magit-log-current
+      "s" 'magit-stage-file
+      "S" 'magit-stage-modified
+      "u" 'magit-unstage-file
+      "p" 'magit-push
+      "P" 'magit-pull
+      "x" 'magit-reset-quickly
+      "/" 'magit-dispatch))
 #+end_src
 * Languages
 ** Common
@@ -834,11 +820,11 @@ set in a non-interactive shell.
   ;; Navigation bindings for all programming modes
   (my-local-leader-def
     :keymaps 'prog-mode-map
-    "g" '(:ignore t :which-key "goto")
-    "gd" '(eglot-find-declaration :which-key "declaration")
-    "gr" '(eglot-find-references :which-key "references")
-    "gi" '(eglot-find-implementation :which-key "implementation")
-    "gt" '(eglot-find-typeDefinition :which-key "type definition"))
+    :infix "g"
+    "d" 'eglot-find-declaration
+    "r" 'eglot-find-references
+    "i" 'eglot-find-implementation
+    "t" 'eglot-find-typeDefinition)
 #+end_src
 ** Clojure (=cider=)
 #+begin_src emacs-lisp
@@ -861,35 +847,9 @@ set in a non-interactive shell.
     (cider-repl-history-size 1000)
 
     :config
-    (general-create-definer my/clojure-evaluation-def :keymaps 'my/clojure-evaluation-map)
-    (general-create-definer my/clojure-navigation-def :keymaps 'my/clojure-navigation-map)
-    (general-create-definer my/clojure-help-def :keymaps 'my/clojure-help-map)
-    (general-create-definer my/clojure-inspect-def :keymaps 'my/clojure-inspect-map)
-    (general-create-definer my/clojure-namespace-def :keymaps 'my/clojure-namespace-map)
-    (general-create-definer my/clojure-pprint-def :keymaps 'my/clojure-pprint-map)
-    (general-create-definer my/clojure-repl-def :keymaps 'my/clojure-repl-map)
-    (general-create-definer my/clojure-test-def :keymaps 'my/clojure-test-map)
-
     (my-local-leader-def
       :keymaps 'clojure-mode-map
-      "'" 'cider-jack-in-clj
-      "\"" 'cider-jack-in-cljs
-      "C" 'cider-connect-cljs
-      "c" 'cider-connect-clj
-
-      "m" 'cider-macroexpand-1
-      "M" 'cider-macroexpand-all
-
-      "e" (cons "eval" my/clojure-evaluation-map)
-      "g" (cons "go" my/clojure-navigation-map)
-      "h" (cons "help" my/clojure-help-map)
-      "i" (cons "inspect" my/clojure-inspect-map)
-      "n" (cons "ns" my/clojure-namespace-map)
-      "p" (cons "pprint" my/clojure-pprint-map)
-      "r" (cons "repl" my/clojure-repl-map)
-      "t" (cons "test" my/clojure-test-map))
-
-    (my/clojure-evaluation-def
+      :infix "e"
       "D" 'cider-insert-defun-in-repl
       "E" 'cider-insert-last-sexp-in-repl
       "R" 'cider-insert-region-in-repl
@@ -900,12 +860,16 @@ set in a non-interactive shell.
       "u" 'cider-undef
       "i" 'cider-debug-defun-at-point)
 
-    (my/clojure-navigation-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "g"
       "b" 'cider-pop-back
       "g" 'cider-find-var
       "n" 'cider-find-ns)
 
-    (my/clojure-help-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "h"
       "a" 'cider-apropos
       "c" 'cider-clojuredocs
       "d" 'cider-doc
@@ -913,25 +877,33 @@ set in a non-interactive shell.
       "n" 'cider-find-ns
       "w" 'cider-clojuredocs-web)
 
-    (my/clojure-inspect-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "i"
       "e" 'cider-enlighten-mode
       "i" 'cider-inspect
       "r" 'cider-inspect-last-result)
 
-    (my/clojure-namespace-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "n"
       "N" 'cider-browse-ns-all
       "n" 'cider-browse-ns
       "r" 'cider-ns-refresh
       "u" 'cider-undef)
 
-    (my/clojure-pprint-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "p"
       "d" 'cider-pprint-eval-defun-at-point
       "D" 'cider-pprint-eval-defun-to-comment
       "p" 'cider-pprint-eval-last-sexp
       "P" 'cider-pprint-eval-last-sexp-to-comment
       "r" 'cider-pprint-eval-last-sexp-to-repl)
 
-    (my/clojure-repl-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "r"
       "L" 'cider-load-buffer-and-switch-to-repl-buffer
       "R" 'cider-restart
       "b" 'cider-switch-to-repl-buffer
@@ -942,14 +914,25 @@ set in a non-interactive shell.
       "r" 'cider-ns-refresh
       "i" 'cider-interrupt)
 
-    (my/clojure-test-def
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      :infix "t"
       "a" 'cider-test-rerun-test
       "l" 'cider-test-run-loaded-tests
       "n" 'cider-test-run-ns-tests
       "p" 'cider-test-run-project-tests
       "r" 'cider-test-rerun-failed-tests
       "s" 'cider-test-run-ns-tests-with-filters
-      "t" 'cider-test-run-test))
+      "t" 'cider-test-run-test)
+
+    (my-local-leader-def
+      :keymaps 'clojure-mode-map
+      "'" 'cider-jack-in-clj
+      "\"" 'cider-jack-in-cljs
+      "C" 'cider-connect-cljs
+      "c" 'cider-connect-clj
+      "m" 'cider-macroexpand-1
+      "M" 'cider-macroexpand-all))
 
   (with-eval-after-load 'clojure-mode
     (setq lispy-clojure-eval-method 'cider))
@@ -968,13 +951,12 @@ set in a non-interactive shell.
 #+end_src
 ** Emacs Lisp
 #+begin_src emacs-lisp
-  (general-def
-    :prefix-map 'my/emacs-eval-map
+  (my-local-leader-def
+    :infix "e"
+    :keymaps 'emacs-lisp-mode-map
     "b" 'eval-buffer
     "e" 'eval-last-sexp
-    "f" 'eval-defun
-    "r" 'eval-region)
-  (my-local-leader-def :keymaps 'emacs-lisp-mode-map "e" (cons "eval" my/emacs-eval-map))
+    "f" 'eval-defun)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -994,12 +976,11 @@ set in a non-interactive shell.
       (setf (alist-get 'rustfmt apheleia-formatters)
             '("rustfmt" "--edition" "2021")))
 
-    (general-def
-      :prefix-map 'my/rust-build-map
+    (my-local-leader-def
+      :keymaps 'rust-mode-map
       "b" 'rust-compile
       "r" 'rust-run
-      "t" 'rust-test)
-     (my-local-leader-def :keymaps 'rust-mode-map "b" (cons my/rust-build-map)))
+      "tb" (cons my/rust-build-map)))
 #+end_src
 ** Typescript (=typescript-ts-mode=)
 #+begin_src emacs-lisp

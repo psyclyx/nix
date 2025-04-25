@@ -15,7 +15,7 @@ in
     name = userName;
     home = userHome;
     uid = 501;
-    shell = pkgs.fish;
+    shell = pkgs.zsh;
   };
 
   home-manager.users.psyc = mkHome {

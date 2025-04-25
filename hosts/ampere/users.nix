@@ -20,7 +20,7 @@ in
     name = userName;
     uid = 501;
     home = userHome;
-    shell = pkgs.fish;
+    shell = pkgs.zsh;
   };
 
   home-manager.users.alice = mkHome {

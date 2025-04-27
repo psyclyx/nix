@@ -27,7 +27,7 @@
     (add-hook 'emacs-startup-hook
               #'(lambda ()
                   (my/enable-gc)
-                  (setq file-name-handler-alist file-name-handler-alist))))
+                  (setq file-name-handler-alist file-name-handler-alist-cache))))
 
   (add-hook 'minibuffer-setup-hook #'my/disable-gc)
   (add-hook 'minibuffer-exit-hook #'my/enable-gc)
@@ -469,17 +469,17 @@ Better 1/2 character movements
 #+begin_src emacs-lisp
   (use-package cape
     :init
-    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-    (add-to-list 'completion-at-point-functions #'cape-keyword)
-    (add-to-list 'completion-at-point-functions #'cape-file)
-
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)
 
     :config
     (general-def "C-c p" 'cape-prefix-map)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+    (add-to-list 'completion-at-point-functions #'cape-elisp-block)
 
-    (setq completion-annotate-function #'cape-annotate-prompt))
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 #+end_src
 ** Command menu (=consult=)
 #+begin_src emacs-lisp
@@ -1055,7 +1055,8 @@ Better 1/2 character movements
       :keymaps 'rust-mode-map
       "b" 'rust-compile
       "r" 'rust-run
-      "tb" (cons my/rust-build-map)))
+      "t" 'rust-test
+      "c" 'rust-check))
 #+end_src
 ** Typescript (=typescript-ts-mode=)
 #+begin_src emacs-lisp

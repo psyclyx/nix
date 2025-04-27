@@ -1,29 +1,45 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: psyclyx
-#+PROPERTY: header-args:emacs-lisp :lexical t
+#+PROPERTY: header-args:emacs-lisp :lexical t :results silent
 #+STARTUP: content
 
 * Base
-#+begin_src emacs-lisp
-    (require 'json)
-    (require 'url)
+** Lexical binding
+#+begin_src emacs-lisp :comments no
+  ;;; -*- lexical-binding: t -*-
 #+end_src
-** Disable GC
+** Configure GC
 #+begin_src emacs-lisp
   ;; startup
-  (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
-        gc-cons-percentage 0.6)
+  (defvar my/gc-cons-threshold-high most-positive-fixnum)
+  (defvar my/gc-cons-threshold (* 96 1024 1024))
 
-  (defvar my/file-name-handler-alist-cache file-name-handler-alist)
+  (defun my/disable-gc ()
+    (setq gc-cons-threshold my/gc-cons-threshold-high))
 
-  (setq file-name-handler-alist nil)
 
-  (defun my/restore-post-init-settings ()
-    (setq gc-cons-threshold  (* 128 1024 1024) ; 128mb
-          gc-cons-percentage 0.1)
-    (setq file-name-handler-alist my/file-name-handler-alist-cache))
+  (defun my/enable-gc ()
+    (setq gc-cons-threshold my/gc-cons-threshold))
 
-  (add-hook 'emacs-startup-hook #'my/restore-post-init-settings)
+  (my/disable-gc)
+  (let ((file-name-handler-alist-cache file-name-handler-alist))
+    (setq file-name-handler-alist nil)
+    (add-hook 'emacs-startup-hook
+              #'(lambda ()
+                  (my/enable-gc)
+                  (setq file-name-handler-alist file-name-handler-alist))))
+
+  (add-hook 'minibuffer-setup-hook #'my/disable-gc)
+  (add-hook 'minibuffer-exit-hook #'my/enable-gc)
+
+  (defun my/completion-in-region-disable-gc ()
+    (if completion-in-region-mode
+        (progn
+          (my/disable-gc))
+      (my/enable-gc)))
+
+  (add-hook 'completion-in-region-mode-hook #'my/completion-in-region-disable-gc)
+  (add-hook 'focus-out-hook #'garbage-collect)
 #+end_src
 ** Declutter
 #+begin_src emacs-lisp
@@ -67,6 +83,15 @@ set in a non-interactive shell.
     (exec-path-from-shell-initialize))
  #+end_src
 * Interface
+** Visible bell
+#+begin_src emacs-lisp
+  (defun my/flash-modeline ()
+    (invert-face 'mode-line)
+    (run-with-timer 0.1 nil 'invert-face 'mode-line))
+
+  (setq visible-bell nil
+        ring-bell-function 'my/flash-modeline)
+#+end_src
 ** Pixelwise sizing
 #+begin_src emacs-lisp
   (setq frame-resize-pixelwise t
@@ -106,28 +131,27 @@ set in a non-interactive shell.
 ** Font
 #+begin_src emacs-lisp
 
-    (set-face-attribute 'default nil
-                        :family "NotoMono Nerd Font Mono"
-                        :height 160)
+  (set-face-attribute 'default nil
+                      :family "NotoMono Nerd Font Mono"
+                      :height 160)
 
-    (set-face-attribute 'variable-pitch nil
-                        :family "NotoSerif Nerd Font Propo")
+  (set-face-attribute 'variable-pitch nil
+                      :family "NotoSerif Nerd Font Propo")
 
-    (set-fontset-font t 'unicode (font-spec :family "Symbola"))
-
-    (use-package mixed-pitch
-      :hook
-      ((org-mode org-roam-mode text-mode) . mixed-pitch-mode))
+  (set-fontset-font t 'unicode (font-spec :family "Symbola"))
 #+end_src
-** Theme (=doom-themes=)
+** Theme (=zenburn-theme=)
 #+begin_src emacs-lisp
-  (use-package doom-themes
+  (use-package zenburn-theme
     :config
-    (setq doom-themes-enable-bold t
-          doom-themes-enable-italic t)
-    (load-theme 'doom-gruvbox-light t)
-    (doom-themes-visual-bell-config)
-    (doom-themes-org-config))
+    (setq zenburn-use-variable-pitch t
+          zenburn-scale-org-headlines t
+          zenburn-scale-outline-headings t)
+    (load-theme 'zenburn t))
+#+end_src
+** Disable blinking cursor
+#+begin_src emacs-lisp
+  (blink-cursor-mode -1)
 #+end_src
 * Editor
 ** Recentf
@@ -144,9 +168,21 @@ set in a non-interactive shell.
   (setq-default indent-tabs-mode nil
                 tab-width 4)
 #+end_src
-** Evil
+
+** =undo-tree=
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :init
+    (global-undo-tree-mode 1)
+    :config
+    (setq undo-tree-auto-save-history t
+          undo-tree-history-directory-alist
+          `(("." . ,(no-littering-expand-var-file-name "undo-tree-hist/")))))
+#+end_src
+** =evil=
 #+begin_src emacs-lisp
   (use-package evil
+    :after (undo-tree)
     :init
     (setq evil-want-integration t
           evil-want-keybinding nil
@@ -156,26 +192,15 @@ set in a non-interactive shell.
     :config
     (evil-mode 1))
 #+end_src
-*** Integrations
-**** Most modes
+*** =evil-collection=
 #+begin_src emacs-lisp
   (use-package evil-collection
     :after evil
     :config
     (evil-collection-init))
 #+end_src
-**** =org-mode=
-#+begin_src emacs-lisp
-  (use-package evil-org
-    :after org
-    :hook (org-mode . (lambda ()
-                        (evil-org-set-key-theme '(navigation insert return textobjects additional shift todo heading calendar))
-                        (evil-org-mode)
-                        (require 'evil-org-agenda)
-                        (evil-org-agenda-set-keys))))
-#+end_src
-** Fast movement
 *** =evil-snipe=
+Better 1/2 character movements
 #+begin_src emacs-lisp
   (use-package evil-snipe
     :after evil
@@ -206,63 +231,74 @@ set in a non-interactive shell.
              (evil-snipe-enable-highlight)
              (evil-snipe-enable-incremental-highlight)))))
 #+end_src
-** =undo-tree=
+
+*** =evil-goggles=
 #+begin_src emacs-lisp
-  (use-package undo-tree
-    :init
-    (global-undo-tree-mode 1)
+  (use-package evil-goggles
+    :after evil
+    :hook evil-mode
+    :custom
+    (evil-goggles-duration 0.1)
+
     :config
-    (setq undo-tree-auto-save-history t
-          undo-tree-history-directory-alist
-          `(("." . ,(no-littering-expand-var-file-name "undo-tree-hist/")))))
+    (evil-goggles-mode)
+    (evil-goggles-use-diff-faces))
 #+end_src
-** Bindings
-*** Leader (=general.el=)
+** Auto-compression
+#+begin_src emacs-lisp
+  (use-package jka-compr
+    :config
+    (auto-compression-mode 1))
+#+end_src
+** Wgrep
+#+begin_src emacs-lisp
+  (use-package wgrep)
+#+end_src
+* Bindings
+** Leader (=general.el=)
 #+begin_src emacs-lisp
   (use-package general
     :config
     (general-evil-setup)
 
-    ;; Create our leader key definer
     (general-create-definer my-leader-def
       :keymaps 'override
       :states '(normal visual insert emacs)
       :prefix "SPC"
-      :non-normal-prefix "C-SPC"))
+      :non-normal-prefix "C-SPC")
+
+    (general-create-definer my-local-leader-def
+      :keymaps 'override
+      :states '(normal visual insert emacs)
+      :prefix "SPC m"
+      :non-normal-prefix "C-SPC m"))
 #+end_src
-*** Local leader (bindings for major modes)
+** Quick bindings
 #+begin_src emacs-lisp
-  (general-create-definer my-local-leader-def
-    :keymaps 'override
-    :states '(normal visual insert emacs)
-    :prefix "SPC m"
-    :non-normal-prefix "C-SPC m")
+    (my-leader-def
+      "." 'find-file
+      "," 'consult-buffer
+      "/" 'consult-ripgrep
+      ";" 'eval-expression
+      ":" 'execute-extended-command
+      "x" (general-key "C-x")
+      "c" (general-key "C-c"))
 #+end_src
-*** Quick bindings
-#+begin_src emacs-lisp
-  (my-leader-def
-    "." 'find-file
-    "," 'consult-buffer
-    "/" 'consult-ripgrep
-    ";" 'eval-expression
-    ":" 'execute-extended-command)
-#+end_src
-*** Buffers
+** Buffers
 #+begin_src emacs-lisp
   (my-leader-def
     :infix "b"
     "b" 'consult-buffer
     "d" 'kill-current-buffer)
 #+end_src
-*** Files
+** Files
 #+begin_src emacs-lisp
   (my-leader-def
     :infix "f"
     "f" 'find-file
-    "r" 'consult-recent-file
-    "R" 'my/reload-config)
+    "r" 'consult-recent-file)
 #+end_src
-*** Search
+** Search
 #+begin_src emacs-lisp
   (my-leader-def
     :infix "s"
@@ -276,13 +312,14 @@ set in a non-interactive shell.
     "r" 'consult-recent-file
     "g" 'consult-git-grep
     "d" 'consult-dir
-    "o" 'consult-outline)
+    "o" 'consult-outline
+    "k" 'consult-yank-from-kill-ring)
 #+end_src
-*** Help
+** Help
 #+begin_src emacs-lisp
   (my-leader-def "h" 'help-command)
 #+end_src
-*** Toggle
+** Toggle
 #+begin_src emacs-lisp
   (my-leader-def "S" 'global-text-scale-adjust)
 #+end_src
@@ -323,29 +360,66 @@ set in a non-interactive shell.
 
 *** Menu (=vertico=)
 #+begin_src emacs-lisp
-  (use-package vertico
-    :init
-    (vertico-mode)
-
-    :custom
-    (vertico-cycle t)
-    (vertico-count 15)
-    (vertico-resize t))
-
-  ;; Persist history over Emacs restarts
   (use-package savehist
     :init
     (savehist-mode))
 
-  ;; Directory navigation like ido
+  (use-package vertico
+    :custom
+    (vertico-cycle t)
+    (vertico-count 15)
+    (vertico-resize t)
+
+    :config
+    (vertico-mode)
+
+    (general-def
+      :keymaps 'vertico-map
+      "M-j" 'next-line
+      "M-k" 'previous-line
+      "M-h" 'backward-paragraph
+      "M-l" 'forward-paragraph)
+
+    ;; Prompt indicator for `completing-read-multiple'.
+    (when (< emacs-major-version 31)
+      (advice-add #'completing-read-multiple :filter-args
+                  (lambda (args)
+                    (cons (format "[CRM%s] %s"
+                                  (string-replace "[ \t]*" "" crm-separator)
+                                  (car args))
+                          (cdr args))))))
+
   (use-package vertico-directory
     :after vertico
     :ensure nil
-    :bind (:map vertico-map
-                ("RET" . vertico-directory-enter)
-                ("DEL" . vertico-directory-delete-char)
-                ("M-DEL" . vertico-directory-delete-word))
-    :hook (rfn-esm-update-handlers . vertico-directory-tidy))
+    :hook (rfn-esm-update-handlers . vertico-directory-tidy)
+    :config
+    (general-def
+      :keymaps 'vertico-map
+      "RET" 'vertico-directory-enter
+      "DEL" 'vertico-directory-delete-char
+      "M-DEL" 'vertico-directory-delete-word))
+
+  (use-package vertico-multiform
+    :after vertico
+    :custom
+    (vertico-buffer-display-action '(display-buffer-use-least-recent-window))
+    (vertico-multiform-categories
+     '((execute-extended-command grid)
+       (library reverse grid)
+       (consult-buffer vertical)
+       (consult-grep reverse grid)))
+
+    :config
+    (vertico-multiform-mode))
+
+  (use-package vertico-repeat
+    :after vertico
+    :config
+    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+    (general-def
+      :states '(normal insert visual motion)
+      "C-M-;" 'vertico-repeat))
 #+end_src
 *** Annotations (=marginalia=)
 #+begin_src emacs-lisp
@@ -367,10 +441,10 @@ set in a non-interactive shell.
     :custom
     (corfu-cycle t)
     (corfu-auto t)
-    (corfu-auto-delay 0.3)
+    (corfu-auto-delay 0.1)
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
-    (corfu-quit-at-boundary nil)
+    (corfu-quit-at-boundary 'seperator)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :init
@@ -381,14 +455,15 @@ set in a non-interactive shell.
       :keymaps 'corfu-map
       "SPC" 'corfu-insert-separator
       "TAB" 'corfu-next
-      "S-TAB" 'corfu-previous))
-
+      [backtab] 'corfu-previous)
+  )
 
   (use-package corfu-popupinfo
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay '(0.4 . 0.2)))
+    (corfu-popupinfo-delay '(0.1 . 0.2)))
+
 #+end_src
 ** At point (=cape=)
 #+begin_src emacs-lisp
@@ -1158,113 +1233,150 @@ set in a non-interactive shell.
     :custom
     (gptel-default-mode 'org-mode)
     (gptel-org-branching-context t)
+    (gptel-expert-commands t)
 
     :config
     (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "@user\n")
     (setf (alist-get 'org-mode gptel-response-prefix-alist) "@assistant\n"))
 #+end_src
-
 *** Model definitions
+**** OpenAI
 #+begin_src emacs-lisp
-  (when (file-exists-p "~/.openai-token")
-    (defun read-openai-token ()
-      "Read OpenAI API token from ~/.openrouter-token file."
-      (with-temp-buffer
-        (insert-file-contents (expand-file-name "~/.openrouter-token"))
-        (string-trim (buffer-string))))
-    (setq gptel-api-key 'read-openai-token))
+  (defun my--read-openai-token ()
+    (with-temp-buffer
+      (insert-file-contents (expand-file-name "~/.openai-token"))
+      (string-trim (buffer-string))))
 
-  (defun fetch-openrouter-models ()
-    (with-current-buffer
-        (url-retrieve-synchronously "https://openrouter.ai/api/v1/models")
-      (goto-char url-http-end-of-headers)
-      (let* ((json-object-type 'alist)
-             (json-data (json-read))
-             (models (alist-get 'data json-data)))
-        (mapcar (lambda (model)
-                  (cons (alist-get 'name model)
-                        (alist-get 'id model)))
-                models))))
+  (when (file-exists-p "~/.openai-token")
+    (setq gptel-api-key #'my--read-openai-token))
+#+end_src
+**** OpenRouter
+#+begin_src emacs-lisp
+  (require 'json)
+  (require 'url)
+
+  (defvar my/openrouter-token)
+
+  (defun my--read-openrouter-token ()
+    "Read OpenRouter API token from ~/.openrouter-token file."
+    (with-temp-buffer
+      (insert-file-contents (expand-file-name "~/.openrouter-token"))
+      (string-trim (buffer-string))))
+
+  (defun my--fetch-openrouter-models-json (on-success on-error)
+    (url-retrieve "https://openrouter.ai/api/v1/models"
+                  (lambda (status &rest _)
+                    (if (plist-get :error status)
+                        (funcall on-error status)
+                      (funcall on-success status)))))
+
+  (defun my--parse-openrouter-models ()
+    (goto-char url-http-end-of-headers)
+    (let* ((json-object-type 'alist)
+           (json-data (json-read))
+           (models-json (alist-get 'data json-data)))
+      (mapcar (lambda (model-json)
+                (let* ((id (alist-get 'id model-json))
+                       (pricing (alist-get 'pricing model-json))
+                       (input-cost (alist-get 'prompt pricing))
+                       (output-cost (alist-get 'completion pricing))
+                       (model ()))
+                  (when-let* ((id* (make-symbol id)))
+                    (when-let ((description (alist-get 'description model-json)))
+                      (setq model (plist-put model :description description)))
+                    (setq model (plist-put model :mime-types '("image/png"
+                                                               "image/jpeg"
+                                                               "image/webp"
+                                                               "application/pdf")))
+                    (when-let ((context-window (alist-get 'context_length model-json)))
+                      (setq model (plist-put model :context-window (/ context-window 1000))))
+                    (when-let ((pricing (alist-get 'pricing model-json)))
+                      (when-let ((input-cost (alist-get 'prompt pricing)))
+                        (setq model (plist-put model :input-cost (* 1000000 (string-to-number input-cost)))))
+                      (when-let ((output-cost (alist-get 'completion pricing)))
+                        (setq model (plist-put model :output-cost (* 1000000 (string-to-number output-cost))))))
+                    (cons id* model))))
+              models-json)))
+
+  (defun my/refresh-openrouter-models (&optional callback)
+    (interactive)
+    (my--fetch-openrouter-models-json
+     (lambda (x)
+       (let ((backend (gptel-make-openai "OpenRouter"
+                        :host "https://openrouter.ai"
+                        :endpoint "/api/v1/completions"
+                        :stream t
+                        :key #'my--read-openrouter-token
+                        :models (my--parse-openrouter-models))))
+         (when callback (funcall callback backend)))
+       (message "Fetched OpenRouter models"))
+     (lambda (x)
+       (error "Failed to fetch OpenRouter models"))))
 
   (when (file-exists-p "~/.openrouter-token")
-    (defun read-openrouter-token ()
-      "Read OpenRouter API token from ~/.openrouter-token file."
-      (with-temp-buffer
-        (insert-file-contents (expand-file-name "~/.openrouter-token"))
-        (string-trim (buffer-string))))
-    (gptel-make-openai "OpenRouter"
-      :host "openrouter.ai"
-      :endpoint "/api/v1/chat/completions"
-      :stream t
-      :key (read-openrouter-token)
-      :models (mapcar (lambda (model)
-                        (cdr model))
-                      (fetch-openrouter-models))))
+    (my/refresh-openrouter-models))
+#+end_src
 
+**** Fallback
+#+begin_src emacs-lisp
   (when (file-exists-p "~/.gptel.el")
     (load-file "~/.gptel.el")
     (when (fboundp 'config:gptel)
       (config:gptel)))
-
 #+end_src
 *** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    "SPC" '(:ignore t :which-key "ai")
-    "SPC SPC" '(:ignore t :which-key "gptel")
-    "SPC SPC RET" '(gptel-send :which-key "send")
-    "SPC SPC n" '(gptel :which-key "new chat")
-    "SPC SPC m" '(gptel-menu :which-key "model menu")
-    "SPC SPC r" '(gptel-rewrite :which-key "rewrite"))
-#+end_src
+    :infix "RET"
+    "g" 'gptel
+    "RET" 'gptel-send
+    "a" 'gptel-add
+    "f" 'gptel-add-file
+    "t" 'gptel-tools
 
+    "m" 'gptel-menu
+    "r" 'gptel-rewrite
+    "n" 'gptel-new-chat)
+#+end_src
 ** Evedel
 #+begin_src emacs-lisp
   (use-package evedel
     :config
-    (customize-set-variable 'evedel-empty-tag-query-matches-all nil)
+    (customize-set-variable 'evedel-empty-tag-query-matches-all t)
 
     (my-leader-def
-      "SPC h" 'evedel-next-instruction
-      "SPC l" 'evedel-previous-instruction
+      :infix "RET e"
 
-      "SPC j" 'evedel-next-directive
-      "SPC k" 'evedel-previous-directive
+      "h" 'evedel-next-instruction
+      "l" 'evedel-previous-instruction
+      "j" 'evedel-next-directive
+      "k" 'evedel-previous-directive
+      "J" 'evedel-next-reference
+      "K" 'evedel-previous-reference
 
-      "SPC J" 'evedel-next-reference
-      "SPC K" 'evedel-previous-reference
+      "," 'evedel-cycle-instructions-at-point
+      "d" 'evedel-create-directive
+      "m" 'evedel-modify-directive
+      "r" 'evedel-create-reference
+      "M" 'evedel-modify-reference-commentary
 
-      "SPC ," 'evedel-cycle-instructions-at-point
-
-
-      "SPC d" '(:ignore t :which-key "directive")
-      "SPC d n" 'evedel-create-directive
-      "SPC d r" 'evedel-modify-directive
-
-      "SPC r" '(:ignore t :which-key "reference")
-      "SPC r n" 'evedel-create-reference
-      "SPC r r" 'evedel-modify-reference-commentary
-
-
-      "SPC i" '(:ignore t :which-key "instructions")
-      "SPC i e" 'evedel-load-instructions
-      "SPC i w" 'evedel-save-instructions
-      "SPC i x" 'evedel-delete-instructions
-      "SPC i c" 'evedel-convert-instructions
-      "SPC i X" 'evedel-delete-all-instructions
-      "SPC i l" 'evedel-link-instructions
-      "SPC i L" 'evedel-unlink-instructions
+      "ie" 'evedel-load-instructions
+      "iw" 'evedel-save-instructions
+      "x" 'evedel-delete-instructions
+      "c" 'evedel-convert-instructions
+      "X" 'evedel-delete-all-instructions
+      "l" 'evedel-link-instructions
+      "L" 'evedel-unlink-instructions
 
 
-      "SPC t" '(:ignore t "tags")
-      "SPC t t" 'evedel-add-tags
-      "SPC t T" 'evedel-remove-tags
-      "SPC t r" 'evedel-modify-directive-tag-query
+      "t" 'evedel-add-tags
+      "T" 'evedel-remove-tags
+      "q" 'evedel-modify-directive-tag-query
 
-      "SPC v" 'evedel-preview-directive-prompt
-      "SPC u" 'evedel-directive-undo
+      "p" 'evedel-preview-directive-prompt
+      "u" 'evedel-directive-undo
 
-      "SPC RET" 'evedel-process-directives))
+      "RET" 'evedel-process-directives))
 #+end_src
 ** =direnv= & =envrc=
 #+begin_src emacs-lisp
@@ -1276,7 +1388,7 @@ set in a non-interactive shell.
     :config
     (envrc-global-mode))
 #+end_src
-** =org-mode=
+** Org (=org-mode=)
 #+begin_src emacs-lisp
   (use-package org
     :config
@@ -1301,31 +1413,34 @@ set in a non-interactive shell.
           org-outline-path-complete-in-steps nil
           org-capture-templates
           '(("t" "Todo" entry (file+headline "~/Sync/org/agenda.org" "Inbox")
-             "* TODO %?
+             "* TODO %\1
   :PROPERTIES:
   :CREATED: %U
   :END:
-  %i"
-             :prepend t)
+
+  %?")
             ("n" "note" entry (file+headline "~/Sync/org/agenda.org" "Inbox")
-             "* %?
+             "* %^{Heading}
   :PROPERTIES:
   :CREATED: %U
   :END:
-  %i"
-             :prepend t)
+
+  %?")
             ("c" "Current Clock Note" entry (clock)
-             "* %<%H:%M> %^{Title|Note|Quick thought|Update|Status}
+             "* %T %^{Title|Note|Quick thought|Update|Status}
+  %i
+
   %?"
-  	       :prepend t
+             :prepend t
              :clock-keep t)
-            ("j" "Journal" entry (file+datetree "~/Sync/org/journal.org")
-             "* %?
+            ("j" "Journal" entry (file+olp+datetree "~/Sync/org/journal.org")
+             "* %<%H:%M>
   :PROPERTIES:
   :CREATED: %U
   :END:
   %i
-  ")))
+
+  %?")))
 
     (setq org-agenda-custom-commands
           '(("n" "Next Tasks"
@@ -1349,81 +1464,53 @@ set in a non-interactive shell.
 
     ;; Save clock history when emacs is closed
     (org-clock-persistence-insinuate))
+#+end_src
 
-  (use-package org-indent
+** =evil-org=
+#+begin_src emacs-lisp
+  (use-package evil-org
     :after org
-    :config
-    (setq org-startup-indented 1))
-#+end_src
-
-#+begin_src emacs-lisp
-  (use-package org-superstar
-    :hook (org-mode-hook . org-superstar-mode)
+    :hook (org-mode-hook . evil-org-mode)
     :custom
-    (org-superstar-headline-bullets-list '("🜂" "🜃" "🜄" "🜁" "🜔" "🜖")))
+    (evil-org-key-theme '(additional
+                          calendar
+                          heading
+                          insert
+                          navigation
+                          return
+                          shift
+                          textobjects
+                          todo))
+
+    :config
+    (evil-org-set-key-theme)
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
 #+end_src
 
+=evil-org= rebinds =:q= and =:wq= for capture and source block buffers, but not =:w=.
 #+begin_src emacs-lisp
-  (set-face-attribute 'org-document-title nil :height 1.75)
-  (set-face-attribute 'org-document-info nil :height 1.3)
-  (set-face-attribute 'org-level-1 nil :height 1.6)
-  (set-face-attribute 'org-level-2 nil :height 1.45)
-  (set-face-attribute 'org-level-3 nil :height 1.3)
-  (set-face-attribute 'org-level-4 nil :height 1.15)
+  (general-def :keymaps 'org-capture-mode-map [remap evil-write] #'(lambda () (interactive) (org-capture-finalize t)))
+  (general-def :keymaps 'org-capture-mode-map [remap evil-save] 'org-capture-refile)
+  (general-def :keymaps 'org-src-mode-map [remap evil-write] 'org-edit-src-save)
 #+end_src
-*** org-roam
-**** Enable
-#+begin_src emacs-lisp
-  (use-package org-roam
-    :after org)
-
-#+end_src
-**** Database location
-#+begin_src emacs-lisp
-    (unless (file-exists-p "~/Sync/org/roam")
-          (make-directory "~/Sync/org/roam" t))
-
-  (setq org-roam-directory "~/Sync/org/roam")
-#+end_src
-**** Autosync database
-#+begin_src emacs-lisp
-  (org-roam-db-autosync-mode)
-#+end_src
-*** Utilities
-#+begin_src emacs-lisp
-  (defun my/org-insert-directory-structure (dir level)
-    "Insert directory structure as org-mode links starting at DIR with heading LEVEL."
-    (interactive "DDirectory: \nnStarting level (e.g., 2 for **): ")
-    (dolist (file (directory-files dir))
-      (unless (member file '("." ".."))
-        (let ((path (concat dir "/" file)))
-          (insert (make-string level ?*) " "
-                  "[[file:" path "][" file "/]]\n")
-          (when (file-directory-p path)
-            (my/org-insert-directory-structure path (1+ level)))))))
-#+end_src
-Screenshot 2025-04-19 at 10.56.18 PM.png*** Bindings
+*** Bindings
 #+begin_src emacs-lisp
   (my-leader-def
-    "n" '(:ignore t :which-key "notes")
-    "na" '(org-agenda :which-key "agenda")
-    "nc" '(org-capture :which-key "capture")
-    "nl" '(org-store-link :which-key "store link")
-    "ni" '(org-insert-link :which-key "insert link")
-    "ns" '(org-search-view :which-key "search")
-    "nt" '(org-todo-list :which-key "todo list")
-    "nj" '(org-journal-new-entry :which-key "journal entry")
-    "nb" '(org-switchb :which-key "switch org buffer")
+    :infix "n"
+    "a" 'org-agenda
+    "c" 'org-capture
+    "l" 'org-store-link
+    "i" 'org-insert-link
+    "s" 'org-search-view
+    "t" 'org-todo-list
+    "b" 'org-switchb)
 
-    "nC" '(:ignore t :which-key "clock")
-    "nCg" '(org-clock-goto :which-key "goto clock")
-    "nCo" '(org-clock-out :which-key "clock out")
-    "nCm" '(org-clock-menu :which-key "clock menu")
-
-    "nr" '(:ignore t :which-key "roam")
-    "nri" '(org-roam-node-insert :which-key "insert node")
-    "nrf" '(org-roam-node-find :which-key "find node")
-    "nrc" '(org-roam-capture :which-key "capture"))
+  (my-leader-def
+    :infix "nC"
+    "g" 'org-clock-goto
+    "o" 'org-clock-out
+    "m" 'org-clock-menu)
 #+end_src
 
 #+begin_src emacs-lisp

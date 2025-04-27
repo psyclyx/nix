@@ -3,16 +3,18 @@
     epkgs: with epkgs; [
       # Emacs
       exec-path-from-shell
+      general
       no-littering
       undo-tree
+      wgrep
 
       # Evil
       evil
       evil-collection
       evil-easymotion
+      evil-goggles
       evil-org
       evil-snipe
-      general
 
       # Completion
       cape
@@ -20,26 +22,18 @@
       corfu
       embark
       embark-consult
-      kind-icon
       marginalia
       orderless
       vertico
 
       # UI
-      all-the-icons-nerd-fonts
-      doom-modeline
-      doom-themes
-      mixed-pitch
       rainbow-delimiters
-      solaire-mode
-      which-key
+      zenburn-theme
 
       # Notes
       gptel
       evedel
       org
-      org-superstar
-      org-roam
 
       # Development
       apheleia
@@ -50,28 +44,16 @@
       lispy
       lispyville
       magit
-      persp-projectile
-      perspective
       projectile
       treesit-grammars.with-all-grammars
       vterm
 
       ## Languages
-
-      ### Clojure
       cider
       clojure-mode
-
-      ### Rust
       rust-mode
-
-      ### Lua
       lua-mode
-
-      ### Nix
       nix-ts-mode
-
-      ### Zig
       zig-mode
     ];
 
@@ -103,7 +85,7 @@
       ## text
       ispell
 
-      # clojure
+      ## clojure
       babashka
       clj-kondo
       cljfmt
@@ -111,28 +93,28 @@
       readline
       zlib
 
-      # rust
+      ## rust
       cargo
       rust-analyzer
       rustc
       rustfmt
 
-      # nix
+      ## nix
       nixfmt-rfc-style
       nixd
 
-      # shell
+      ## shell
       shellcheck
       shfmt
 
-      # typescript
+      ## typescript
       eclint
       nodePackages.prettier
       nodePackages.typescript
       nodePackages.typescript-language-server
       nodejs
 
-      # zig
+      ## zig
       zls
     ]
     ++ lib.optionals stdenv.isDarwin [ ]

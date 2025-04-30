@@ -38,7 +38,7 @@
           (my/disable-gc))
       (my/enable-gc)))
 
-  (add-hook 'completion-in-region-mode-hook #'my/completion-in-region-disable-gc)
+  ;(add-hook 'completion-in-region-mode-hook #'my/completion-in-region-disable-gc)
   (add-hook 'focus-out-hook #'garbage-collect)
 #+end_src
 ** Declutter

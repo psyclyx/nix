@@ -163,6 +163,7 @@ set in a non-interactive shell.
       "C-h v" 'helpful-variable
       "C-h k" 'helpful-key
       "C-h x" 'helpful-command
+      "C-h o" 'helpful-symbol
       "K" 'helpful-at-point))
 #+end_src
 * Editor
@@ -199,7 +200,9 @@ set in a non-interactive shell.
     (setq evil-want-integration t
           evil-want-keybinding nil
           evil-want-C-u-scroll t
+          evil-move-beyond-eol t
           evil-want-C-i-jump t
+          evil-lookup-func #'helpful-at-point
           evil-undo-system 'undo-tree)
     :config
     (evil-mode 1))
@@ -255,6 +258,17 @@ Better 1/2 character movements
     :config
     (evil-goggles-mode)
     (evil-goggles-use-diff-faces))
+#+end_src
+*** =evil-cleverparens=
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :hook ((prog-mode text-mode markdown-mode) . smartparens-strict-mode)
+    :config
+    (require 'smartparens-config))
+
+  (use-package evil-cleverparens
+    :after smartparens
+    :hook (smartparens-mode))
 #+end_src
 ** Auto-compression
 #+begin_src emacs-lisp
@@ -623,192 +637,6 @@ Better 1/2 character movements
       "p" 'flycheck-previous-error
       "b" 'flycheck-buffer))
 #+end_src
-** Structural Editing (=lispy= and =lispyville=)
-#+begin_src emacs-lisp
-  (use-package lispy
-    :hook ((emacs-lisp-mode
-            lisp-mode
-            scheme-mode
-            clojure-mode) . lispy-mode)
-    :custom
-    (lispy-close-quotes-at-end-p t)
-    (lispy-colon-p nil))
-
-  (use-package lispyville
-    :after (evil lispy)
-    :hook (lispy-mode . lispyville-mode)
-    :config
-    (general-create-definer my/lispyville-define-key
-      :keymaps 'lispyville-mode-map)
-
-    ;; operators
-    (my/lispyville-define-key
-      [remap evil-yank] 'lispyville-yank
-      [remap evil-delete] 'lispyville-delete
-      [remap evil-change] 'lispyville-change
-      [remap evil-yank-line] 'lispyville-yank-line
-      [remap evil-delete-line] 'lispyville-delete-line
-      [remap evil-change-line] 'lispyville-change-line
-      [remap evil-delete-char] 'lispyville-delete-char-or-splice
-      [remap evil-delete-backward-char] 'lispyville-delete-char-or-splice-backwards
-      [remap evil-substitute] 'lispyville-substitute
-      [remap evil-change-whole-line] 'lispyville-change-whole-line
-      [remap evil-join] 'lispyville-join)
-
-    ;; c-w
-    (my/lispyville-define-key
-      [remap evil-delete-backward-word] 'lispyville-delete-backward-word)
-
-    ;; c-u
-    ;; (my/lispyville-define-key
-    ;;   [remap evil-delete-back-to-indentation] 'lispyville-delete-back-to-indentation)
-
-    ;; prettify
-    (my/lispyville-define-key
-      [remap evil-indent] #'lispyville-prettify)
-
-    ;; text-objects
-    (my/lispyville-define-key
-      :keymaps 'evil-inner-text-objects-map
-      "a" 'lispyville-inner-atom
-      "l" 'lispyville-inner-list
-      "x" 'lispyville-inner-sexp
-      "f" 'lispyville-inner-function
-      "c" 'lispyville-inner-comment
-      "S" 'lispyville-inner-string)
-
-    (my/lispyville-define-key
-      :keymaps 'evil-outer-text-objects-map
-      "a" 'lispyville-a-atom
-      "l" 'lispyville-a-list
-      "x" 'lispyville-a-sexp
-      "f" 'lispyville-a-function
-      "c" 'lispyville-a-comment
-      "S" 'lispyville-a-string)
-
-    ;; atom-movements
-    (my/lispyville-define-key
-      [remap evil-forward-WORD-begin] 'lispyville-forward-atom-begin
-      [remap evil-forward-WORD-end] 'lispyville-forward-atom-end
-      [remap evil-backward-WORD-begin] 'lispyville-backward-atom-begin
-      [remap evil-backward-WORD-end] 'lispyville-backward-atom-end)
-    ;; (my/lispyville-define-key
-    ;;   [remap evil-forward-word-begin] 'lispyville-forward-atom-begin
-    ;;   [remap evil-forward-word-end] 'lispyville-forward-atom-end
-    ;;   [remap evil-backward-word-begin] 'lispyville-backward-atom-begin
-    ;;   [remap evil-backward-word-end] 'lispyville-backward-atom-end)
-    
-    ;; additional-movement
-    (my/lispyville-define-key
-      :states '(motion)
-      "H" 'lispyville-backward-sexp
-      "L" 'lispyville-forward-sexp
-      (kbd "M-h") 'lispyville-beginning-of-defun
-      (kbd "M-l") 'lispyville-end-of-defun
-      ;; reverse of lispy-flow
-      "[" 'lispyville-previous-opening
-      "]" 'lispyville-next-closing
-      ;; like lispy-flow
-      "{" 'lispyville-next-opening
-      "}" 'lispyville-previous-closing
-      ;; like lispy-left and lispy-right
-      "(" 'lispyville-backward-up-list
-      ")" 'lispyville-up-list)
-
-    ;; commentary
-    (my/lispyville-define-key
-      :states '(normal)
-      "gc" 'lispyville-comment-or-uncomment
-      "gy" 'lispyville-comment-and-clone-dwim
-      (kbd "s-/") 'lispyville-comment-or-uncomment-line)
-
-    ;; slurp/barf-cp
-    (my/lispyville-define-key
-      :states '(normal)
-      ">" 'lispyville->
-      "<" 'lispyville-<)
-
-    ;; slurp/barf-lispy
-    ;; (my/lispyville-define-key
-    ;;  :states '(normal)
-    ;;  ">" 'lispyville-slurp
-    ;;  "<" 'lispyville-barf)
-
-    ;; wrap
-    (my/lispyville-define-key
-      :states '(normal)
-      (kbd "M-(") 'lispyville-wrap-with-round
-      (kbd "M-[") 'lispyville-wrap-with-brackets
-      (kbd "M-{") 'lispyville-wrap-with-braces)
-
-    ;; additional
-    (my/lispyville-define-key
-      :states '(normal)
-      (kbd "M-j") 'lispyville-drag-forward
-      (kbd "M-k") 'lispyville-drag-backward
-      (kbd "M-J") 'lispy-join
-      (kbd "M-s") 'lispy-splice
-      (kbd "M-S") 'lispy-split
-      (kbd "M-r") 'lispy-raise-sexp
-      (kbd "M-R") 'lispyville-raise-list
-      (kbd "M-t") 'transpose-sexps
-      (kbd "M-v") 'lispy-convolute-sexp)
-
-    ;; additional-insert
-    (my/lispyville-define-key
-      :states '(normal)
-      (kbd "M-i") 'lispyville-insert-at-beginning-of-list
-      (kbd "M-a") 'lispyville-insert-at-end-of-list
-      (kbd "M-o") 'lispyville-open-below-list
-      (kbd "M-O") 'lispyville-open-above-list)
-
-    ;; additional-wrap
-    ;; (my/lispyville-define-key
-    ;;  :states '(normal)
-    ;;  (kbd "M-(") 'lispyville-wrap-round
-    ;;  (kbd "M-[") 'lispyville-wrap-brackets
-    ;;  (kbd "M-{") 'lispyville-wrap-braces)
-
-    ;; arrows
-    ;; (my/lispyville-define-key
-    ;;  :states '(normal)
-    ;;  "<i" 'lispyville-insert-at-beginning-of-list
-    ;;  ">i" 'lispyville-insert-at-end-of-list)
-
-    ;; insert
-    ;; (lispyville-space-after-insert)
-
-    ;;escape
-    (my/lispyville-define-key
-      :states '(insert emacs)
-      (kbd "<escape>") 'lispyville-normal-state)
-
-
-    ;; mark
-    ;; (my/lispyville-define-key
-    ;;   :states '(normal visual)
-    ;;   "v" (lispyville-wrap-command lispy-mark-symbol visual)
-    ;;   "V" (lispyville-wrap-command lispy-mark visual)
-    ;;   (kbd "C-v") 'lispyville-wrap-lispy-mark-visual)
-
-    ;; mark-special
-    ;; (my/lispyville-define-key
-    ;;   :states '(normal visual)
-    ;;   "v" (lispyville-wrap-command lispy-mark-symbol special)
-    ;;   "V" (lispyville-wrap-command lispy-mark special)
-    ;;   (kbd "C-v") 'lispyville-wrap-lispy-mark-special)
-
-    ;; mark-toggle
-    ;; (my/lispyville-define-key
-    ;;   :states '(visual)
-    ;;   "" 'lispyville-toggle-mark-type)
-
-    ;; (my/lispyville-define-key
-    ;;   :states '(insert emacs)
-    ;;   (kbd "<escape>") 'lispyville-escape)
-
-    (setq lispy-compat '(magit-blame-mode edebug cider)))
-#+end_src
 ** Formatting (=aphelia=)
 #+begin_src emacs-lisp
   (use-package apheleia
@@ -911,7 +739,6 @@ Better 1/2 character movements
 *** =clojure-mode=
 #+begin_src emacs-lisp
   (use-package clojure-mode
-    :after (lispyville)
     :mode "\\.clj\\'"
 
     :config
@@ -1018,9 +845,6 @@ Better 1/2 character movements
       "c" 'cider-connect-clj
       "m" 'cider-macroexpand-1
       "M" 'cider-macroexpand-all))
-
-  (with-eval-after-load 'clojure-mode
-    (setq lispy-clojure-eval-method 'cider))
 #+end_src
 ** Nix (=nix-ts-mode=)
 #+begin_src emacs-lisp
@@ -1042,11 +866,6 @@ Better 1/2 character movements
     "b" 'eval-buffer
     "e" 'eval-last-sexp
     "f" 'eval-defun)
-#+end_src
-
-#+begin_src emacs-lisp
-  (with-eval-after-load 'emacs-lisp-mode
-    (setq lispy-eval-display-style 'overlay))
 #+end_src
 ** Rust
 #+begin_src emacs-lisp

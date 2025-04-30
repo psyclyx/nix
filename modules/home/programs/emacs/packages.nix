@@ -43,10 +43,10 @@
       envrc
       flycheck
       logview
-      lispy
-      lispyville
       magit
       projectile
+      smartparens
+      evil-cleverparens
       treesit-grammars.with-all-grammars
       vterm
 

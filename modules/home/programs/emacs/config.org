@@ -372,7 +372,6 @@ Better 1/2 character movements
 
     :config
     (vertico-mode)
-
     (general-def
       :keymaps 'vertico-map
       "M-j" 'next-line
@@ -389,37 +388,30 @@ Better 1/2 character movements
                                   (car args))
                           (cdr args))))))
 
-  (use-package vertico-directory
-    :after vertico
-    :ensure nil
-    :hook (rfn-esm-update-handlers . vertico-directory-tidy)
-    :config
-    (general-def
-      :keymaps 'vertico-map
-      "RET" 'vertico-directory-enter
-      "DEL" 'vertico-directory-delete-char
-      "M-DEL" 'vertico-directory-delete-word))
+  (require 'vertico-buffer)
+  (require 'vertico-grid)
+  (require 'vertico-directory)
+  (require 'vertico-reverse)
+  (require 'vertico-repeat)
+  (require 'vertico-multiform)
 
-  (use-package vertico-multiform
-    :after vertico
-    :custom
-    (vertico-buffer-display-action '(display-buffer-use-least-recent-window))
-    (vertico-multiform-categories
-     '((execute-extended-command grid)
-       (library reverse grid)
-       (consult-buffer vertical)
-       (consult-grep reverse grid)))
+  (add-hook 'rfn-esm-update-handlers #'vertico-directory-tidy)
 
-    :config
-    (vertico-multiform-mode))
+  (general-def
+    :keymaps '(vertico-map vertico-mulltiform-map)
+    "RET" 'vertico-directory-enter
+    "DEL" 'vertico-directory-delete-char
+    "M-DEL" 'vertico-directory-delete-word)
 
-  (use-package vertico-repeat
-    :after vertico
-    :config
-    (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
-    (general-def
-      :states '(normal insert visual motion)
-      "C-M-;" 'vertico-repeat))
+  (setq vertico-buffer-display-action '(display-buffer-use-least-recent-window)
+        vertico-multiform-categories '((t reverse)))
+
+  (vertico-multiform-mode)
+
+  (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+  (general-def
+    :states '(normal insert visual motion)
+    "C-M-;" 'vertico-repeat)
 #+end_src
 *** Annotations (=marginalia=)
 #+begin_src emacs-lisp
@@ -444,7 +436,7 @@ Better 1/2 character movements
     (corfu-auto-delay 0.1)
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
-    (corfu-quit-at-boundary 'seperator)
+    (corfu-quit-at-boundary nil)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :init
@@ -455,31 +447,25 @@ Better 1/2 character movements
       :keymaps 'corfu-map
       "SPC" 'corfu-insert-separator
       "TAB" 'corfu-next
-      [backtab] 'corfu-previous)
-  )
+      "S-TAB" 'corfu-previous))
 
   (use-package corfu-popupinfo
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
     (corfu-popupinfo-delay '(0.1 . 0.2)))
-
 #+end_src
+
 ** At point (=cape=)
 #+begin_src emacs-lisp
   (use-package cape
     :init
-
-    :config
     (general-def "C-c p" 'cape-prefix-map)
-    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-    (add-to-list 'completion-at-point-functions #'cape-keyword)
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
-    (add-to-list 'completion-at-point-functions #'cape-elisp-block)
-
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
+    (add-hook 'completion-at-point-functions #'cape-dabbrev)
+    (add-hook 'completion-at-point-functions #'cape-keyword)
+    (add-hook 'completion-at-point-functions #'cape-file)
+    (add-hook 'completion-at-point-functions #'cape-elisp-symbol)
+    (add-hook 'completion-at-point-functions #'cape-elisp-block))
 #+end_src
 ** Command menu (=consult=)
 #+begin_src emacs-lisp

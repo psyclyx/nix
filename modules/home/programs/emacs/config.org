@@ -153,6 +153,18 @@ set in a non-interactive shell.
 #+begin_src emacs-lisp
   (blink-cursor-mode -1)
 #+end_src
+** Better help (=helpful=)
+#+begin_src emacs-lisp
+  (use-package helpful
+    :ensure t
+    :config
+    (general-def
+      "C-h f" 'helpful-callable
+      "C-h v" 'helpful-variable
+      "C-h k" 'helpful-key
+      "C-h x" 'helpful-command
+      "K" 'helpful-at-point))
+#+end_src
 * Editor
 ** Recentf
 #+begin_src emacs-lisp
@@ -866,6 +878,10 @@ Better 1/2 character movements
       "x" 'magit-reset-quickly
       "/" 'magit-dispatch))
 #+end_src
+** Logs (=logview=)
+#+begin_src emacs-lisp
+  (use-package logview)
+#+end_src
 * Languages
 ** Common
 #+begin_src emacs-lisp
@@ -888,15 +904,23 @@ Better 1/2 character movements
     "t" 'eglot-find-typeDefinition)
 #+end_src
 ** Clojure (=cider=)
+*** flycheck-clj-kondo
+#+begin_src emacs-lisp
+  (use-package flycheck-clj-kondo)
+#+end_src
+*** =clojure-mode=
 #+begin_src emacs-lisp
   (use-package clojure-mode
     :after (lispyville)
     :mode "\\.clj\\'"
-    
+
     :config
+    (require 'flycheck-clj-kondo)
     (setf (alist-get 'clojure-mode apheleia-mode-alist) 'cljstyle)
     (setf (alist-get 'cljstyle apheleia-formatters) '("cljstyle" "pipe")))
-
+#+end_src
+*** =cider=
+#+begin_src emacs-lisp
   (use-package cider
     :after clojure-mode
     :custom
@@ -1290,8 +1314,8 @@ Better 1/2 character movements
     (my--fetch-openrouter-models-json
      (lambda (x)
        (let ((backend (gptel-make-openai "OpenRouter"
-                        :host "https://openrouter.ai"
-                        :endpoint "/api/v1/completions"
+                        :host "openrouter.ai"
+                        :endpoint "/api/v1/chat/completions"
                         :stream t
                         :key #'my--read-openrouter-token
                         :models (my--parse-openrouter-models))))
@@ -1396,6 +1420,7 @@ Better 1/2 character movements
 
           org-refile-targets '((nil :maxlevel . 9)
                                (org-agenda-files :maxlevel . 9))
+          org-confirm-babel-evaluate nil
           org-refile-use-outline-path 'file
           org-outline-path-complete-in-steps nil
           org-capture-templates

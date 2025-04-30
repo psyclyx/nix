@@ -7,6 +7,7 @@
       no-littering
       undo-tree
       wgrep
+      helpful
 
       # Evil
       evil
@@ -41,6 +42,7 @@
       eglot
       envrc
       flycheck
+      logview
       lispy
       lispyville
       magit
@@ -51,6 +53,7 @@
       ## Languages
       cider
       clojure-mode
+      flycheck-clj-kondo
       rust-mode
       lua-mode
       nix-ts-mode

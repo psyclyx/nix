@@ -258,14 +258,13 @@ Better 1/2 character movements
 *** =evil-goggles=
 #+begin_src emacs-lisp
   (use-package evil-goggles
-    :after evil
-    :hook evil-mode
+    :after evil-mode
     :custom
     (evil-goggles-duration 0.15)
 
     :config
-    (evil-goggles-mode)
-    (evil-goggles-use-diff-faces))
+    (evil-goggles-use-magit-faces)
+    (evil-goggles-mode))
 #+end_src
 *** =evil-cleverparens=
 #+begin_src emacs-lisp

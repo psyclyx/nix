@@ -130,15 +130,23 @@ set in a non-interactive shell.
 #+end_src
 ** Font
 #+begin_src emacs-lisp
+  (use-package faces
+    :custom
+    (face-font-family-alternatives
+     (("Berkeley Mono" "Aporetic Sans Mono" "Noto Sans Mono" "SF Mono" "Menlo" "Monospace")
+      ("Aporetic Sans" "Noto Sans" "Noto Sans" "SF Pro" "Helvetica" "Arial"))))
 
   (set-face-attribute 'default nil
-                      :family "NotoMono Nerd Font Mono"
-                      :height 160)
+                      :family "Berkeley Mono"
+                      :height 180
+                      :weight 'extra-light
+                      :width 'condensed)
+
+  (set-face-attribute 'fixed-pitch nil
+                      :family "Berkeley Mono")
 
   (set-face-attribute 'variable-pitch nil
-                      :family "NotoSerif Nerd Font Propo")
-
-  (set-fontset-font t 'unicode (font-spec :family "Symbola"))
+                      :family "Aporetic Sans")
 #+end_src
 ** Theme (=zenburn-theme=)
 #+begin_src emacs-lisp

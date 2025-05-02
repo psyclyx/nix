@@ -13,11 +13,11 @@ bar=(
 )
 
 default=(
-  icon.font="notomono Nerd Font Propo:Regular:12.0"
+  icon.font="Berkeley Mono:ExtraLight:12.0"
   icon.color="${THEME_FOREGROUND}"
   icon.highlight_color="${THEME_BORDER_ACTIVE}"
 
-  label.font="NotoMono Nerd Font Propo:Regular:18.0"
+  label.font="Berkeley Mono:Thin:18.0"
   label.color="${THEME_FOREGROUND}"
   label.highlight_color="${THEME_BORDER_ACTIVE}"
 

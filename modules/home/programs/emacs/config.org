@@ -253,7 +253,7 @@ Better 1/2 character movements
     :after evil
     :hook evil-mode
     :custom
-    (evil-goggles-duration 0.1)
+    (evil-goggles-duration 0.15)
 
     :config
     (evil-goggles-mode)

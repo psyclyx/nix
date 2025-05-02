@@ -54,9 +54,10 @@
       cider
       clojure-mode
       flycheck-clj-kondo
-      rust-mode
       lua-mode
       nix-ts-mode
+      rust-mode
+      slime
       zig-mode
     ];
 
@@ -65,14 +66,11 @@
     with pkgs;
     [
       # UI
+      aporetic
       etBook
       fontconfig
-      nerd-fonts.hack
-      nerd-fonts.noto
-      nerd-fonts.symbols-only
       symbola
       dejavu_fonts
-      noto-fonts
 
       # Development
       direnv
@@ -95,6 +93,10 @@
       leiningen
       readline
       zlib
+
+      ## Common lisp
+      sbcl
+      ecl
 
       ## rust
       cargo

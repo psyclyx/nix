@@ -723,14 +723,6 @@ Better 1/2 character movements
 
   (add-hook 'prog-mode-hook #'my/setup-language-defaults)
 
-  ;; Navigation bindings for all programming modes
-  (my-local-leader-def
-    :keymaps 'prog-mode-map
-    :infix "g"
-    "d" 'eglot-find-declaration
-    "r" 'eglot-find-references
-    "i" 'eglot-find-implementation
-    "t" 'eglot-find-typeDefinition)
 #+end_src
 ** Clojure (=cider=)
 *** flycheck-clj-kondo

@@ -356,15 +356,7 @@ Better 1/2 character movements
   (use-package orderless
     :custom
     (completion-styles '(orderless basic))
-    (completion-category-overrides '((file (styles . (partial-completion basic)))
-                                   (project-file (styles . (partial-completion basic)))))
-    :config
-    ;; Recognize more completion styles
-    (setq orderless-matching-styles
-          '(orderless-literal
-            orderless-prefixes
-            orderless-initialism
-            orderless-regexp)))
+    (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 ** Minibuffer
 #+begin_src emacs-lisp

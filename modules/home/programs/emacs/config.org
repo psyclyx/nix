@@ -431,11 +431,12 @@ Better 1/2 character movements
     "M-DEL" 'vertico-directory-delete-word)
 
   (setq vertico-buffer-display-action '(display-buffer-use-least-recent-window)
-        vertico-multiform-categories '((t reverse)))
+        vertico-multiform-categories '((embark-keybinding grid)))
 
   (vertico-multiform-mode)
 
   (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+
   (general-def
     :states '(normal insert visual motion)
     "C-M-;" 'vertico-repeat)
@@ -443,14 +444,11 @@ Better 1/2 character movements
 *** Annotations (=marginalia=)
 #+begin_src emacs-lisp
   (use-package marginalia
-    :after vertico
     :init
     (marginalia-mode)
     :custom
-    (marginalia-align 'right)
     (marginalia-max-relative-age 0)
     :config
-    ;; Add custom annotators for more informative completions
     (add-to-list 'marginalia-prompt-categories '("\\<face\\>" . face))
     (add-to-list 'marginalia-prompt-categories '("\\<var\\>" . variable)))
 #+end_src
@@ -463,7 +461,7 @@ Better 1/2 character movements
     (corfu-auto-delay 0.1)
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
-    (corfu-quit-at-boundary nil)
+    (corfu-quit-no-match t)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :init
@@ -480,7 +478,7 @@ Better 1/2 character movements
     :after corfu
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay '(0.1 . 0.2)))
+    (corfu-popupinfo-delay '(0.5 . 0.3)))
 #+end_src
 
 ** At point (=cape=)
@@ -520,25 +518,6 @@ Better 1/2 character movements
     (setq evil-jumps-cross-buffers nil)
     (evil-set-command-property 'consult-line :jump t))
 #+end_src
-** Command discovery (=which-key=)
-#+begin_src emacs-lisp
-  (use-package which-key
-    :init
-    (which-key-mode)
-    :custom
-    (which-key-idle-delay 0.2)
-    (which-key-prefix-prefix "+")
-    (which-key-sort-order 'which-key-key-order-alpha)
-    (which-key-sort-uppercase-first nil)
-    (which-key-add-column-padding 1)
-    (which-key-max-display-columns nil)
-    (which-key-min-display-lines 6)
-    :config
-    ;; Allow C-h to trigger which-key before it is done automatically
-    (setq which-key-show-early-on-C-h t)
-    ;; Make sure which-key buffer is always below minibuffer
-    (setq which-key-popup-type 'side-window))
-#+end_src
 ** Actions (=embark=)
 #+begin_src emacs-lisp
   (use-package embark
@@ -562,49 +541,22 @@ Better 1/2 character movements
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 
-  (defun embark-which-key-indicator ()
-    "An embark indicator that displays keymaps using which-key.
-  The which-key help message will show the type and value of the
-  current target followed by an ellipsis if there are further
-  targets."
-    (lambda (&optional keymap targets prefix)
-      (if (null keymap)
-          (which-key--hide-popup-ignore-command)
-        (which-key--show-keymap
-         (if (eq (plist-get (car targets) :type) 'embark-become)
-             "Become"
-           (format "Act on %s '%s'%s"
-                   (plist-get (car targets) :type)
-                   (embark--truncate-target (plist-get (car targets) :target))
-                   (if (cdr targets) "…" "")))
-         (if prefix
-             (pcase (lookup-key keymap prefix 'accept-default)
-               ((and (pred keymapp) km) km)
-               (_ (key-binding prefix 'accept-default)))
-           keymap)
-         nil nil t (lambda (binding)
-                     (not (string-suffix-p "-argument" (cdr binding))))))))
-
-  (setq embark-indicators
-        '(embark-which-key-indicator
-      embark-highlight-indicator
-      embark-isearch-highlight-indicator))
-
-  (defun embark-hide-which-key-indicator (fn &rest args)
-    "Hide the which-key indicator immediately when using the completing-read prompter."
-    (which-key--hide-popup-ignore-command)
-    (let ((embark-indicators
-           (remq #'embark-which-key-indicator embark-indicators)))
-      (apply fn args)))
-
-  (advice-add #'embark-completing-read-prompter
-              :around #'embark-hide-which-key-indicator)
+  (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
 #+end_src
 * Development
+** Eldoc
+
+#+begin_src emacs-lisp
+(setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+#+end_src
+
 ** Highlight matching parentheses (=rainbow-delimiters=)
 #+begin_src emacs-lisp
-  (use-package rainbow-delimiters)
+  (use-package rainbow-delimiters
+    :hook prog-mode)
 #+end_src
+
 ** LSP (=eglot=)
 #+begin_src emacs-lisp
   (use-package eglot
@@ -746,14 +698,6 @@ Better 1/2 character movements
 * Languages
 ** Common
 #+begin_src emacs-lisp
-  (defun my/setup-language-defaults ()
-    "Set up common language support features."
-    (flycheck-mode)
-    (electric-pair-local-mode)
-    (rainbow-delimiters-mode)
-    (show-paren-mode))
-
-  (add-hook 'prog-mode-hook #'my/setup-language-defaults)
 
 #+end_src
 ** Clojure (=cider=)

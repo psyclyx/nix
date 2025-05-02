@@ -6,23 +6,19 @@
   ...
 }:
 let
-  repoSymlink = false; # will eventually be argument
-  relPath = lib.strings.removePrefix (toString inputs.self);
-  repoPath = f: "${config.home.homeDirectory}/projects/nix" + relPath f;
-  mkRepoFile =
-    file: fallback:
-    if repoSymlink then config.lib.file.mkOutOfStoreSymlink (repoPath file) else fallback;
-
   packageConfig = import ./packages.nix;
   packages = packageConfig.systemPackages pkgs;
   emacs =
-    if pkgs.stdenv.isDarwin then
-      (pkgs.emacs-30.override {
-        # https://github.com/NixOS/nixpkgs/issues/395169
-        withNativeCompilation = false;
+    with pkgs;
+    if stdenv.isDarwin then
+      emacs-30.overrideAttrs (old: {
+        buildInputs = old.buildInputs ++ [
+          pkgs.darwin.apple_sdk.frameworks.WebKit
+        ];
+        configureFlags = old.configureFlags ++ [ "--with-xwidgets" ];
       })
     else
-      pkgs.emacs-unstable-pgtk;
+      emacs-unstable-pgtk;
 in
 lib.mkMerge [
   {
@@ -35,11 +31,9 @@ lib.mkMerge [
     };
 
     home = lib.mkIf config.programs.emacs.enable {
-      file = {
-        ".config/emacs/init.el".source = mkRepoFile ./init.el ./init.el;
-        ".config/emacs/config.org".source = mkRepoFile ./config.org ./config.org;
-      };
-      packages = packages;
+         packages = packages;
+         file.".config/emacs/config.org".source = ./config.org;
+         file.".config/emacs/init.el".source = ./init.el;
     };
   }
 

@@ -17,7 +17,7 @@ in
         };
         font = {
           normal = {
-            family = "NotoMono Nerd Font Mono";
+            family = "Aporetic Sans Mono";
           };
           size = 12;
         };

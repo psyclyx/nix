@@ -386,7 +386,7 @@ Better 1/2 character movements
   (use-package vertico
     :custom
     (vertico-cycle t)
-    (vertico-count 15)
+    (vertico-count 20)
     (vertico-resize t)
 
     :config

@@ -625,12 +625,44 @@ Better 1/2 character movements
 ** Syntax checking (=flycheck=)
 #+begin_src emacs-lisp
   (use-package flycheck
+    :preface
+    ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
+    (defun my--flycheck-eldoc (callback &rest _ignored)
+      "Print flycheck messages at point by calling CALLBACK."
+      (when-let ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
+        (mapc
+         (lambda (err)
+           (funcall callback
+                    (format "%s: %s"
+                            (let ((level (flycheck-error-level err)))
+                              (pcase level
+                                ('info (propertize "I" 'face 'flycheck-error-list-info))
+                                ('error (propertize "E" 'face 'flycheck-error-list-error))
+                                ('warning (propertize "W" 'face 'flycheck-error-list-warning))
+                                (_ level)))
+                            (flycheck-error-message err))
+                    :thing (or (flycheck-error-id err)
+                               (flycheck-error-group err))
+                    :face 'font-lock-doc-face))
+         flycheck-errors)))
+
+
+    (defun my--flycheck-prefer-eldoc ()
+      (add-hook 'eldoc-documentation-functions #'my--flycheck-eldoc nil t)
+      (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+      (setq flycheck-display-errors-function nil)
+      (setq flycheck-help-echo-function nil))
+
+
+    :hook ((flycheck-mode . my--flycheck-prefer-eldoc)
+           prog-mode)
+
     :custom
     (flycheck-display-errors-delay 0.1)
-    (flycheck-indication-mode 'left-margin)
+    (flycheck-disabled-checkers '(emacs-lisp-checkdoc))
+
 
     :config
-    (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc))
     (my-leader-def
       :infix "e"
       "l" 'flycheck-list-errors

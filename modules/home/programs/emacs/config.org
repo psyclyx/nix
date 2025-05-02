@@ -1,6 +1,6 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: psyclyx
-#+PROPERTY: header-args:emacs-lisp :lexical t :results silent
+#+PROPERTY: header-args:emacs-lisp :lexical t :tangle config.el :noweb yes :results silent
 #+STARTUP: content
 
 * Base
@@ -1355,3 +1355,9 @@ Better 1/2 character movements
     "s" '(org-schedule :which-key "schedule todo"))
 #+end_src
 
+
+
+* Tangle on save
+;; Local Variables:
+;; eval: (add-hook 'after-save-hook (lambda () (org-babel-tangle)) nil t)
+;; End:

@@ -679,7 +679,7 @@ Better 1/2 character movements
     (magit-bury-buffer-function #'magit-restore-window-configuration)
     (magit-save-repository-buffers 'dontask)
     (magit-no-confirm '(stage-all-changes unstage-all-changes))
-    
+
     :config
     (setq magit-repository-directories
           (mapcar (lambda (dir)
@@ -710,7 +710,7 @@ Better 1/2 character movements
 * Languages
 ** Common
 #+begin_src emacs-lisp
-
+  (add-hook 'prog-mode-hook #'show-paren-mode)
 #+end_src
 ** Clojure (=cider=)
 *** flycheck-clj-kondo

@@ -460,13 +460,26 @@ Better 1/2 character movements
     (corfu-auto-delay 0.1)
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
-    (corfu-quit-no-match t)
+    (corfu-quit-at-boundary 'separator)
+    (corfu-quit-at-no-match 'separator)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :init
     (global-corfu-mode)
 
     :config
+    (defun my--corfu-last-input-sep-p ()
+      (s-suffix-p " " (car corfu--input)))
+
+    (defun my--corfu-continue-post-command-advice (func)
+      (if (and (my--corfu-last-input-sep-p)
+               (eq this-command 'corfu-insert-separator))
+          (progn
+            (delete-backward-char 1)
+            (corfu-quit))
+        (funcall func)))
+    (advice-add 'corfu--post-command :around #'my--corfu-continue-post-command-advice)
+
     (general-def
       :keymaps 'corfu-map
       "SPC" 'corfu-insert-separator

@@ -754,7 +754,7 @@ Better 1/2 character movements
     :custom
     (cider-repl-display-help-banner nil)
     (cider-show-error-buffer t)
-    (cider-auto-select-error-buffer t)
+    (cider-auto-select-error-buffer nil)
     (cider-repl-history-file (no-littering-expand-var-file-name "cider-history"))
     (cider-repl-wrap-history t)
     (cider-repl-history-size 1000)

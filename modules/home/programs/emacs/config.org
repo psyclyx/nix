@@ -1,6 +1,6 @@
 #+TITLE: Emacs configuration
 #+AUTHOR: psyclyx
-#+PROPERTY: header-args:emacs-lisp :lexical t :tangle config.el :noweb yes :results silent
+#+PROPERTY: header-args:emacs-lisp :lexical t :noweb yes :results silent
 #+STARTUP: content
 
 * Base

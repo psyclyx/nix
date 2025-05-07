@@ -171,8 +171,7 @@ set in a non-interactive shell.
       "C-h v" 'helpful-variable
       "C-h k" 'helpful-key
       "C-h x" 'helpful-command
-      "C-h o" 'helpful-symbol
-      "K" 'helpful-at-point))
+      "C-h o" 'helpful-symbol))
 #+end_src
 * Editor
 ** Recentf

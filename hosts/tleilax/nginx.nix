@@ -34,7 +34,7 @@
     );
   };
 
-  jails = {
+  services.fail2ban.jails = {
     ngnix-url-probe.settings = {
       enabled = true;
       filter = "nginx-url-probe";

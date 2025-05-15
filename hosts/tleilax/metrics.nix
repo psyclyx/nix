@@ -36,7 +36,7 @@
   };
 
   services.loki = {
-    enable = true;
+    enable = false;
     configuration = {
       server = {
         http_listen_address = "127.0.0.1";

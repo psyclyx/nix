@@ -31,7 +31,12 @@ in
           forwardAgent = true;
           identityFile = "~/.ssh/id_psyclyx";
         };
-        "sigil.lan" = {
+        "tleilax.lan tleilax tleilax.local tleilax.psyclyx.xyz" = {
+          port = 17891;
+          forwardAgent = true;
+          identityFile = "~/.ssh/id_psyclyx";
+        };
+        "sigil.lan sigil sigil.local" = {
           forwardAgent = true;
           identityFile = "~/.ssh/id_psyclyx";
         };

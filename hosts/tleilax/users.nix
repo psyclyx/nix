@@ -30,6 +30,7 @@ in
   home-manager.users.psyc = mkHome {
     name = "psyc";
     email = "me@psyclyx.xyz";
+    home.packages = with pkgs; [ clojure screen ];
     modules = [
       ../../modules/home/base
       { services.syncthing.enable = lib.mkForce false; }

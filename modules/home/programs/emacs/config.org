@@ -460,7 +460,6 @@ Better 1/2 character movements
     (corfu-auto-prefix 2)
     (corfu-preselect 'prompt)
     (corfu-quit-at-boundary 'separator)
-    (corfu-quit-at-no-match 'separator)
     (read-extended-command-predicate #'command-completion-default-include-p)
 
     :init

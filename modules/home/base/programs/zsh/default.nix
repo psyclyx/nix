@@ -13,7 +13,6 @@ in
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
-    enableFishIntegration = false;
   };
 
   programs.direnv = {

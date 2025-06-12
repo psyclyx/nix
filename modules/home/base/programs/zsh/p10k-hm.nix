@@ -50,15 +50,13 @@ in
     home.file.".p10k-config.zsh" = cfg.config;
 
     programs.zsh = {
-      initExtraFirst = mkBefore (
-        # p10k friendly direnvZshIntegration replacement
-        if direnvCfg.enable then wrapDirenv instantPromptConfig else instantPromptConfig
-      );
-
-      initExtra = ''
-        source ${powerlevel10k}/powerlevel10k.zsh-theme
-        source ~/.p10k-config.zsh
-      '';
+      initContent = mkMerge [
+        (mkBefore (if direnvCfg.enable then wrapDirenv instantPromptConfig else instantPromptConfig))
+        ''
+          source ${powerlevel10k}/powerlevel10k.zsh-theme
+          source ~/.p10k-config.zsh
+        ''
+      ];
     };
   };
 }

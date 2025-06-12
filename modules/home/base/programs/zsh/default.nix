@@ -32,7 +32,7 @@ in
     };
 
     # TODO: refactor
-    initExtra =
+    initContent =
       ''
         path_append() {
           if [ -d "''$1" ] && [[ ":''$PATH:" != *":''$1:"* ]]; then

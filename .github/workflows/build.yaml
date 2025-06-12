@@ -38,7 +38,7 @@ jobs:
     needs: build-emacs-darwin
     strategy:
       matrix:
-        host: [halo, ampere]
+        host: [halo]
     uses: ./.github/workflows/build-steps.yaml
     with:
       os: macos-latest

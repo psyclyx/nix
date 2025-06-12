@@ -13,6 +13,8 @@ let
 in
 nixpkgs.lib.nixosSystem {
   modules = [
+    # workaround: doc generation seems broken in unstable?
+    { documentation.enable = true; }
     {
       networking.hostName = hostName;
       nixpkgs = {

@@ -6,6 +6,7 @@ on:
 
 jobs:
   lockfile:
+    environment: CI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

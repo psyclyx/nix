@@ -51,8 +51,6 @@
     #  but doesn't have support for installing homebrew itself)
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nix-darwin.follows = "nix-darwin";
     };
 
     # Track newer versions of `emacs` (NixOS) and its package repositories

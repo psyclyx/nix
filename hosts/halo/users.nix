@@ -32,5 +32,7 @@ in
     ];
   };
 
+  system.primaryUser = userName;
+
   nix-homebrew.user = userName;
 }

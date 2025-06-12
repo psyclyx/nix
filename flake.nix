@@ -89,18 +89,6 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
-
-    # Provides `vault` on darwin, as building it takes forever.
-    homebrew-hashicorp = {
-      url = "github:hashicorp/homebrew-tap";
-      flake = false;
-    };
-
-    # VPN client
-    homebrew-conductorone = {
-      url = "github:conductorone/cone";
-      flake = false;
-    };
   };
 
   outputs =

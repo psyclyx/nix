@@ -20,17 +20,20 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services = {
-      greetd = {
-        enable = true;
-        vt = 2;
-        settings = {
-          default_session = {
-            command = "${tuigreet} --time --user-menu --remember --asterisks --cmd sway";
-          };
-          user = "greeter";
-        };
-      };
-    };
+    programs.regreet.enable = true;
   };
+  # config = lib.mkIf cfg.enable {
+  #   services = {
+  #     greetd = {
+  #       enable = true;
+  #       vt = 2;
+  #       settings = {
+  #         default_session = {
+  #           command = "${tuigreet} --time --user-menu --remember --asterisks --cmd sway";
+  #         };
+  #         user = "greeter";
+  #       };
+  #     };
+  #   };
+  # };
 }

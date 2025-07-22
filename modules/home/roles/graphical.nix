@@ -10,6 +10,7 @@ let
   linux = {
     home = {
       packages = with pkgs; [
+        imagemagick
         firefox-bin
         signal-desktop-bin
       ];

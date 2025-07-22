@@ -27,8 +27,10 @@
           inputs.sops-nix.homeManagerModules.sops
           inputs.self.homeManagerModules.default
           ../../home/psyc.nix
+          ../../../modules/home/programs/emacs
           ../../home/desktop.nix
         ];
+        programs.emacs.enable = true;
         psyclyx = {
           programs = {
             waybar = {

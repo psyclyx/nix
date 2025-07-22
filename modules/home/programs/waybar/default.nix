@@ -11,9 +11,9 @@ let
     reload_style_on_change = true;
     layer = "bottom";
     position = "top";
-    height = 32;
-    margin = "0px 0px";
-    padding = "0px 0px";
+    margin = "4px 4px";
+    spacing = 8;
+    padding = "4px 4px";
   };
   sway = common // {
     name = "sway";

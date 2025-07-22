@@ -8,7 +8,7 @@
 lib.mkMerge [
   {
     stylix.targets.emacs.enable = false;
-    services = {
+    programs = {
       emacs = {
         enable = lib.mkDefault false;
         package = lib.mkDefault pkgs.psyclyx.emacs;
@@ -17,7 +17,7 @@ lib.mkMerge [
 
     home =
       with inputs.psyclyx-emacs.files;
-      lib.mkIf config.programs.emacs.enable {
+      lib.mkIf (config.programs.emacs.enable || config.services.emacs.enable) {
         file.".config/emacs" = {
           source = pkgs.psyclyx.emacsConfig;
           recursive = true;

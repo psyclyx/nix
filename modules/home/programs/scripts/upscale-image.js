@@ -8,12 +8,46 @@ if (process.argv.length !== 4) {
     process.exit(1);
 }
 
-const [inputFile, outputFile] = process.argv.slice(2);
+const args = process.argv.slice(2);
+
+var inputFile = null;
+var outputFile = null;
+var scale = 2;
+
+while (args.length > 0) {
+    arg = args.shift();
+    switch (arg) {
+    case "-i":
+    case "--input":
+        inputFile = args.shift();
+        break;
+    case "-o":
+    case "--output":
+        outputFile = args.shift();
+        break;
+    case "-s":
+    case "--scale":
+        scale = parseInt(args.shift());
+        break;
+    default:
+        console.error(`Error: Unknown argument '${arg}`);
+        process.exit(1);
+    }
+}
+
+if (scale != 2 && scale != 4) {
+    console.error(`Error: scale must be 2 or 4`);
+    process.exit(1);
+}
+
+outputFile = outputFile || `${scale}x-${inputFile}`;
 
 if (!fs.existsSync(inputFile)) {
     console.error(`Error: File '${inputFile}' does not exist`);
     process.exit(1);
 }
+
+console.log(`Scaling '${inputFile}' ${scale}x and saving to '${outputFile}'`)
 
 const imageBuffer = fs.readFileSync(inputFile);
 const base64Data = imageBuffer.toString('base64');
@@ -49,9 +83,16 @@ const req = https.request(options, (res) => {
         const response = JSON.parse(data);
         const imageUri = response.output;
         const base64Match = imageUri.match(/^data:.*?;base64,(.+)$/);
+
         if (base64Match) {
-            const imageData = Buffer.from(base64Match[1], 'base64');
-            fs.writeFileSync(outputFile, imageData);
+            fs.writeFileSync(outputFile, Buffer.from(base64Match[1], 'base64'));
+        } else {
+            const protocol = imageUri.startsWith('https:') ? https : http;
+            protocol.get(imageUri, (fetchRes) => {
+                const chunks = [];
+                fetchRes.on('data', chunk => chunks.push(chunk));
+                fetchRes.on('end', () => fs.writeFileSync(outputFile, Buffer.concat(chunks)));
+            });
         }
     });
 });

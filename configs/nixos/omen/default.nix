@@ -18,7 +18,7 @@
   stylix = {
     enable = true;
     #  base16Scheme = "${pkgs.base16-schemes}/share/themes/horizon-terminal-light.yaml";
-    image = ../../wallpapers/madoka-homura-2x.png;
+    image = ../../wallpapers/2x-homura-clocks.png;
     fonts = {
       serif = {
         package = pkgs.nerd-fonts.noto;

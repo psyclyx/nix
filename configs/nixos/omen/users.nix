@@ -31,6 +31,7 @@
           ../../../modules/home/programs/emacs
           ../../home/desktop.nix
         ];
+        programs.emacs.enable = true;
         services.emacs.enable = true;
         psyclyx = {
           gtk.enable = false;

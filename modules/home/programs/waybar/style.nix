@@ -1,9 +1,9 @@
-{ ... }:
+{ config, lib, ... }:
 let
   c = import ../../nixos/colors.nix;
 in
 {
-  programs.waybar = {
+  programs.waybar = lib.mkIf config.psyclyx.programs.waybar.enable {
     style = ''
       * {
           padding: 0;

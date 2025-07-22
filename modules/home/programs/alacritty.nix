@@ -43,7 +43,7 @@ in
           window = {
             option_as_alt = "Both";
           };
-          inherit font colors;
+          #inherit font colors;
         };
       };
     };

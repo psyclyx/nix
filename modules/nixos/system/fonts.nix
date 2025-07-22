@@ -18,7 +18,7 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = {
     fonts = {
       packages = with pkgs; [
         aporetic
@@ -30,7 +30,7 @@ in
         twitter-color-emoji
         ubuntu_font_family
       ];
-      fontconfig = {
+      fontconfig = lib.mkIf cfg.enable {
         useEmbeddedBitmaps = true;
         defaultFonts = {
           monospace = [ "Aporetic Sans Mono" ];

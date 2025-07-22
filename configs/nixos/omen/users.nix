@@ -25,16 +25,18 @@
       psyc = {
         imports = [
           inputs.sops-nix.homeManagerModules.sops
+          inputs.hyprland.homeManagerModules.default
           inputs.self.homeManagerModules.default
           ../../home/psyc.nix
           ../../../modules/home/programs/emacs
           ../../home/desktop.nix
         ];
-        programs.emacs.enable = true;
+        services.emacs.enable = true;
         psyclyx = {
+          gtk.enable = false;
           programs = {
-            waybar = {
-              cores = 4;
+            hyprland = {
+              enable = true;
             };
           };
         };

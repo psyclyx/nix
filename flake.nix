@@ -38,6 +38,31 @@
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
     };
+
+    hyprland.url = "github:hyprwm/hyprland";
+
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins";
+      inputs.hyprland.follows = "hyprland";
+    };
+
+    stylix = {
+      url = "github:danth/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  nixConfig = {
+    extra-substitutors = [
+      "https://nix-community.cachix.org"
+      "https://psyclyx.cachix.org"
+      "https://hyprland.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "psyclyx.cachix.org-1:UFwKXEDn3gLxIW9CeXGdFFUzCIjj8m6IdAQ7GA4XfCk="
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+    ];
   };
 
   outputs =
@@ -45,7 +70,11 @@
     let
       inherit (inputs.nixpkgs) lib;
       overlay = import ./overlay.nix inputs;
-      overlays = [ overlay ];
+      overlays = [
+        overlay
+        inputs.hyprland.overlays.default
+        inputs.hyprland-plugins.overlays.default
+      ];
 
       pkgsFor =
         system:

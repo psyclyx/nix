@@ -28,6 +28,7 @@ in
     };
     psyclyx = {
       programs = {
+        scripts.upscale-image = true;
         git = {
           enable = lib.mkDefault true;
         };

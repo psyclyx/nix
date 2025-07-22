@@ -6,9 +6,15 @@
 }:
 let
   cfg = config.psyclyx.programs.sway;
+  waybarExe = lib.getExe config.programs.waybar.package;
+  waybar-sway = pkgs.writeScript "waybar-sway" ''
+    ${waybarExe} -c ${config.xdg.configHome}/waybar/sway.json
+  '';
 in
 {
-  imports = [ ./keybindings.nix ./theme.nix ];
+  imports = [
+    ./keybindings.nix
+  ];
 
   options = {
     psyclyx = {
@@ -24,6 +30,9 @@ in
     wayland.windowManager.sway = {
       enable = true;
       package = null;
+      extraConfig = ''
+        output * scale 1
+      '';
       config = {
         assigns = {
           "1" = [ { instance = "vscodium"; } ];
@@ -32,7 +41,8 @@ in
           "4" = [ { instance = "signal"; } ];
         };
 
-        bars = [ { command = "${pkgs.waybar}/bin/waybar"; } ];
+        startup = [ { command = "waybar -c ~/.config/sway.json"; } ];
+        bars = lib.mkForce [ { command = "${waybar-sway}"; } ];
         defaultWorkspace = "workspace number 1";
         floating = {
           criteria = [

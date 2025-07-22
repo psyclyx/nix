@@ -1,6 +1,7 @@
 {
   imports = [
     ./programs/adb.nix
+    ./programs/hyprland.nix
     ./programs/steam.nix
     ./programs/sway.nix
     ./programs/zsh.nix

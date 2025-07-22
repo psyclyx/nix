@@ -4,7 +4,9 @@
     ./gtk.nix
     ./programs/alacritty.nix
     ./programs/git.nix
+    ./programs/hyperland
     ./programs/kitty.nix
+    ./programs/scripts
     ./programs/ssh.nix
     ./programs/sway
     ./programs/waybar

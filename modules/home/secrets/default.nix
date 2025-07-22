@@ -40,15 +40,19 @@ in
           sopsFile = ./tokens.json;
           key = "openrouter";
         };
+        replicate = {
+          sopsFile = ./tokens.json;
+          key = "replicate";
+        };
       };
       templates = {
         "${home}/.aider.conf.yml" = {
           path = "${home}/.aider.conf.yml";
           content = ''
-api-key:
-  - openrouter=${config.sops.placeholder.openrouter}
-        '';
-                                    };
+            api-key:
+              - openrouter=${config.sops.placeholder.openrouter}
+          '';
+        };
       };
     };
   };

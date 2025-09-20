@@ -17,6 +17,6 @@ in
       enable = true;
       enableGlobalCompInit = false;
     };
-    users.defaultShell = cfg.defaultShell;
+    users.defaultUserShell = cfg.defaultShell;
   };
 }

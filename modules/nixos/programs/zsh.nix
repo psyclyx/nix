@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.psyclyx.programs.zsh;
 in
@@ -17,6 +22,6 @@ in
       enable = true;
       enableGlobalCompInit = false;
     };
-    users.defaultUserShell = cfg.defaultShell;
+    users.defaultUserShell = lib.mkIf cfg.defaultShell pkgs.zsh;
   };
 }

@@ -23,6 +23,7 @@ in
         nix.enable = lib.mkDefault true;
         nixpkgs.enable = lib.mkDefault true;
         timezone.enable = lib.mkDefault true;
+        zsh.enable = lib.mkDefault true;
       };
     };
   };

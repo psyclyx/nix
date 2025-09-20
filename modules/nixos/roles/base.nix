@@ -17,13 +17,15 @@ in
 
   config = lib.mkIf cfg.enable {
     psyclyx = {
+      programs = {
+        zsh.enable = lib.mkDefault true;
+      };
       system = {
         home-manager.enable = lib.mkDefault true;
         locale.enable = lib.mkDefault true;
         nix.enable = lib.mkDefault true;
         nixpkgs.enable = lib.mkDefault true;
         timezone.enable = lib.mkDefault true;
-        zsh.enable = lib.mkDefault true;
       };
     };
   };

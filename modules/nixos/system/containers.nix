@@ -1,4 +1,4 @@
-{ config, lib }:
+{ config, lib, ... }:
 let
   cfg = config.psyclyx.system.containers;
   nvidiaCfg = config.psyclyx.hardware.nvidia;

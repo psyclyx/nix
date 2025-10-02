@@ -18,8 +18,12 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       hashcat
-      john
+      (john.overrideAttrs (old: {
+        buildInputs = (old.buildInputs ++ [ libxcrypt ]);
+      }))
+      libxcrypt
       sleuthkit
+      wordlists
     ];
   };
 }

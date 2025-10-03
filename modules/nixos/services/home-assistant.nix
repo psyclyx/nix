@@ -1,7 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.psyclyx.services.home-assistant;
-  port = config.psyclyx.networking.ports.home-assistant;
+  port = config.psyclyx.network.ports.home-assistant;
 in
 {
   options = {
@@ -11,7 +11,7 @@ in
           enable = lib.mkEnableOption "Enables Home Assistant, with @psyclyx's config";
         };
       };
-      networking = {
+      network = {
         ports = {
           home-assistant = lib.mkOption {
             type = lib.types.port;
@@ -23,7 +23,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    networking = {
+    network = {
       firewall = {
         allowedTCPPorts = [ port ];
       };

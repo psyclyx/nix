@@ -23,7 +23,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    network = {
+    networking = {
       firewall = {
         allowedTCPPorts = [ port ];
       };

@@ -62,6 +62,11 @@
           modules = [ ./configs/nixos/tleilax ];
           system = "x86_64-linux";
         };
+
+        lab1 = mkNixosConfiguration {
+          modules = [ ./configs/nixos/lab/lab1.nix ];
+          system = "x86_64-linux";
+        };
       };
 
       darwinConfigurations = {

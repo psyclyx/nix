@@ -4,7 +4,7 @@ let
       modules ? [ ],
     }:
     {
-      system = "x86-64-linux";
+      system = "x86_64-linux";
       modules = [ ./common.nix ] ++ modules;
     };
 in

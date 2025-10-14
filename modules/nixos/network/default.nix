@@ -53,7 +53,6 @@ in
           matchConfig.Name = name;
           linkConfig.RequiredForOnline = lib.mkIf network.requiredForOnline "routable";
           networkConfig.DHCP = lib.mkIf network.enableDHCP "ipv4";
-          inherit (network) dns;
         }
       ) cfg.networks;
     };

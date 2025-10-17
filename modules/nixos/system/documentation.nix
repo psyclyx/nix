@@ -6,7 +6,7 @@ let
 in
 {
   options = {
-    psyclyx.documentation = {
+    psyclyx.system.documentation = {
       enable = mkEnableOption "documentation generation";
     };
   };

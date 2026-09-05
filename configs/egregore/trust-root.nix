@@ -11,11 +11,11 @@
       refs.host = "iyr";
       tang-server = {
         port = 7654;
-        # Lab hosts reach tang via iyr's lab-VLAN address (the JWE
-        # blobs they carry embed that URL). aclNetworks adds the main
-        # subnet so cross-VLAN clients (eno1 "for now" fallback path)
-        # still pass.
-        network = "lab";
+        # Tang advertises on iyr's infra address; the JWE blobs
+        # clients carry embed that URL, so moving it means re-binding
+        # clevis on anything already sealed. aclNetworks admits the
+        # clients that reach it from another segment.
+        network = "infra";
         aclNetworks = [ "main" ];
       };
     };

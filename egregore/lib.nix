@@ -73,8 +73,8 @@ in rec {
   #
   # A ref is an edge to another entity. Two spellings, one meaning:
   #
-  #   refs.gateway = "mdf-agg01";
-  #   refs.peer    = { target = "mdf-brk01"; port = "port9"; };
+  #   refs.gateway = "some-router";
+  #   refs.peer    = { target = "a-switch"; port = "port9"; };
   #
   # The plain form names the far entity and nothing else. The rich form
   # additionally names *where* on the far entity the edge lands — a

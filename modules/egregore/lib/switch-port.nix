@@ -8,8 +8,8 @@
 # A port's `refs` are graph edges, same shape as an entity's: what is on
 # the other end of the cable. Two conventional roles —
 #
-#   refs.host = "sigil"                                  → an end station
-#   refs.peer = { target = "mdf-brk01"; port = "port9"; } → another switch
+#   refs.host = "some-server"                          → an end station
+#   refs.peer = { target = "a-switch"; port = "port9"; } → another switch
 #
 # — and the rich form names the far-side port or NIC, so a link can be
 # checked rather than described in prose. `description` is what's left

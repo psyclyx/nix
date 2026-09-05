@@ -51,6 +51,9 @@ in {
           # wired per env (phase 3). Until then, the SVIs are routable
           # but unreachable — no traffic yet.
           l3HwOffload = true;
+          # Marvell primary; the CRS326 also reports an Atheros switch2
+          # that holds no L3 settings.
+          primarySwitchChip = "switch1";
           # IPv6 L3 hw offload — added in RouterOS 7.6, shares the
           # IPv4 hw table so no incremental memory cost.
           l3HwSettings.ipv6Hw = true;
@@ -58,7 +61,6 @@ in {
           # defaults to no on RouterOS; needs to be on or hw offload
           # has nothing to do.
           ipv6Forward = true;
-          uplinkNetwork = "main";
           # ULA addresses: per-network suffix from `ulaSubnetHex`, host
           # portion follows the IPv4 convention (.1 for the gateway
           # SVIs, .2 on main where iyr is the L3 gateway).

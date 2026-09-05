@@ -49,16 +49,6 @@
         default = "mgmt";
         description = "Network entity name providing the management plane (SSH/SNMP).";
       };
-      uplinkNetwork = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Network whose gateway becomes this switch's IPv4 default route.
-          Null = use mgmtNetwork. Set explicitly when the switch is an L3
-          router and you want cross-VLAN egress to avoid hairpinning
-          through a lower-bandwidth mgmt path.
-        '';
-      };
       l3HwOffload = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -69,15 +59,17 @@
       };
       primarySwitchChip = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
-        default = "switch1";
+        default = null;
         description = ''
-          Name of the switch chip that carries L3 offload. RouterOS names
-          these per model — a CRS326 reports a Marvell `switch1` plus an
-          auxiliary Atheros `switch2`, and the L3 settings belong to the
-          primary. Null on devices with no switch chip to configure.
+          Name of the switch chip that carries the L3 offload settings.
+          A device may report several — one per switch ASIC — with the
+          L3 settings belonging to the primary. Read the name off the
+          device with `/interface ethernet switch print`.
 
-          Read it off the device with
-          `/interface ethernet switch print` if a model disagrees.
+          Null means there is no switch chip to configure, and is the
+          default: a name that happens to be right for one vendor's
+          model numbering is a fact about that model, not about the
+          type, and guessing it here would put it at the wrong layer.
         '';
       };
       ipv6Forward = lib.mkOption {
@@ -175,6 +167,12 @@
       networkEntities = lib.filterAttrs (_: e: e.type == "network") (top.entities or {});
     in {
       address = mgmtAddr;
+      # Addresses keyed by network, the same shape a host exposes.
+      # Anything asking "what address does this device have on network
+      # N" — a route resolving its next hop, a relay resolving its
+      # server — can then ask without first working out what kind of
+      # device it is talking to.
+      addresses = r.addresses;
       label = "${if r.identity != null then r.identity else name} (${r.model})";
       platform = "routeros";
       model = r.model;
@@ -206,29 +204,38 @@
       mgmtVlan  = mgmt.network.vlan;
       mgmtIp    = sw.addresses.${sw.mgmtNetwork}.ipv4;
 
-      # Default route derives from the uplink network's gateway. Falls back
-      # to mgmt when no uplink override is set.
-      uplinkName = if sw.uplinkNetwork != null then sw.uplinkNetwork else sw.mgmtNetwork;
-      uplinkNet  = top.entities.${uplinkName};
-      uplinkGw   = uplinkNet.attrs.gateway4;
+      # Routes this switch installs, declared as entities. `refsIn.on` is
+      # the inverse index — every route whose refs.on points here.
+      myRoutes = map (n: top.entities.${n})
+        (entity.attrs.refsIn.on or []);
+      routesFor    = family: builtins.filter (r: r.attrs.family == family) myRoutes;
+      mkRouteRow   = r: { inherit (r.attrs) dst gateway disabled; inherit (r.route) comment; };
+      defaultDst   = family: if family == "ipv6" then "::/0" else "0.0.0.0/0";
+      defaultRoute = family:
+        lib.findFirst (r: r.attrs.dst == defaultDst family) null (routesFor family);
+
+      # The network our default route crosses, or null if we have no
+      # default route. Null rather than a fallback: a device with nowhere
+      # to send unmatched traffic has no egress network, and inventing
+      # one would just move the failure somewhere harder to read.
+      egressNet =
+        let d = defaultRoute "ipv4";
+        in if d == null then null else d.refs.over;
 
       adminKeys = top.conventions.adminSshKeys or [];
 
       # Address of a relayed network's DHCP server as reachable from this
-      # switch. Relayed requests carry giaddr, so the server does not need
-      # to be on-link with the client's VLAN — it only has to be routable
-      # from here, and the uplink is by construction that path. Resolving
-      # against the uplink (rather than pinning an address) means the
-      # relay target follows the uplink when it moves.
+      # switch: the server's address on the network our default route
+      # crosses. Reading the resolved address view means this works
+      # whether the server declares that address or derives it from being
+      # the network's gateway, so it follows the route when the route
+      # moves.
       dhcpServerAddr = netName: let
         serverName = (top.entities.${netName}).attrs.dnsRef;
         server = top.entities.${serverName} or null;
       in
-        if serverName == null || server == null then null
-        # The server is the uplink network's gateway, so it takes that
-        # network's convention address rather than declaring one.
-        else if (uplinkNet.attrs.gatewayRef or null) == serverName then uplinkGw
-        else server.host.addresses.${uplinkName}.ipv4 or null;
+        if serverName == null || server == null || egressNet == null then null
+        else ((server.attrs.addresses or {}).${egressNet} or {}).ipv4 or null;
 
       # All entries in sw.addresses get an L3 interface, and with
       # l3-hw-offloading on the chip routes every one of them. There is no
@@ -297,7 +304,7 @@
         # mgmt-only special case rather than extending it.
         tagged = tIfaces ++ lib.optional (builtins.elem vlan sviVlans) "bridge1";
       in {
-        vlan_ids = vStr;
+        "vlan_ids" = vStr;
         inherit tagged untagged;
       };
 
@@ -307,10 +314,10 @@
         system = {
           inherit identity;
           timezone    = sw.timezone;
-          dns_servers = [mgmt.attrs.gateway4];
-          l3_hw_offload = sw.l3HwOffload;
+          "dns_servers"   = [mgmt.attrs.gateway4];
+          "l3_hw_offload" = sw.l3HwOffload;
           ssh = {
-            host_key_type = "ed25519";
+            "host_key_type" = "ed25519";
             keys = map (key: { inherit key; user = sw.sshUser; }) adminKeys;
           };
           snmp = { enabled = true; };
@@ -321,17 +328,17 @@
         # auxiliary Atheros; L3 offload belongs to the primary. Naming it
         # here keeps the chip name out of the generator, which has no way
         # to know it and used to guess "switch1".
-        ethernet_switches = lib.optional (sw.primarySwitchChip != null) {
+        "ethernet_switches" = lib.optional (sw.primarySwitchChip != null) {
           name = sw.primarySwitchChip;
-          l3_hw_offload = sw.l3HwOffload;
+          "l3_hw_offload" = sw.l3HwOffload;
         };
 
-        l3hw_settings =
+        "l3hw_settings" =
           lib.optionalAttrs (sw.l3HwSettings.ipv6Hw != null) {
-            ipv6_hw = sw.l3HwSettings.ipv6Hw;
+            "ipv6_hw" = sw.l3HwSettings.ipv6Hw;
           }
           // lib.optionalAttrs (sw.l3HwSettings.icmpReplyOnError != null) {
-            icmp_reply_on_error = sw.l3HwSettings.icmpReplyOnError;
+            "icmp_reply_on_error" = sw.l3HwSettings.icmpReplyOnError;
           };
 
         # Ethernet-level frame size. Distinct from the L3 `mtu` on each
@@ -359,19 +366,19 @@
           name      = bondName;
           mode      = bond.mode;
           slaves    = bond.slaves;
-          lacp_mode = bond.lacpMode;
+          "lacp_mode" = bond.lacpMode;
           comment   = bond.comment;
         }) sw.bonds;
 
         bridge = {
           name            = "bridge1";
-          protocol_mode   = "none";
-          igmp_snooping    = sw.bridge.multicast.snooping;
-          multicast_querier = sw.bridge.multicast.querier;
-          multicast_router  = sw.bridge.multicast.router;
-          igmp_version      = sw.bridge.multicast.igmpVersion;
-          mld_version       = sw.bridge.multicast.mldVersion;
-          vlan_filtering  = true;
+          "protocol_mode"     = "none";
+          "igmp_snooping"     = sw.bridge.multicast.snooping;
+          "multicast_querier" = sw.bridge.multicast.querier;
+          "multicast_router"  = sw.bridge.multicast.router;
+          "igmp_version"      = sw.bridge.multicast.igmpVersion;
+          "mld_version"       = sw.bridge.multicast.mldVersion;
+          "vlan_filtering"    = true;
           ports = map (iface: let
             portName = if sw.bonds ? ${iface}
               then builtins.head sw.bonds.${iface}.slaves
@@ -389,12 +396,12 @@
           vlans = map vlanEntry usedVlans;
         };
 
-        vlan_interfaces = map (netName: let
+        "vlan_interfaces" = map (netName: let
           net = top.entities.${netName};
         in {
           interface = "bridge1";
           name      = "vlan${toString net.network.vlan}";
-          vlan_id   = net.network.vlan;
+          "vlan_id" = net.network.vlan;
           mtu       = net.network.mtu;
         }) addressedNetworks;
 
@@ -409,7 +416,7 @@
         # IPv6 addresses follow the same shape, emitted only for
         # networks where an ipv6 entry is set. Prefix is /64 (the
         # network's ULA + per-VLAN subnet via ulaSubnetHex).
-        ipv6_addresses = lib.flip lib.concatMap addressedNetworks (netName: let
+        "ipv6_addresses" = lib.flip lib.concatMap addressedNetworks (netName: let
           net = top.entities.${netName};
           v6 = sw.addresses.${netName}.ipv6 or null;
         in lib.optional (v6 != null) {
@@ -424,7 +431,7 @@
         # dhcpRelay set — including ones where the switch isn't the
         # gateway, since relaying is about carrying the request, not about
         # routing the client.
-        dhcp_relays = lib.flip lib.concatMap addressedNetworks (netName: let
+        "dhcp_relays" = lib.flip lib.concatMap addressedNetworks (netName: let
           net = top.entities.${netName};
           server = dhcpServerAddr netName;
           localAddr = sw.addresses.${netName}.ipv4 or null;
@@ -433,40 +440,44 @@
           {
             name = "relay-${netName}";
             interface = "vlan${toString net.network.vlan}";
-            dhcp_server = [ server ];
-            local_address = localAddr;
+            "dhcp_server"   = [ server ];
+            "local_address" = localAddr;
             disabled = false;
           });
 
-        ipv6_settings = lib.optionalAttrs (sw.ipv6Forward != null) {
+        "ipv6_settings" = lib.optionalAttrs (sw.ipv6Forward != null) {
           forwarding = sw.ipv6Forward;
         };
 
-        # On the uplink network the switch is transit-only — its own
-        # default route exits via that VLAN, so it must NOT advertise
-        # itself as an IPv6 default router there. Otherwise hosts on that
-        # VLAN (which already have their real gateway) pick the switch up
-        # as an equal-cost default and blackhole internet v6 through it,
-        # since the switch has no v6 default of its own. Only relevant
-        # when the switch actually holds a v6 address on the uplink SVI.
+        # A device advertises itself as an IPv6 default router only if it
+        # can actually be one. This switch has no ::/0 route, so on every
+        # SVI where it holds a v6 address it must say "not a default
+        # router" — otherwise hosts pick it up alongside their real
+        # gateway and blackhole internet v6 through it.
+        #
+        # `ra-lifetime=none` sets the router lifetime to zero; the prefix
+        # is still advertised, so SLAAC addressing is unaffected. It is
+        # only the "use me as a default route" claim that's withdrawn.
+        #
+        # This used to be pinned to one SVI — whichever `uplinkNetwork`
+        # named — which is why the switch is currently advertising a
+        # 30-minute router lifetime on storage, lab, the cluster VLANs
+        # and mgmt while having no v6 default at all. The condition was
+        # never about the uplink; it's about whether we have a route.
+        #
         # (No comment emitted: RouterOS `/ipv6 nd` accepts `comment=`
         # but never stores it, so it would be write-only noise. The
         # rationale lives here in source, where operators read it.)
-        ipv6_nd = lib.optional
-          ((sw.addresses.${uplinkName}.ipv6 or null) != null)
-          {
-            interface = "vlan${toString uplinkNet.network.vlan}";
-            ra_lifetime = "none";
-          };
+        "ipv6_nd" = lib.optionals (defaultRoute "ipv6" == null)
+          (map (netName: {
+            interface     = "vlan${toString top.entities.${netName}.network.vlan}";
+            "ra_lifetime" = "none";
+          }) (builtins.filter
+            (n: (sw.addresses.${n}.ipv6 or null) != null)
+            addressedNetworks));
 
-        routes = [{
-          # Non-L3 switches keep the default route declared-but-disabled
-          # (matches prior behavior — a placeholder operators enable by
-          # hand if needed). L3 routers must have it active.
-          disabled = !sw.l3HwOffload;
-          dst      = "0.0.0.0/0";
-          gateway  = uplinkGw;
-        }];
+        routes        = map mkRouteRow (routesFor "ipv4");
+        "ipv6_routes" = map mkRouteRow (routesFor "ipv6");
       };
 
       json = builtins.toJSON projection;

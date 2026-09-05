@@ -52,6 +52,7 @@
       active = lib.filterAttrs (_: p: portType p != "unused") s.ports;
     in {
       address = s.addresses.mgmt.ipv4;
+      addresses = s.addresses;
       label = "${if s.identity != null then s.identity else name} (${s.model})";
       platform = "sodola";
       model = s.model;

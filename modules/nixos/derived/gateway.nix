@@ -26,50 +26,23 @@
     if myHost == null then []
     else lib.attrNames (myHost.interfaces or {});
 
-  # Switch-routed networks → static routes via switch uplink address.
-  # Computes IPv4 + IPv6 entries; networkd's [Route] is family-agnostic
-  # so both go into the same per-VLAN list and end up on the same
-  # network unit (the one carrying the uplink).
-  switches = lib.filterAttrs (_: e: e.type == "routeros") eg.entities;
-  ulaPrefix = eg.ipv6UlaPrefix or "";
+  # Static routes this host installs, read from route entities rather
+  # than reconstructed from someone else's topology. A route names what
+  # every routing table names: a destination, a next hop, and the link
+  # to reach it over — so it lands on the network unit for `refs.over`.
   staticRoutesByVlan = let
-    perSwitch = lib.mapAttrsToList (_swName: sw: let
-      r = sw.routeros;
-      uplinkName =
-        if r.uplinkNetwork != null then r.uplinkNetwork
-        else r.mgmtNetwork;
-      uplinkNet = eg.entities.${uplinkName};
-      nextHopV4 = r.addresses.${uplinkName}.ipv4 or null;
-      nextHopV6 = r.addresses.${uplinkName}.ipv6 or null;
-      mkRoute = netName: family: dest: gw: {
-        inherit netName family;
-        uplinkVlan = uplinkNet.network.vlan;
-        destSubnet = dest;
-        gateway = gw;
-      };
-      routedFor = netName: let
-        netEnt = eg.entities.${netName};
-        v4dest = "${netEnt.attrs.network4}/${toString netEnt.attrs.prefixLen}";
-        ulaHex = netEnt.network.ulaSubnetHex or "";
-        v6dest =
-          if ulaPrefix != "" && ulaHex != ""
-          then "${ulaPrefix}:${ulaHex}::/64"
-          else null;
-      in
-        lib.optional (nextHopV4 != null) (mkRoute netName "ipv4" v4dest nextHopV4)
-        ++ lib.optional (nextHopV6 != null && v6dest != null)
-            (mkRoute netName "ipv6" v6dest nextHopV6);
-    in lib.concatMap routedFor sw.attrs.gatewayNetworks)
-      switches;
-    flat = builtins.filter
-      (r: r.gateway != null && !(builtins.elem r.netName myConnectedNetworks))
-      (lib.flatten perSwitch);
+    myRoutes = map (n: eg.entities.${n})
+      (eg.entities.${hostname}.attrs.refsIn.on or []);
+    onLink = r: eg.entities.${r.refs.over}.network.vlan;
   in lib.foldl' (acc: r:
-    let vid = toString r.uplinkVlan; in
+    let vid = toString (onLink r); in
     acc // {
-      ${vid} = (acc.${vid} or []) ++ [{ destination = r.destSubnet; gateway = r.gateway; }];
+      ${vid} = (acc.${vid} or []) ++ [{
+        destination = r.attrs.dst;
+        inherit (r.attrs) gateway;
+      }];
     }
-  ) {} flat;
+  ) {} (builtins.filter (r: r.attrs.gateway != null) myRoutes);
 
   mkGatewayNet = vlanId: let
     name = lib.head (lib.attrNames (lib.filterAttrs

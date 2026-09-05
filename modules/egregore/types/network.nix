@@ -118,6 +118,16 @@
       siteRefs = if siteEntity != null then siteEntity.refs or {} else {};
       dnsRef = netRefs.dns or siteRefs.dns or null;
       gatewayRef = netRefs.gateway or siteRefs.gateway or null;
+      # Which router serves each family. Normally the same box, so v6
+      # falls back to the v4 answer — but they are separate facts, and a
+      # dual-stack network can legitimately have different routers for
+      # each, which is what a migration looks like while it is halfway
+      # done. Whoever is the v6 router holds the ULA gateway address,
+      # sends the RAs and is advertised as the resolver in them; the v4
+      # router holds the v4 gateway address. Fusing the two means moving
+      # one silently moves the other.
+      gateway6Ref = netRefs.gateway6 or netRefs.gateway
+        or siteRefs.gateway6 or siteRefs.gateway or null;
     in {
       vlan = net.vlan;
       prefix = prefix;
@@ -133,7 +143,7 @@
         else "(${net.ipv4})";
       site = net.site;
       zone = net.zone;
-      inherit dnsRef gatewayRef;
+      inherit dnsRef gatewayRef gateway6Ref;
       # DNS PTR reverse zone components.
       ip6Reverse = lib.optionalString (net.ulaSubnetHex != "")
         (reverseNibbles 4 net.ulaSubnetHex);

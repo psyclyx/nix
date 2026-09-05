@@ -75,10 +75,28 @@
     # See docs/lab-v3.md for the rationale; new zones go in zones.nix
     # and pick up their policy here.
     policy = {
+      # Everything mdf-agg01 routes, arriving at iyr over the transit
+      # link. The switch hardware-routes east-west and hands north-south
+      # here, so these packets are not the switch's own traffic — they
+      # carry the original client's source address, from any VLAN behind
+      # the switch. The zone therefore inherits what those clients are
+      # allowed, and the destination zones below grant it in return.
+      #
+      # Not "accept everything": the switch also routes the storage and
+      # cluster fabrics, which are deliberately not permitted to reach
+      # the apt LAN just because their path happens to traverse iyr.
+      core-transit = {
+        wan = "accept";           # north-south NAT, the whole point
+        infra = "accept";         # DNS, NTP, OpenBao
+        mgmt = "accept";          # iLO from behind the switch
+        wg = "accept";
+      };
+
       # apt-LAN traffic: trusted users reach everything except the
       # storage-internal fabric (which is rack-only) and the cluster
       # workloads' L2 (clients reach those via ingress, not directly).
       lan = {
+        core-transit = "accept";  # replies to switch-routed clients
         lan = "accept";           # hairpin: clients reaching mdf-agg01 via iyr
         infra = "accept";
         lab-transit = "accept";   # SSH to hypervisors
@@ -93,6 +111,7 @@
 
       # Infra services talk to each other and out for updates.
       infra = {
+        core-transit = "accept";  # replies to switch-routed clients
         infra = "accept";
         lan = "accept";
         wan = "accept";

@@ -17,13 +17,19 @@
           description = "VLAN id on lanInterface.";
         };
         address4 = lib.mkOption {
-          type = lib.types.str;
-          description = "IPv4 address in CIDR notation (the gateway IP).";
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = ''
+            IPv4 gateway address in CIDR notation, or null when this host
+            doesn't route v4 for the segment. Null is meaningful: a host
+            can serve one family and not the other, and it still needs
+            the rest of this entry for the family it does serve.
+          '';
         };
         address6 = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
-          description = "IPv6 address in CIDR notation.";
+          description = "IPv6 gateway address in CIDR notation, or null.";
         };
         ulaPrefix = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
@@ -186,7 +192,7 @@
     mkGatewayNetwork = net: lib.nameValuePair "31-${vlanIface net.id}" ({
       matchConfig.Name = vlanIface net.id;
       address =
-        [ net.address4 ]
+        lib.optional (net.address4 != null) net.address4
         ++ lib.optional (net.address6 != null) net.address6;
       networkConfig = {
         IPv6SendRA = net.sendRA;

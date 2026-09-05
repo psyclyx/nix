@@ -140,6 +140,12 @@
               # Apt-LAN zones egressing to WAN.
               { from = "lan"; to = "wan"; }
               { from = "infra"; to = "wan"; }
+              # North-south for everything mdf-agg01 routes. The switch
+              # hardware-routes east-west and hands the rest to iyr over
+              # the transit link; those packets arrive with the client's
+              # source address and still need NAT, which the switch
+              # can't do.
+              { from = "core-transit"; to = "wan"; }
               # WG-routed traffic to apt zones needs source NAT.
               # WG cryptokey check at the hub drops sources outside
               # the peer's AllowedIPs; masquerading at iyr makes
@@ -153,6 +159,12 @@
             vpn.ipv4     = "10.157.0.2";
             lab.ipv4     = "10.0.210.2";
             storage.ipv4 = "10.0.200.2";
+            # iyr held 10.0.10.1 only by being main's v4 gateway, and
+            # that moved to mdf-agg01 — so the address has to be stated
+            # or iyr silently leaves the VLAN it resolves, serves DHCP
+            # and is managed on. The v6 address stays derived: iyr is
+            # still main's v6 router and holds ::1.
+            main.ipv4    = "10.0.10.3";
           };
           sshPort = 17891;
           deployAddress = "iyr.apt.psyclyx.net";

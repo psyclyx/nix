@@ -67,7 +67,10 @@ in {
           addresses = {
             mgmt.ipv4    = "10.0.240.2";
             mgmt.ipv6    = "fd9a:e830:4b1e:f0::2";
-            main.ipv4    = "10.0.10.2";
+            # .1 — the v4 gateway for main, which is why clients need no
+            # reconfiguration. The ULA stays ::2: iyr remains main's v6
+            # router and holds ::1.
+            main.ipv4    = "10.0.10.1";
             main.ipv6    = "fd9a:e830:4b1e:a::2";
             # LAN core transit (/30) — iyr .1, agg .2. The switch's default
             # route still exits via main to iyr until the gateway migration

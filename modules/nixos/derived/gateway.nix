@@ -10,13 +10,22 @@
   gw = if myHost == null then {} else (myHost.gateway or {});
   enabled = (gw.lanInterface or null) != null;
 
-  # Networks this host is the gateway for. VLAN-backed only; overlay
-  # networks (vpn) excluded.
+  # Networks this host routes, for either family. VLAN-backed only;
+  # overlay networks (vpn) excluded.
+  #
+  # The two families are asked separately because they can differ. A
+  # host that routes only v6 for a segment still holds the ULA address
+  # and sends the RAs there; it just doesn't hold the v4 gateway
+  # address. Asking one question for both would mean handing over v4
+  # also silently hands over router advertisements, the advertised
+  # resolver, and the prefix delegation.
+  isV4Gateway = e: (e.attrs.gatewayRef or null) == hostname;
+  isV6Gateway = e: (e.attrs.gateway6Ref or null) == hostname;
   gatewayedNetworks = lib.filterAttrs
     (_: e:
       e.type == "network"
       && e.network.vlan != null
-      && (e.attrs.gatewayRef or null) == hostname)
+      && (isV4Gateway e || isV6Gateway e))
     eg.entities;
   gatewayedVlans = lib.sort builtins.lessThan
     (lib.mapAttrsToList (_: e: e.network.vlan) gatewayedNetworks);
@@ -72,17 +81,36 @@
       then null
       else (eg.entities.${resolverHost}.host.addresses.${name} or {}).ipv6 or null;
     resolver6 = if resolver6FromHost != null then resolver6FromHost else na.gateway6;
+    v4 = isV4Gateway net;
+    v6 = isV6Gateway net;
+    declared = if myHost == null then {} else myHost.addresses.${name} or {};
+    declared4 = declared.ipv4 or null;
+    declared6 = declared.ipv6 or null;
   in {
     id = vlanId;
-    address4 = "${na.gateway4}/${toString na.prefixLen}";
-    address6 = "${na.gateway6}/64";
-    ulaPrefix = "${eg.ipv6UlaPrefix}:${net.network.ulaSubnetHex}::/64";
-    pdSubnetId = net.network.ipv6PdSubnetId;
-    inherit raDomains;
-    dnsServers = lib.optional (resolver6 != null && resolver6 != "") resolver6;
+    # This host's address on the segment: the gateway address when it
+    # routes that family, its own declared address when it doesn't but
+    # is still present here. A router that hands v4 over to someone else
+    # usually keeps an address on the segment — it still resolves, still
+    # serves DHCP, still has to be reachable — and that address is a
+    # declared fact rather than the gateway convention.
+    address4 =
+      if v4 then "${na.gateway4}/${toString na.prefixLen}"
+      else if declared4 != null then "${declared4}/${toString na.prefixLen}"
+      else null;
+    address6 =
+      if v6 then "${na.gateway6}/64"
+      else if declared6 != null then "${declared6}/64"
+      else null;
+    ulaPrefix =
+      if v6 then "${eg.ipv6UlaPrefix}:${net.network.ulaSubnetHex}::/64" else null;
+    pdSubnetId = if v6 then net.network.ipv6PdSubnetId else null;
+    raDomains = if v6 then raDomains else [];
+    dnsServers =
+      lib.optional (v6 && resolver6 != null && resolver6 != "") resolver6;
     # Transit links are point-to-point router↔router; no RA (no SLAAC
     # clients, and two routers advertising to each other is just noise).
-    sendRA = !(builtins.elem "transit" (net.tags or []));
+    sendRA = v6 && !(builtins.elem "transit" (net.tags or []));
     staticRoutes = staticRoutesByVlan.${toString vlanId} or [];
   };
 

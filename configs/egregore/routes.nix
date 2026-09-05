@@ -14,10 +14,10 @@
     entities = {
       mdf-agg01-default = {
         type = "route";
-        refs = { on = "mdf-agg01"; via = "iyr"; over = "main"; };
+        refs = { on = "mdf-agg01"; via = "iyr"; over = "core-transit"; };
         route = {
           dst = "0.0.0.0/0";
-          comment = "iyr on main";
+          comment = "iyr over core transit";
         };
       };
 
@@ -38,7 +38,7 @@
         name = "iyr-to-${n.name}";
         value = {
           type = "route";
-          refs = { on = "iyr"; via = "mdf-agg01"; over = "main"; };
+          refs = { on = "iyr"; via = "mdf-agg01"; over = "core-transit"; };
           route.dst = n.v4;
         };
       }
@@ -46,7 +46,7 @@
         name = "iyr-to-${n.name}-v6";
         value = {
           type = "route";
-          refs = { on = "iyr"; via = "mdf-agg01"; over = "main"; };
+          refs = { on = "iyr"; via = "mdf-agg01"; over = "core-transit"; };
           route.dst = n.v6;
         };
       }

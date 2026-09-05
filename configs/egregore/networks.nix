@@ -17,8 +17,15 @@
       # learn on vlan10) but die somewhere on the CSS326 → CRS326 →
       # mdf-brk01 flood path and never arrive at Kea. Relaying from the
       # SVI that already sees the frame routes around the broken flood.
+      # mdf-agg01 routes v4 here; iyr keeps v6. The cutover is v4-only —
+      # v6 default-router selection happens through RAs from iyr's
+      # link-local, which is untouched by which box holds 10.0.10.1, and
+      # iyr is the resolver and the source of the delegated prefix. The
+      # switch has no v6 default route to offer, so handing it v6 would
+      # black-hole off-net v6 for everything on this VLAN.
       main = {
         type = "network";
+        refs = { gateway = "mdf-agg01"; gateway6 = "iyr"; };
         network = { site = "apt"; vlan = 10; ipv4 = "10.0.10.0/24"; ulaSubnetHex = "a"; ipv6PdSubnetId = 0; dhcpRelay = true; zone = "lan"; };
       };
       infra = {

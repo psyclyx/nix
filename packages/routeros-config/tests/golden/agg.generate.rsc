@@ -32,6 +32,23 @@
 /ip ssh set host-key-type=ed25519
 /snmp set enabled=yes
 
+# ── Interface settings ──
+/interface ethernet
+set [find default-name=sfp-sfpplus1] l2mtu=9004
+set [find default-name=sfp-sfpplus2] l2mtu=9004
+set [find default-name=sfp-sfpplus3] l2mtu=9004
+set [find default-name=sfp-sfpplus4] l2mtu=9004
+set [find default-name=sfp-sfpplus5] l2mtu=9004
+set [find default-name=sfp-sfpplus6] l2mtu=9004
+set [find default-name=sfp-sfpplus7] l2mtu=9004
+set [find default-name=sfp-sfpplus8] l2mtu=9004
+set [find default-name=sfp-sfpplus9] l2mtu=9004
+set [find default-name=sfp-sfpplus10] l2mtu=9004
+set [find default-name=sfp-sfpplus11] l2mtu=9004
+set [find default-name=sfp-sfpplus12] l2mtu=9004
+set [find default-name=sfp-sfpplus20] l2mtu=9004
+set [find default-name=sfp-sfpplus24] l2mtu=9004
+
 # ── Bonds ──
 /interface bonding
 add name=bond-css326 mode=802.3ad slaves=sfp-sfpplus9,sfp-sfpplus10 comment="CSS326 trunk"

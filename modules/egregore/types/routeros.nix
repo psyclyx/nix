@@ -236,6 +236,15 @@
       # the switch route it.
       addressedNetworks = lib.attrNames sw.addresses;
 
+      # Largest L3 MTU any network on this switch asks for, and the
+      # ethernet frame size that has to carry it: + 4 for the VLAN tag,
+      # since a VLAN interface's l2mtu is the parent's minus the tag.
+      # Null when nothing wants more than a standard frame, so switches
+      # with no jumbo networks emit no l2mtu lines at all.
+      maxNetMtu = lib.foldl' lib.max 1500
+        (map (n: top.entities.${n}.network.mtu or 1500) addressedNetworks);
+      portL2mtu = if maxNetMtu > 1500 then maxNetMtu + 4 else null;
+
       # Port config lookup with default for unassigned hardware ports.
       portCfg = pname: sw.ports.${pname} or portDef.empty;
 
@@ -325,9 +334,25 @@
             icmp_reply_on_error = sw.l3HwSettings.icmpReplyOnError;
           };
 
+        # Ethernet-level frame size. Distinct from the L3 `mtu` on each
+        # VLAN interface, and this is the one that has to be raised for
+        # jumbo to work at all: a VLAN interface's l2mtu is its parent
+        # bridge's minus the 4-byte tag, and a bridge's l2mtu is the
+        # *minimum* across its members. So one port left at the default
+        # caps every VLAN on the bridge, no matter which ports the jumbo
+        # traffic actually crosses.
+        #
+        # Raising it doesn't leak jumbo anywhere: l2mtu only permits
+        # larger frames, it doesn't cause them. Hosts size their packets
+        # to the L3 MTU, which stays 1500 on every network that didn't
+        # ask for more.
+        #
+        # The ceiling is per-model (`max-l2mtu`, 10218 on the CRS326).
         interfaces = map (pname: {
           name    = pname;
           enabled = true;
+        } // lib.optionalAttrs (portL2mtu != null) {
+          l2mtu = portL2mtu;
         }) activePorts;
 
         bonds = lib.mapAttrsToList (bondName: bond: {

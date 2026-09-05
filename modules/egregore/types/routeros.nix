@@ -461,8 +461,11 @@ ${json}
 EGREGORE_EOF'';
       };
       deploy = {
-        description = "Deploy config to switch (upload + reset-configuration). DESTRUCTIVE — switch reboots and reapplies. Prefer `apply` for incremental changes. Args are passed as extra SSH/SCP options (e.g. -J iyr).";
+        description = "Deploy config to switch: back up off-box, then reset-configuration + run-after-reset. DESTRUCTIVE — the switch reboots and rebuilds from the generated script. Recovery is the downloaded backup, over serial if need be. Args are passed as extra SSH/SCP options (e.g. -J iyr).";
         impl = ''
+          stamp=$(date +%Y%m%d-%H%M%S)
+          backup="preflight-${identity}-$stamp"
+
           echo "Generating ${rscName}..." >&2
           tmpfile=$(mktemp --suffix=.rsc)
           trap "rm -f $tmpfile" EXIT
@@ -470,16 +473,33 @@ EGREGORE_EOF'';
 ${json}
 EGREGORE_EOF
 
-          echo "Uploading to ${mgmtIp} via SCP..." >&2
+          # Back up before anything else, and pull it off the switch. A
+          # copy that only exists on the device it protects isn't a
+          # backup — reset keeps files, but a dead flash doesn't.
+          echo "Backing up to /tmp/$backup.backup..." >&2
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+            "$@" "admin@${mgmtIp}" "/system backup save name=$backup"
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+            "$@" "admin@${mgmtIp}:/$backup.backup" "/tmp/$backup.backup"
+
+          echo "Uploading ${rscName}..." >&2
           scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
             "$@" "$tmpfile" "admin@${mgmtIp}:/${rscName}"
 
+          # keep-users: the script recreates the admin user anyway (it has
+          # to, for a factory-fresh switch), but if it halts before
+          # getting there, keeping users is the difference between "log
+          # in and fix it" and "find a serial cable".
           echo "Resetting configuration (switch will reboot)..." >&2
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
             "$@" "admin@${mgmtIp}" \
-            "/system/reset-configuration no-defaults=yes run-after-reset=${rscName}"
+            "/system/reset-configuration keep-users=yes no-defaults=yes run-after-reset=${rscName}"
 
-          echo "Deploy complete. Switch will reboot and apply ${rscName}." >&2'';
+          echo "" >&2
+          echo "Deploy complete. ${identity} reboots and applies ${rscName}." >&2
+          echo "If it comes back wrong, restore with:" >&2
+          echo "  scp /tmp/$backup.backup admin@${mgmtIp}:/" >&2
+          echo "  ssh admin@${mgmtIp} '/system backup load name=$backup'" >&2'';
       };
       apply = {
         description = "Incremental apply via /export terse diff. Non-destructive: pulls current state, computes diff against desired, pushes only changed items. Diffs only the sections that safely tolerate live add/remove (/interface vlan, /ip address, /interface bridge vlan). Use --dry-run to preview. Extra ssh args pass through as `-- -J jumphost`.";

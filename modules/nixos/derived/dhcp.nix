@@ -107,13 +107,19 @@
     onLink =
       if resolver == null then null
       else ((resolver.attrs.addresses or {}).${netName} or {}).${family} or null;
+    # A router holds its segment's gateway address by convention rather
+    # than by declaring it, so "the resolver is this family's gateway"
+    # is the one case where the gateway address is the right answer.
+    # Per family: the two can differ, and on main they do.
+    gatewayRefFor =
+      if family == "ipv4" then na.gatewayRef or null else na.gateway6Ref or null;
   in
     if onLink != null then onLink
-    else if resolverHost != null && resolverHost == (na.gatewayRef or null)
+    else if resolverHost != null && resolverHost == gatewayRefFor
     then (if family == "ipv4" then na.gateway4 else na.gateway6)
     else throw ("network '${netName}': resolver '${toString resolverHost}' has no "
-      + "${family} address there, and isn't its gateway — nothing valid to "
-      + "advertise as a nameserver");
+      + "${family} address there, and isn't its ${family} gateway — nothing "
+      + "valid to advertise as a nameserver");
 
   mkSubnet4 = _poolName: pool: let
     net = eg.entities.${pool.network};

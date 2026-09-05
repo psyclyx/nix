@@ -157,8 +157,15 @@
           };
           addresses = {
             vpn.ipv4     = "10.157.0.2";
+            # .2 in both families on the segments iyr listens on but
+            # doesn't gateway. The v6 halves were missing, and because
+            # iyr is these networks' resolver, their DHCPv6 clients were
+            # being handed mdf-agg01's ULA as a nameserver — a switch
+            # that has never run a resolver.
             lab.ipv4     = "10.0.210.2";
+            lab.ipv6     = "fd9a:e830:4b1e:d2::2";
             storage.ipv4 = "10.0.200.2";
+            storage.ipv6 = "fd9a:e830:4b1e:c8::2";
             # iyr held 10.0.10.1 only by being main's v4 gateway, and
             # that moved to mdf-agg01 — so the address has to be stated
             # or iyr silently leaves the VLAN it resolves, serves DHCP

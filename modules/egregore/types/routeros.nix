@@ -34,8 +34,10 @@
           Addresses this switch holds, keyed by network entity name. The
           mgmt entry is required (it backs the SSH/SNMP/management plane).
           Additional entries are emitted as L3 interfaces — for networks
-          the switch routes (see routedNetworks), they become the network's
-          gateway; for other networks they're transit-only interfaces.
+          Every entry becomes an /interface vlan + /ip address, and with
+          l3-hw-offloading on, one the chip routes. Whether the switch is
+          the network's *canonical* gateway is a separate question,
+          answered by the network's own refs.gateway.
         '';
       };
       ports = lib.mkOption {
@@ -110,16 +112,6 @@
           these are additional sub-knobs.
         '';
       };
-      routedNetworks = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = ''
-          Networks this switch is the L3 gateway for. Explicit entries are
-          unioned with networks whose attrs.gatewayRef points at this
-          entity. Routed networks get an /interface vlan + /ip address
-          emitted using the switch's matching addresses.<network> entry.
-        '';
-      };
       timezone = lib.mkOption {
         type = lib.types.str;
         default = "America/Los_Angeles";
@@ -168,9 +160,6 @@
       active = lib.filterAttrs (_: p: portType p != "unused") r.ports;
       mgmtAddr = r.addresses.${r.mgmtNetwork}.ipv4 or null;
       networkEntities = lib.filterAttrs (_: e: e.type == "network") (top.entities or {});
-      autoRouted = lib.attrNames (
-        lib.filterAttrs (_: net: (net.attrs.gatewayRef or null) == name) networkEntities
-      );
     in {
       address = mgmtAddr;
       label = "${if r.identity != null then r.identity else name} (${r.model})";
@@ -178,7 +167,14 @@
       model = r.model;
       portCount = builtins.length (builtins.attrNames r.ports);
       activePortCount = builtins.length (builtins.attrNames active);
-      routedNetworks = lib.unique (r.routedNetworks ++ autoRouted);
+      # Networks this switch is the canonical gateway for, derived solely
+      # from the network's own `refs.gateway`. This is a statement about
+      # policy — who other hosts should route to — NOT about what the
+      # chip forwards: with l3-hw-offloading on, the switch routes every
+      # VLAN it holds an address on, whether or not it is named here.
+      gatewayNetworks = lib.attrNames (
+        lib.filterAttrs (_: net: (net.attrs.gatewayRef or null) == name) networkEntities
+      );
     };
 
     verbs = name: entity: top: let
@@ -213,11 +209,11 @@
         else if (uplinkNet.attrs.gatewayRef or null) == serverName then uplinkGw
         else server.host.addresses.${uplinkName}.ipv4 or null;
 
-      # All entries in sw.addresses get an L3 interface. Routed networks
-      # are the gateway for their subnet; others are transit-only IPs that
-      # let the switch participate on the VLAN (e.g. to reach a next-hop).
+      # All entries in sw.addresses get an L3 interface, and with
+      # l3-hw-offloading on the chip routes every one of them. There is no
+      # "transit-only" address: holding an address on a VLAN is what makes
+      # the switch route it.
       addressedNetworks = lib.attrNames sw.addresses;
-      routedSet = lib.genAttrs entity.attrs.routedNetworks (_: true);
 
       # Port config lookup with default for unassigned hardware ports.
       portCfg = pname: sw.ports.${pname} or {
@@ -346,7 +342,6 @@
           name      = "vlan${toString net.network.vlan}";
           vlan_id   = net.network.vlan;
           mtu       = net.network.mtu;
-          routed    = routedSet ? ${netName};
         }) addressedNetworks;
 
         addresses = map (netName: let

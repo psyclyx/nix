@@ -63,7 +63,7 @@
     switchRoutes = lib.flatten (lib.mapAttrsToList (_: sw: let
       r = sw.routeros;
       nextHopOnPoolNet = r.addresses.${sitePool}.ipv4 or null;
-      routedHere = lib.filter (n: n != sitePool) sw.attrs.routedNetworks;
+      routedHere = lib.filter (n: n != sitePool) sw.attrs.gatewayNetworks;
     in
       if nextHopOnPoolNet == null then []
       else map (netName: let

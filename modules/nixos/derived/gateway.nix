@@ -59,7 +59,7 @@
         lib.optional (nextHopV4 != null) (mkRoute netName "ipv4" v4dest nextHopV4)
         ++ lib.optional (nextHopV6 != null && v6dest != null)
             (mkRoute netName "ipv6" v6dest nextHopV6);
-    in lib.concatMap routedFor sw.attrs.routedNetworks)
+    in lib.concatMap routedFor sw.attrs.gatewayNetworks)
       switches;
     flat = builtins.filter
       (r: r.gateway != null && !(builtins.elem r.netName myConnectedNetworks))

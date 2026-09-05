@@ -6,13 +6,7 @@ let
   # rework; the lab traffic now lives on 200/210 (storage/lab) with
   # mdf-agg01 doing L3 hardware-offloaded routing.
   #
-  # 220-223 (cluster-prod/stage/scratch/orch) added in the lab-v3
-  # rework — these will only ever live on the rack fabric, but
-  # carrying them on every internal trunk is harmless and avoids
-  # per-trunk VLAN-list bookkeeping. Routed at mdf-agg01 (L3 HW
-  # offload); access ports come online as lab hosts get NICs wired
-  # per env in phase 3 of the rework.
-  internal = [10 25 200 210 220 221 222 223 240];
+  internal = [10 25 200 210 240];
   # WAN transit VLANs — L2-only, not modeled as network entities (they
   # have no internal subnet). 251 is Google Fiber (the primary IPv4
   # uplink), 250 is Xfinity (IPv6 + the IPv4 fallback); both land on
@@ -43,13 +37,8 @@ in {
           # L3 routing — with l3-hw-offloading on, the chip routes every
           # VLAN below that this switch holds an address on. Which of
           # them it is the *canonical* gateway for is a separate fact,
-          # stated by each network's own refs.gateway: storage (200),
-          # lab (210), and the cluster-* envs (220-223).
-          #
-          # Cluster SVIs are seated for phase 2 of the lab-v3 rework;
-          # access ports for them come online when lab hosts get NICs
-          # wired per env (phase 3). Until then, the SVIs are routable
-          # but unreachable — no traffic yet.
+          # stated by each network's own refs.gateway: storage (200)
+          # and lab (210).
           l3HwOffload = true;
           # Marvell primary; the CRS326 also reports an Atheros switch2
           # that holds no L3 settings.
@@ -81,14 +70,6 @@ in {
             storage.ipv6 = "fd9a:e830:4b1e:c8::1";
             lab.ipv4     = "10.0.210.1";
             lab.ipv6     = "fd9a:e830:4b1e:d2::1";
-            cluster-prod.ipv4    = "10.0.220.1";
-            cluster-prod.ipv6    = "fd9a:e830:4b1e:dc::1";
-            cluster-stage.ipv4   = "10.0.221.1";
-            cluster-stage.ipv6   = "fd9a:e830:4b1e:dd::1";
-            cluster-scratch.ipv4 = "10.0.222.1";
-            cluster-scratch.ipv6 = "fd9a:e830:4b1e:de::1";
-            cluster-orch.ipv4    = "10.0.223.1";
-            cluster-orch.ipv6    = "fd9a:e830:4b1e:df::1";
           };
 
           bonds = {

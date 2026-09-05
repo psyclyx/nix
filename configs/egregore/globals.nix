@@ -63,9 +63,6 @@
       storage.label = "Rack-internal storage fabric — unauthenticated NFS/iSCSI.";
       lab-transit.label = "Hypervisor↔mdf-agg01 routed transit.";
       core-transit.label = "iyr↔mdf-agg01 router-on-a-stick transit (NAT hairpin).";
-      cluster-workload.label = "Cluster prod + stage VMs — ingress-served, no WAN.";
-      cluster-scratch.label = "Cluster scratch VMs — playground; WAN allowed.";
-      cluster-orch.label = "Cluster orchestration control plane.";
       wg.label = "WireGuard overlay — site-to-site + road warriors.";
       wan.label = "Internet transit.";
     };
@@ -82,9 +79,12 @@
       # the switch. The zone therefore inherits what those clients are
       # allowed, and the destination zones below grant it in return.
       #
-      # Not "accept everything": the switch also routes the storage and
-      # cluster fabrics, which are deliberately not permitted to reach
-      # the apt LAN just because their path happens to traverse iyr.
+      # KNOWN WRONG, do not trust this zone to restrict anything: the
+      # rules derived from it match on iifname, and every switch-routed
+      # source arrives on the same interface. `wan = accept` here grants
+      # WAN to every VLAN behind the switch, including storage, whose own
+      # row below says it has none. Enforcing this needs source-prefix
+      # matching at iyr, not zones.
       core-transit = {
         wan = "accept";           # north-south NAT, the whole point
         infra = "accept";         # DNS, NTP, OpenBao
@@ -93,8 +93,7 @@
       };
 
       # apt-LAN traffic: trusted users reach everything except the
-      # storage-internal fabric (which is rack-only) and the cluster
-      # workloads' L2 (clients reach those via ingress, not directly).
+      # storage-internal fabric, which is rack-only.
       lan = {
         core-transit = "accept";  # replies to switch-routed clients
         lan = "accept";           # hairpin: clients reaching mdf-agg01 via iyr
@@ -104,9 +103,6 @@
         mgmt = "accept";          # iLO/IPMI from workstations
         wg = "accept";            # reach overlay peers
         wan = "accept";           # internet
-        cluster-workload = "accept";  # NFS (sigil-fast-path) + admin
-        cluster-scratch = "accept";
-        cluster-orch = "accept";
       };
 
       # Infra services talk to each other and out for updates.
@@ -120,15 +116,13 @@
       };
 
       # WG overlay: tleilax + road warriors + apt peers. tleilax is
-      # the ingress origin for cluster-workload.
+      # the ingress origin for apt-side services.
       wg = {
         lan = "accept";
         infra = "accept";
         wg = "accept";
         storage = "accept";
         lab-transit = "accept";
-        cluster-workload = "accept";  # ingress from tleilax HAProxy
-        cluster-orch = "accept";
       };
 
       # Lab-transit: hypervisor canonical identity; can reach
@@ -139,9 +133,6 @@
         wg = "accept";
         wan = "accept";
         storage = "accept";
-        cluster-workload = "accept";
-        cluster-scratch = "accept";
-        cluster-orch = "accept";
       };
 
       # Storage VLAN: rack-internal, unauth NFS/iSCSI. Admin SSH path
@@ -150,39 +141,13 @@
         lan = "accept";       # SSH replies to admin
         wg = "accept";
         lab-transit = "accept";
-        # No wan, no cluster, no infra outbound — storage hosts don't
-        # initiate connections off the rack.
+        # No wan, no infra outbound — storage hosts don't initiate
+        # connections off the rack. Not currently enforced; see the
+        # core-transit note above.
       };
 
-      # Cluster workload (prod+stage): no WAN, no scratch/orch peering
-      # for now (revisit if orch needs to push to workload).
-      cluster-workload = {
-        wg = "accept";              # serve ingress
-        lan = "accept";             # serve sigil-NFS, admin
-        lab-transit = "accept";     # hypervisor services (KDC, etc.)
-        cluster-workload = "accept"; # prod↔stage and intra-env
-      };
 
-      # Cluster scratch: WAN-allowed playground.
-      cluster-scratch = {
-        wan = "accept";
-        wg = "accept";
-        lan = "accept";
-        lab-transit = "accept";
-        cluster-scratch = "accept";
-      };
 
-      # Cluster orch: scheduler reach into workloads + reach to lan/wg
-      # for ops. No direct WAN by default.
-      cluster-orch = {
-        cluster-workload = "accept";
-        cluster-scratch = "accept";
-        lab-transit = "accept";
-        lan = "accept";
-        wg = "accept";
-        infra = "accept";
-        cluster-orch = "accept";
-      };
 
       # mgmt: out-of-band. Reachable from lan/wg only; no outbound.
       mgmt = { };

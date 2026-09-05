@@ -1,8 +1,8 @@
 # Network segments — IP-routable scopes.
 #
-# Apartment networks are VLAN-backed and live at the apt site. The `storage`,
-# `lab`, and cluster-* networks are routed by mdf-agg01 (CRS326) — see
-# refs.gateway below; the site-level default of iyr applies to the rest.
+# Apartment networks are VLAN-backed and live at the apt site. `storage`
+# and `lab` are routed by mdf-agg01 (CRS326) — see refs.gateway below;
+# the site-level default of iyr applies to the rest.
 #
 # vpn is the WG overlay: not VLAN-backed, no site (it spans sites).
 #
@@ -32,8 +32,8 @@
         type = "network";
         network = { site = "apt"; vlan = 25; ipv4 = "10.0.25.0/24"; ulaSubnetHex = "19"; ipv6PdSubnetId = 1; zone = "infra"; };
       };
-      # iyr isn't the gateway for storage/lab/cluster-* (mdf-agg01 is)
-      # but it *is* an L2 listener on storage + lab (DHCP + DNS).
+      # iyr isn't the gateway for storage/lab (mdf-agg01 is) but it *is*
+      # an L2 listener on both (DHCP + DNS).
       # refs.dns points the DHCP projection's domain-name-servers option
       # at iyr's address on each network, not the switch's.
       # storage/lab relay *and* keep iyr's L2 anchor for now. The relay is
@@ -56,35 +56,6 @@
         type = "network";
         refs = { gateway = "mdf-agg01"; dns = "iyr"; };
         network = { site = "apt"; vlan = 210; ipv4 = "10.0.210.0/24"; ulaSubnetHex = "d2"; ipv6PdSubnetId = 9; dhcpRelay = true; zone = "lab-transit"; };
-      };
-
-      # Cluster env networks (VLANs 220-223). Routed at mdf-agg01; DHCP
-      # relayed to iyr (Kea) via mdf-agg01 — iyr has no L2 presence on
-      # these VLANs at all, so the relay isn't an optimisation here, it's
-      # the only path a DISCOVER has. Each lab host hosts
-      # a bridge for each env on a dedicated 1G access port — see
-      # docs/lab-v3.md.
-      # Cluster env PD subnet IDs fit in the Xfinity /60 (4 bits → 0..15);
-      # 12-15 are the trailing slice, keeping 0-11 for apt-side use.
-      cluster-prod = {
-        type = "network";
-        refs = { gateway = "mdf-agg01"; dns = "iyr"; };
-        network = { site = "apt"; vlan = 220; ipv4 = "10.0.220.0/24"; ulaSubnetHex = "dc"; ipv6PdSubnetId = 12; dhcpRelay = true; zone = "cluster-workload"; };
-      };
-      cluster-stage = {
-        type = "network";
-        refs = { gateway = "mdf-agg01"; dns = "iyr"; };
-        network = { site = "apt"; vlan = 221; ipv4 = "10.0.221.0/24"; ulaSubnetHex = "dd"; ipv6PdSubnetId = 13; dhcpRelay = true; zone = "cluster-workload"; };
-      };
-      cluster-scratch = {
-        type = "network";
-        refs = { gateway = "mdf-agg01"; dns = "iyr"; };
-        network = { site = "apt"; vlan = 222; ipv4 = "10.0.222.0/24"; ulaSubnetHex = "de"; ipv6PdSubnetId = 14; dhcpRelay = true; zone = "cluster-scratch"; };
-      };
-      cluster-orch = {
-        type = "network";
-        refs = { gateway = "mdf-agg01"; dns = "iyr"; };
-        network = { site = "apt"; vlan = 223; ipv4 = "10.0.223.0/24"; ulaSubnetHex = "df"; ipv6PdSubnetId = 15; dhcpRelay = true; zone = "cluster-orch"; };
       };
 
       mgmt = {

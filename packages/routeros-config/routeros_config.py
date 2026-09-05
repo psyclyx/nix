@@ -1534,6 +1534,19 @@ def main():
 
     if args.command == "generate":
         config = json.load(sys.stdin)
+        # Check property names before emitting anything. This script is
+        # what `deploy` feeds to run-after-reset, and a bad property
+        # halts the import *after* the wipe — the switch is already
+        # empty by the time anything notices. RouterOS won't pre-check
+        # for us: `:parse` accepts unbalanced braces, unknown menus and
+        # unknown properties alike. Failing here is the only chance to
+        # fail before the destructive step.
+        problems = schema_violations(load_schema())
+        if problems:
+            sys.stderr.write("refusing to generate — unknown properties:\n")
+            for p in problems:
+                sys.stderr.write(f"  {p}\n")
+            return 1
         sys.stdout.write(generate(config))
     elif args.command == "state-command":
         sys.stdout.write(state_command() + "\n")

@@ -10,6 +10,21 @@
             default = 1;
             description = "Host offset for gateway address within each subnet.";
           };
+          internalPrefixes = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [];
+            description = ''
+              IPv4 prefixes that count as "inside" for policy that has to
+              be expressed as a destination match rather than as a zone —
+              switch-chip ACLs, which see a destination address and not
+              the zone it belongs to. The IPv6 equivalent is the ULA
+              prefix, which is already a global.
+
+              Aggregates rather than per-network prefixes: the point is
+              to say "not the internet", and enumerating every segment
+              would need updating whenever one is added.
+            '';
+          };
           transitVlan = lib.mkOption {
             type = lib.types.int;
             default = 250;

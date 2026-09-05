@@ -115,6 +115,19 @@
               lab-transit = "accept";
               mgmt = "accept";
               wg = "accept";
+              # Traffic mdf-agg01 hands us over the transit. Almost
+              # nothing terminates here: iyr holds an address on every
+              # segment it serves, so clients reach its services directly on
+              # their own VLAN. What does arrive is relayed DHCP, which
+              # the switch unicasts to iyr's transit address.
+              core-transit = {
+                policy = "drop";
+                allowICMP = true;
+                rules = [
+                  { "udp dport" = 67; comment = "DHCPv4 relay"; }
+                  { "udp dport" = 547; comment = "DHCPv6 relay"; }
+                ];
+              };
               # WAN: drop + specific allows. The TCP port comes from
               # the SSH service port; hardcoded here pending a port
               # registry projection.

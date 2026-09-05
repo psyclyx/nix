@@ -4,6 +4,8 @@
   config = {
     conventions = {
       gatewayOffset = 1;
+      # Everything we number out of is inside 10/8.
+      internalPrefixes = [ "10.0.0.0/8" ];
       transitVlan = 250;
       adminSshKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPK+1GlLeOjyDZjcdGFXjDnJfgtO7OOOoeTliAwZRSsf psyc@sigil"

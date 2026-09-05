@@ -139,6 +139,15 @@ add interface=vlan10 ra-lifetime=none
 add interface=vlan240 ra-lifetime=none
 add interface=vlan200 ra-lifetime=none
 
+# ── Switch ACLs ──
+/interface ethernet switch rule
+add switch=switch1 vlan-id=240 dst-address=10.0.0.0/8 comment="mgmt: internal v4"
+add switch=switch1 vlan-id=240 dst-address6=fd9a:e830:4b1e::/48 comment="mgmt: internal v6"
+add switch=switch1 vlan-id=240 new-dst-ports="" comment="mgmt: no route off-site"
+add switch=switch1 vlan-id=200 dst-address=10.0.0.0/8 comment="storage: internal v4"
+add switch=switch1 vlan-id=200 dst-address6=fd9a:e830:4b1e::/48 comment="storage: internal v6"
+add switch=switch1 vlan-id=200 new-dst-ports="" comment="storage: no route off-site"
+
 # ── Disable unused ports ──
 /interface ethernet
 set [find default-name=qsfpplus1-1] disabled=yes

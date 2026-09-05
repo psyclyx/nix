@@ -243,6 +243,36 @@
       # the switch route it.
       addressedNetworks = lib.attrNames sw.addresses;
 
+      # Switch-chip ACLs, derived from the forward policy rather than
+      # written twice. A network this switch routes whose zone has no
+      # `wan = "accept"` must not reach the internet — and iyr cannot
+      # enforce that, because by the time the traffic reaches it every
+      # switch-routed source shares one interface. The chip can, because
+      # it still sees which VLAN the packet arrived on.
+      #
+      # Three rules per restricted network, in order: permit the
+      # internal destinations, then drop. RouterOS stops at the first
+      # match, and an empty new-dst-ports is how it spells drop. Nothing
+      # here names a dynamic prefix, so a renumber doesn't touch it.
+      internalV4 = top.conventions.internalPrefixes or [];
+      internalV6 =
+        lib.optional ((top.ipv6UlaPrefix or "") != "") "${top.ipv6UlaPrefix}::/48";
+
+      wanDenied = builtins.filter (netName: let
+        zone = (top.entities.${netName}).attrs.zone or "";
+        policy = (top.policy.${zone} or {}).wan or null;
+      in zone != "" && policy != "accept") addressedNetworks;
+
+      switchRules = lib.concatMap (netName: let
+        vlan = (top.entities.${netName}).network.vlan;
+        rule = extra: { switch = sw.primarySwitchChip; vlan_id = vlan; } // extra;
+      in
+        lib.optionals (vlan != null && sw.primarySwitchChip != null) (
+          map (p: rule { dst_address = p; comment = "${netName}: internal v4"; }) internalV4
+          ++ map (p: rule { dst_address6 = p; comment = "${netName}: internal v6"; }) internalV6
+          ++ [ (rule { new_dst_ports = ""; comment = "${netName}: no route off-site"; }) ]
+        )) wanDenied;
+
       # Largest L3 MTU any network on this switch asks for, and the
       # ethernet frame size that has to carry it: + 4 for the VLAN tag,
       # since a VLAN interface's l2mtu is the parent's minus the tag.
@@ -476,6 +506,7 @@
             (n: (sw.addresses.${n}.ipv6 or null) != null)
             addressedNetworks));
 
+        "switch_rules" = switchRules;
         routes        = map mkRouteRow (routesFor "ipv4");
         "ipv6_routes" = map mkRouteRow (routesFor "ipv6");
       };

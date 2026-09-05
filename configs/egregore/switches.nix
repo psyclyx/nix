@@ -64,6 +64,10 @@ in {
             # LAN core transit (/30) — iyr .1, agg .2. The switch's default
             # route still exits via main to iyr until the gateway migration
             # flips it here.
+            # .1 — infra's v4 gateway. The ULA stays ::2: iyr remains
+            # infra's v6 router and holds ::1, same split as main.
+            infra.ipv4   = "10.0.25.1";
+            infra.ipv6   = "fd9a:e830:4b1e:19::2";
             core-transit.ipv4 = "10.0.252.2";
             core-transit.ipv6 = "fd9a:e830:4b1e:fc::2";
             storage.ipv4 = "10.0.200.1";   # convention gateway (.1)

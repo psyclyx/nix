@@ -48,15 +48,18 @@
             # routed by mdf-agg01, but iyr still forwards there via its
             # static routes on vlan10, so peers reach them transparently.
             exportedRoutes = [
-              "10.0.10.0/24"  "10.0.25.0/24"  "10.0.100.0/24" "10.0.110.0/24"
+              "10.0.10.0/24"  "10.0.25.0/24"
               "10.0.200.0/24" "10.0.210.0/24" "10.0.240.0/24"
             ];
           };
-          # iyr is the apt site gateway for main/infra/guest/iot/mgmt
-          # and an L2-only DHCP/DNS listener on storage/lab (mdf-agg01
-          # is their L3 gateway). Declaring the full interface set
-          # lets data-driven projections (overlay shortcuts, firewall
-          # zones) target the right units without per-host scaffolding.
+          # mdf-agg01 is the v4 gateway for main, infra, storage and
+          # lab; iyr holds a host address on each and remains their v6
+          # router, their resolver and their DHCP server. It still
+          # gateways mgmt and the transit /30 outright.
+          #
+          # Declaring the full interface set lets data-driven
+          # projections (overlay shortcuts, firewall zones) target the
+          # right units without per-host scaffolding.
           interfaces = {
             main.device    = "enp1s0.10";
             infra.device   = "enp1s0.25";
@@ -112,10 +115,6 @@
               lab-transit = "accept";
               mgmt = "accept";
               wg = "accept";
-              # Guests + IoT: permissive at iyr (they go through this
-              # gateway anyway). Override here, not in NixOS module.
-              guest = "accept";
-              iot = "accept";
               # WAN: drop + specific allows. The TCP port comes from
               # the SSH service port; hardcoded here pending a port
               # registry projection.
@@ -172,6 +171,11 @@
             # and is managed on. The v6 address stays derived: iyr is
             # still main's v6 router and holds ::1.
             main.ipv4    = "10.0.10.3";
+            # Same story on infra: iyr held .1 by being its gateway, and
+            # that moved to the switch. Everything that reaches OpenBao
+            # and the resolver here derives the address from this entry,
+            # so stating it is all that's needed.
+            infra.ipv4   = "10.0.25.3";
           };
           sshPort = 17891;
           deployAddress = "iyr.apt.psyclyx.net";

@@ -76,7 +76,7 @@ add bridge=bridge1 interface=sfp-sfpplus24 pvid=1 comment="trunk to mdf-brk01"
 # ── VLAN table ──
 /interface bridge vlan
 add bridge=bridge1 vlan-ids=10 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24,bridge1 untagged=bond-sigil
-add bridge=bridge1 vlan-ids=25 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24
+add bridge=bridge1 vlan-ids=25 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24,bridge1
 add bridge=bridge1 vlan-ids=200 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24,bridge1 untagged=sfp-sfpplus1,sfp-sfpplus3,sfp-sfpplus5,sfp-sfpplus7
 add bridge=bridge1 vlan-ids=210 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24,bridge1 untagged=sfp-sfpplus2,sfp-sfpplus4,sfp-sfpplus6,sfp-sfpplus8
 add bridge=bridge1 vlan-ids=240 tagged=bond-css326,sfp-sfpplus20,sfp-sfpplus24,bridge1
@@ -87,6 +87,7 @@ add bridge=bridge1 vlan-ids=252 tagged=sfp-sfpplus24,bridge1
 # ── VLAN interfaces ──
 /interface vlan
 add interface=bridge1 name=vlan252 vlan-id=252 mtu=1500
+add interface=bridge1 name=vlan25 vlan-id=25 mtu=1500
 add interface=bridge1 name=vlan210 vlan-id=210 mtu=1500
 add interface=bridge1 name=vlan10 vlan-id=10 mtu=1500
 add interface=bridge1 name=vlan240 vlan-id=240 mtu=1500
@@ -104,6 +105,7 @@ add interface=bridge1 name=vlan200 vlan-id=200 mtu=9000
 # ── IP addresses ──
 /ip address
 add address=10.0.252.2/30 interface=vlan252 network=10.0.252.0
+add address=10.0.25.1/24 interface=vlan25 network=10.0.25.0
 add address=10.0.210.1/24 interface=vlan210 network=10.0.210.0
 add address=10.0.10.1/24 interface=vlan10 network=10.0.10.0
 add address=10.0.240.2/24 interface=vlan240 network=10.0.240.0
@@ -122,6 +124,7 @@ add name=relay-storage interface=vlan200 dhcp-server=10.0.252.1 local-address=10
 # ── IPv6 addresses ──
 /ipv6 address
 add address=fd9a:e830:4b1e:fc::2/64 interface=vlan252
+add address=fd9a:e830:4b1e:19::2/64 interface=vlan25
 add address=fd9a:e830:4b1e:d2::1/64 interface=vlan210
 add address=fd9a:e830:4b1e:a::2/64 interface=vlan10
 add address=fd9a:e830:4b1e:f0::2/64 interface=vlan240
@@ -130,6 +133,7 @@ add address=fd9a:e830:4b1e:c8::1/64 interface=vlan200
 # ── IPv6 ND ──
 /ipv6 nd
 add interface=vlan252 ra-lifetime=none
+add interface=vlan25 ra-lifetime=none
 add interface=vlan210 ra-lifetime=none
 add interface=vlan10 ra-lifetime=none
 add interface=vlan240 ra-lifetime=none

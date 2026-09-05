@@ -28,8 +28,17 @@
         refs = { gateway = "mdf-agg01"; gateway6 = "iyr"; };
         network = { site = "apt"; vlan = 10; ipv4 = "10.0.10.0/24"; ulaSubnetHex = "a"; ipv6PdSubnetId = 0; dhcpRelay = true; zone = "lan"; };
       };
+      # Routed by mdf-agg01 like every other internal segment. iyr was
+      # its gateway only because it predates the switch having usable L3
+      # offload — infra has no property that wants a stateful router in
+      # front of it, and putting it on the switch means east-west between
+      # infra hosts is hardware-routed rather than hairpinned.
+      #
+      # v6 stays with iyr for the same reason as main: the switch has no
+      # ::/0 to offer yet.
       infra = {
         type = "network";
+        refs = { gateway = "mdf-agg01"; gateway6 = "iyr"; };
         network = { site = "apt"; vlan = 25; ipv4 = "10.0.25.0/24"; ulaSubnetHex = "19"; ipv6PdSubnetId = 1; zone = "infra"; };
       };
       # iyr isn't the gateway for storage/lab (mdf-agg01 is) but it *is*

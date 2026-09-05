@@ -265,8 +265,7 @@ SECTIONS = [
                 F("name", omit="req"), F("interface", omit="req"),
                 F("dhcp_server", "dhcp-server", kind="list", omit="req"),
                 F("local_address", "local-address", omit="falsy"),
-                F("disabled", kind="bool"),
-                F("comment", kind="qstr", omit="falsy")]),
+                F("disabled", kind="bool")]),
     Section("ipv6_addresses", "/ipv6 address", "# ── IPv6 addresses ──",
             ("address",), [
                 F("address", omit="req"), F("interface", omit="req"),
@@ -300,8 +299,7 @@ SECTIONS = [
             (), [
                 F("forwarding", "forward", kind="bool"),
                 # Enums here ("yes-if-forwarding-disabled"), not booleans.
-                F("accept_redirects", "accept-redirects"),
-                F("accept_source_route", "accept-source-route")],
+                F("accept_redirects", "accept-redirects")],
             mode="settings"),
 ]
 
@@ -811,6 +809,110 @@ def state_command():
     return ":put [:serialize to=json {" + parts + "}]"
 
 
+# ── The device's own schema ───────────────────────────────────────────
+#
+# RouterOS will describe itself. `/console/inspect request=child` on a
+# menu's `set` command enumerates that menu's real properties, per model
+# and per firmware version:
+#
+#   /console/inspect request=child path=[:toarray "ip,route,set"]
+#     → blackhole, check-gateway, comment, disabled, distance,
+#       dst-address, gateway, pref-src, routing-table, scope,
+#       suppress-hw-offload, target-scope, vrf-interface
+#
+# That's the authority on what a property is called and whether it
+# exists. We keep a captured copy in the repo so `generate` works
+# without a device and so a firmware upgrade shows up as a reviewable
+# diff — and re-read it on every apply, because a schema we believe and
+# a device that disagrees is exactly how you write a config that imports
+# halfway and stops.
+#
+# What it does NOT tell us, and we therefore still declare: which
+# properties name a row (RouterOS addresses rows by `.id`, which a spec
+# for a row that doesn't exist yet cannot know), and which menus are
+# ours to manage at all.
+
+SCHEMA_PATH = "@schema@"
+
+# `set` takes these to choose which rows to act on. They're arguments of
+# the command, not properties of a row.
+_NON_PROPERTY_ARGS = {"numbers", "find"}
+
+
+def schema_command(paths):
+    """Remote command returning the property list for each given menu."""
+    parts = ";".join(
+        '"{p}"=[/console/inspect request=child '
+        'path=[:toarray "{arg}"] as-value]'.format(
+            p=p, arg=",".join(p.strip("/").split(" ") + ["set"]))
+        for p in paths
+    )
+    return ":put [:serialize to=json {" + parts + "}]"
+
+
+def parse_schema(text):
+    """Inspect output → {menu path: sorted property names}."""
+    raw = json.loads(text)
+    out = {}
+    for path, nodes in raw.items():
+        if not nodes:
+            continue
+        out[path] = sorted(
+            n["name"] for n in nodes
+            if n.get("node-type") == "arg"
+            and n.get("name") not in _NON_PROPERTY_ARGS
+        )
+    return out
+
+
+def load_schema(path=None):
+    """The committed schema, or {} when it hasn't been captured yet."""
+    path = path or SCHEMA_PATH
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def schema_violations(schema, sections=None):
+    """Properties our sections name that the device's schema doesn't have.
+
+    Runs against the committed schema at import time and against the
+    live one at apply time. A property we're wrong about is a line the
+    device rejects, and `/import` stops at the first error — so this is
+    the difference between a clean refusal and a half-applied config.
+    """
+    if not schema:
+        return []
+    out = []
+    for s in sections or _DIFFABLE:
+        known = schema.get(s.path)
+        if known is None:
+            continue
+        for f in s.fields:
+            if f.ros not in known:
+                out.append(f"{s.path}: no property '{f.ros}'")
+    return out
+
+
+def schema_drift(committed, live):
+    """Menus where the device disagrees with the schema we shipped."""
+    out = []
+    for path, props in sorted(live.items()):
+        was = committed.get(path)
+        if was is None:
+            out.append(f"{path}: not in the committed schema")
+            continue
+        gone = sorted(set(was) - set(props))
+        added = sorted(set(props) - set(was))
+        if gone:
+            out.append(f"{path}: device no longer has {', '.join(gone)}")
+        if added:
+            out.append(f"{path}: device also has {', '.join(added)}")
+    return out
+
+
 def parse_state(text):
     """Parse the JSON state reply into {section path: [row, ...]}.
 
@@ -1090,6 +1192,39 @@ def format_diff_script(ops, identity=None):
 # ── CLI ──────────────────────────────────────────────────────────────
 
 
+def cmd_learn_schema(args):
+    """Capture the device's property schema for the menus we manage."""
+    import shlex
+    import subprocess
+
+    ssh_extra = shlex.split(args.ssh_args) if args.ssh_args else []
+    paths = [s.path for s in _DIFFABLE]
+    proc = subprocess.run(
+        ["ssh", "-o", "BatchMode=yes", *ssh_extra, args.ssh,
+         schema_command(paths)],
+        capture_output=True, text=True, timeout=60,
+    )
+    if proc.returncode != 0:
+        sys.stderr.write(f"ssh failed: {proc.stderr}\n")
+        return proc.returncode
+    try:
+        schema = parse_schema(proc.stdout)
+    except json.JSONDecodeError as e:
+        sys.stderr.write(
+            f"{args.ssh}: could not parse schema as JSON ({e}). "
+            f"Device said:\n{proc.stdout[:500]}\n")
+        return 1
+
+    missing = [p for p in paths if p not in schema]
+    if missing:
+        sys.stderr.write(
+            "warning: device reported no properties for: "
+            + ", ".join(missing) + "\n")
+
+    sys.stdout.write(json.dumps(schema, indent=2, sort_keys=True) + "\n")
+    return 0
+
+
 def cmd_diff(args):
     """Emit an .rsc diff: spec from stdin, current state (JSON) from a file."""
     config = json.load(sys.stdin)
@@ -1199,6 +1334,34 @@ def cmd_apply(args):
         sys.stderr.write(f"ssh failed: {pull.stderr}\n")
         return pull.returncode
 
+    # 1a. Read the device's schema and refuse to proceed if it disagrees
+    # with the one we shipped, or if we name a property it doesn't have.
+    # `/import` halts at the first bad line and leaves everything after
+    # it unapplied, so a wrong property name is a half-configured switch.
+    # Better to stop before writing anything.
+    schema_pull = subprocess.run(
+        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint,
+         schema_command([s.path for s in _DIFFABLE])],
+        capture_output=True, text=True, timeout=30,
+    )
+    if schema_pull.returncode == 0:
+        try:
+            live_schema = parse_schema(schema_pull.stdout)
+        except json.JSONDecodeError:
+            live_schema = {}
+        problems = (schema_drift(load_schema(), live_schema)
+                    + schema_violations(live_schema))
+        if problems:
+            sys.stderr.write(
+                f"{ssh_endpoint}: device schema disagrees with ours — "
+                "refusing to apply.\n")
+            for p in problems:
+                sys.stderr.write(f"  {p}\n")
+            sys.stderr.write(
+                "Re-capture with `routeros-config learn-schema "
+                f"{ssh_endpoint}` and review the diff.\n")
+            return 1
+
     try:
         current = parse_state(pull.stdout)
     except json.JSONDecodeError as e:
@@ -1296,6 +1459,16 @@ def main():
 
     sub.add_parser("generate", help="JSON stdin -> .rsc stdout")
 
+    sp_learn = sub.add_parser(
+        "learn-schema",
+        help="Read the device's own property schema and print it as JSON. "
+             "Commit the result; apply re-reads it live and refuses to "
+             "run if the device disagrees.",
+    )
+    sp_learn.add_argument("ssh", help="SSH endpoint (user@host).")
+    sp_learn.add_argument("--ssh-args", default="",
+                          help="Extra SSH options as one string.")
+
     sub.add_parser(
         "state-command",
         help="Print the remote command that dumps current state as JSON. "
@@ -1344,6 +1517,8 @@ def main():
         sys.stdout.write(generate(config))
     elif args.command == "state-command":
         sys.stdout.write(state_command() + "\n")
+    elif args.command == "learn-schema":
+        return cmd_learn_schema(args)
     elif args.command == "diff":
         return cmd_diff(args)
     elif args.command == "apply":

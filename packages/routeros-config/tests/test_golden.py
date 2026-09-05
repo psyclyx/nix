@@ -118,5 +118,21 @@ def test_rollback_arm_shape():
     assert p.rstrip().splitlines()[-1].startswith("/system scheduler add")
 
 
+def test_schema_conformance():
+    """Every property we name must exist on the device.
+
+    RouterOS reports its own schema; this is the captured copy. `/import`
+    halts at the first bad line and leaves the rest of a diff unapplied,
+    so a property we're wrong about is a half-configured switch. Two were
+    wrong when this check was first run: `/ip dhcp-relay` has no
+    `comment`, and `accept-source-route` is an `/ip settings` property,
+    not an `/ipv6 settings` one.
+    """
+    schema = rc.load_schema(os.path.join(os.path.dirname(HERE), "schema.json"))
+    assert schema, "schema.json missing — run `routeros-config learn-schema`"
+    violations = rc.schema_violations(schema)
+    assert not violations, "\n".join(violations)
+
+
 if __name__ == "__main__":
     sys.exit(main())

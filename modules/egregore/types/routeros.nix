@@ -63,8 +63,21 @@
         type = lib.types.bool;
         default = false;
         description = ''
-          Enable hardware-offloaded inter-VLAN routing on the bridge.
+          Enable hardware-offloaded inter-VLAN routing on the switch chip.
           Supported on CRS3xx (Marvell Prestera) running RouterOS 7.6+.
+        '';
+      };
+      primarySwitchChip = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = "switch1";
+        description = ''
+          Name of the switch chip that carries L3 offload. RouterOS names
+          these per model — a CRS326 reports a Marvell `switch1` plus an
+          auxiliary Atheros `switch2`, and the L3 settings belong to the
+          primary. Null on devices with no switch chip to configure.
+
+          Read it off the device with
+          `/interface ethernet switch print` if a model disagrees.
         '';
       };
       ipv6Forward = lib.mkOption {
@@ -292,6 +305,16 @@
             keys = map (key: { inherit key; user = sw.sshUser; }) adminKeys;
           };
           snmp = { enabled = true; };
+        };
+
+        # Switch chips, as rows rather than as a boolean the generator has
+        # to turn back into one. A CRS3xx has a Marvell primary plus an
+        # auxiliary Atheros; L3 offload belongs to the primary. Naming it
+        # here keeps the chip name out of the generator, which has no way
+        # to know it and used to guess "switch1".
+        ethernet_switches = lib.optional (sw.primarySwitchChip != null) {
+          name = sw.primarySwitchChip;
+          l3_hw_offload = sw.l3HwOffload;
         };
 
         l3hw_settings =

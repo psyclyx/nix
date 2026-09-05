@@ -127,9 +127,92 @@ class Field:
 
 F = Field
 
-# Record sections: config-key → (rsc section header, comment, identity
-# tuple (None = not diffed), field list). Order of fields is the emit
-# order and must match `/export` field order for a clean diff.
+
+class Section:
+    """One RouterOS menu we manage, declared once.
+
+    Everything the tool needs about a menu is derived from this entry:
+    the generator's emit order, the spec→row projection, the remote
+    query that reads current state, the identity the diff matches rows
+    on, and the field kinds it compares by. Adding a menu means adding
+    an entry here and nothing else — there is deliberately no second
+    place that names a menu, a property, or a value.
+
+    key       dotted path into the spec JSON holding this menu's rows
+              ("routes", "bridge.vlans"). A dict there is read as a
+              single row, which is what settings menus look like.
+    identity  properties that name a row, or None for menus that are
+              emitted by generate() but never diffed.
+    mode      "record"    rows we create and destroy: add / set / remove
+              "hardware"  rows the device owns and we only reconfigure
+                          (a switch chip); set, never add or remove
+              "settings"  one implicit row, read with `get` and written
+                          with a bare `set` — no selector, none exists
+    """
+
+    __slots__ = ("key", "path", "comment", "identity", "fields", "mode",
+                 "inject")
+
+    def __init__(self, key, path, comment, identity, fields, mode="record",
+                 inject=None):
+        self.key = key
+        self.path = path
+        self.comment = comment
+        self.identity = identity
+        self.fields = fields
+        self.mode = mode
+        # Properties that live once in the spec but belong on every row
+        # of this menu: py-key → dotted spec path. The bridge VLAN table
+        # is nested under the bridge it belongs to, so the rows don't
+        # repeat its name; the device's rows do.
+        self.inject = inject or {}
+
+    @property
+    def menu(self):
+        """Command form of the path: `/ip route` → `/ip/route`."""
+        return self.path.replace(" ", "/")
+
+    @property
+    def query(self):
+        """Expression returning this menu's current state.
+
+        Always bracketed. A bare `/ipv6/settings/get` inside an array
+        constructor is not evaluated as a command — the reply comes back
+        `null`, the section reads as empty, and every apply re-emits it.
+        """
+        if self.mode == "settings":
+            return f"[{self.menu}/get]"
+        # `detail` is what adds the configured `tagged`/`untagged` to
+        # bridge VLANs; without it only the effective `current-*` come
+        # back and every VLAN looks changed.
+        return f"[{self.menu}/print detail as-value]"
+
+    @property
+    def diffable(self):
+        return self.identity is not None
+
+    @staticmethod
+    def _at(config, dotted):
+        node = config
+        for part in dotted.split("."):
+            if not isinstance(node, dict):
+                return None
+            node = node.get(part)
+        return node
+
+    def spec_rows(self, config):
+        """This menu's rows from the spec, keyed by RouterOS property."""
+        node = self._at(config, self.key)
+        if node is None:
+            return []
+        rows = [node] if isinstance(node, dict) else node
+        extra = {k: self._at(config, path) for k, path in self.inject.items()}
+        return [_diff_params(self.fields, dict(r, **extra)) for r in rows]
+
+
+# Order is the generator's emit order, and for record sections the field
+# order must match RouterOS's own so a generated script reads like an
+# export.
 _ROUTE_FIELDS = [
     # Explicit yes/no rather than a bare `disabled=yes` flag: the diff
     # compares desired against exported state, and a flag that vanishes
@@ -143,53 +226,86 @@ _ROUTE_FIELDS = [
     F("comment", kind="qstr", omit="falsy"),
 ]
 
-RECORD_SECTIONS = [
-    ("vlan_interfaces", "/interface vlan", "# ── VLAN interfaces ──",
-     ("name",), [
-        F("interface", omit="req"), F("name", omit="req"),
-        F("vlan_id", "vlan-id", kind="int", omit="req"),
-        F("mtu", kind="int"), F("comment", kind="qstr", omit="falsy")]),
-    ("addresses", "/ip address", "# ── IP addresses ──",
-     ("address",), [
-        F("address", omit="req"), F("interface", omit="req"),
-        F("network", omit="falsy"), F("comment", kind="qstr", omit="falsy")]),
+SECTIONS = [
+    Section("vlan_interfaces", "/interface vlan", "# ── VLAN interfaces ──",
+            ("name",), [
+                F("interface", omit="req"), F("name", omit="req"),
+                F("vlan_id", "vlan-id", kind="int", omit="req"),
+                F("mtu", kind="int"),
+                F("comment", kind="qstr", omit="falsy")]),
+    # Bridge VLAN table — structurally nested under the bridge in the
+    # spec, its own menu on the device.
+    Section("bridge.vlans", "/interface bridge vlan", "# ── VLAN table ──",
+            ("vlan-ids",), [
+                F("bridge", omit="req"),
+                F("vlan_ids", "vlan-ids", omit="req"),
+                F("tagged", kind="list", omit="falsy"),
+                F("untagged", kind="list", omit="falsy")],
+            inject={"bridge": "bridge.name"}),
+    Section("addresses", "/ip address", "# ── IP addresses ──",
+            ("address",), [
+                F("address", omit="req"), F("interface", omit="req"),
+                F("network", omit="falsy"),
+                F("comment", kind="qstr", omit="falsy")]),
     # Identity is (dst, gateway) — not (dst, table): `routing-table` is
-    # omitted from export for main-table routes, and _index_section drops
-    # any entry whose identity has a None component, which would silently
-    # skip every main-table route. Changing a route's gateway is therefore
-    # add-then-remove, which is the safe order: the section never passes
-    # through a state with no route for that destination.
-    ("routes", "/ip route", "# ── Routes ──",
-     ("dst-address", "gateway"), _ROUTE_FIELDS),
-    # DHCP relay. Diffable (identity = name) so relays can be added to a
-    # live switch without a reboot: the relay only adds a unicast path to
-    # the server, it never removes the existing broadcast one, so a client
+    # absent for main-table routes, and a None identity component drops
+    # the row, which would silently skip every main-table route.
+    # Changing a route's gateway is therefore add-then-remove, which is
+    # the safe order: the section never passes through a state with no
+    # route for that destination.
+    Section("routes", "/ip route", "# ── Routes ──",
+            ("dst-address", "gateway"), _ROUTE_FIELDS),
+    # DHCP relay. Diffable so relays can be added to a live switch
+    # without a reboot: the relay only adds a unicast path to the
+    # server, it never removes the existing broadcast one, so a client
     # that already reaches DHCP by flooding is unaffected while one that
     # doesn't starts working.
-    ("dhcp_relays", "/ip dhcp-relay", "# ── DHCP relay ──",
-     ("name",), [
-        F("name", omit="req"), F("interface", omit="req"),
-        F("dhcp_server", "dhcp-server", kind="list", omit="req"),
-        F("local_address", "local-address", omit="falsy"),
-        F("disabled", kind="bool"),
-        F("comment", kind="qstr", omit="falsy")]),
-    ("ipv6_addresses", "/ipv6 address", "# ── IPv6 addresses ──",
-     ("address",), [
-        F("address", omit="req"), F("interface", omit="req"),
-        F("advertise", kind="bool"),
-        F("eui64", "eui-64", kind="bool", diffable=False),
-        F("no_dad", "no-dad", kind="bool"),
-        F("comment", kind="qstr", omit="falsy")]),
-    ("ipv6_nd", "/ipv6 nd", "# ── IPv6 ND ──",
-     ("interface",), [
-        F("interface", omit="req"), F("ra_lifetime", "ra-lifetime"),
-        F("comment", kind="qstr", omit="falsy")]),
-    ("ipv6_routes", "/ipv6 route", "# ── IPv6 routes ──",
-     ("dst-address", "gateway"), _ROUTE_FIELDS),
+    Section("dhcp_relays", "/ip dhcp-relay", "# ── DHCP relay ──",
+            ("name",), [
+                F("name", omit="req"), F("interface", omit="req"),
+                F("dhcp_server", "dhcp-server", kind="list", omit="req"),
+                F("local_address", "local-address", omit="falsy"),
+                F("disabled", kind="bool"),
+                F("comment", kind="qstr", omit="falsy")]),
+    Section("ipv6_addresses", "/ipv6 address", "# ── IPv6 addresses ──",
+            ("address",), [
+                F("address", omit="req"), F("interface", omit="req"),
+                F("advertise", kind="bool"),
+                F("eui64", "eui-64", kind="bool", diffable=False),
+                F("no_dad", "no-dad", kind="bool"),
+                F("comment", kind="qstr", omit="falsy")]),
+    Section("ipv6_nd", "/ipv6 nd", "# ── IPv6 ND ──",
+            ("interface",), [
+                F("interface", omit="req"),
+                F("ra_lifetime", "ra-lifetime"),
+                F("comment", kind="qstr", omit="falsy")]),
+    Section("ipv6_routes", "/ipv6 route", "# ── IPv6 routes ──",
+            ("dst-address", "gateway"), _ROUTE_FIELDS),
+    # Switch chips. Rows the hardware defines — a CRS326 has a Marvell
+    # primary plus an Atheros secondary — so we reconfigure them and
+    # never add or remove. Which chip gets which setting is the spec's
+    # business, not ours; nothing here knows the name "switch1".
+    Section("ethernet_switches", "/interface ethernet switch",
+            "# ── Switch chip ──", ("name",), [
+                F("name", omit="req"),
+                F("l3_hw_offload", "l3-hw-offloading", kind="bool"),
+                F("qos_hw_offload", "qos-hw-offloading", kind="bool")],
+            mode="hardware"),
+    Section("l3hw_settings", "/interface ethernet switch l3hw-settings",
+            "# ── L3HW chip settings ──", (), [
+                F("ipv6_hw", "ipv6-hw", kind="bool"),
+                F("icmp_reply_on_error", "icmp-reply-on-error", kind="bool")],
+            mode="settings"),
+    Section("ipv6_settings", "/ipv6 settings", "# ── IPv6 settings ──",
+            (), [
+                F("forwarding", "forward", kind="bool"),
+                # Enums here ("yes-if-forwarding-disabled"), not booleans.
+                F("accept_redirects", "accept-redirects"),
+                F("accept_source_route", "accept-source-route")],
+            mode="settings"),
 ]
 
-_SECTION_BY_PATH = {path: (fields, ident) for _, path, _, ident, fields
-                    in RECORD_SECTIONS}
+_SECTION_BY_PATH = {s.path: s for s in SECTIONS}
 
 
 def _emit_add(fields, entry):
@@ -490,13 +606,14 @@ def generate(config):
     # ── VLAN interfaces ─────────────────────────────────────────
     _emit_record_section(
         lines, "/interface vlan", "# ── VLAN interfaces ──",
-        _SECTION_BY_PATH["/interface vlan"][0], vlan_ifaces)
+        _SECTION_BY_PATH["/interface vlan"].fields, vlan_ifaces)
 
     # ── L3 hardware offloading ─────────────────────────────────
     # Two distinct knobs land here:
-    #   system.l3_hw_offload (bool) — enables inter-VLAN routing offload
-    #     on Marvell Prestera chipsets (CRS3xx, RouterOS 7.6+). Maps to
-    #     `/interface ethernet switch set 0 l3-hw-offloading=yes`.
+    #   ethernet_switches[] — per-chip settings, chiefly l3-hw-offloading,
+    #     which enables inter-VLAN routing offload on Marvell Prestera
+    #     chipsets (CRS3xx, RouterOS 7.6+). The spec names the chip; we
+    #     don't guess it.
     #   l3hw_settings.* (dict) — fine-grained switch-chip L3 knobs
     #     (IPv6 hardware path, ICMP reply behavior). Maps to
     #     `/interface ethernet switch l3hw-settings set ...`.
@@ -506,11 +623,18 @@ def generate(config):
     # `/import` halts on the first error and `deploy` runs the script via
     # `reset-configuration no-defaults=yes`, so emitting it there aborted
     # the script partway and left the switch with no addresses at all.
-    # Positional `set 0` matches how the device itself exports this row.
-    if system.get("l3_hw_offload"):
+    for chip in config.get("ethernet_switches", []):
+        sec = _SECTION_BY_PATH["/interface ethernet switch"]
+        settings = [
+            f.render(chip) for f in sec.fields if f.py != "name"
+        ]
+        settings = [s for s in settings if s is not None]
+        if not settings:
+            continue
         lines.append("# ── Switch chip L3 hardware offloading ──")
         lines.append(
-            "/interface ethernet switch set 0 l3-hw-offloading=yes"
+            f"/interface ethernet switch set [find name={chip['name']}] "
+            + " ".join(settings)
         )
         lines.append("")
 
@@ -575,24 +699,24 @@ def generate(config):
     # ── IP addresses ────────────────────────────────────────────
     _emit_record_section(
         lines, "/ip address", "# ── IP addresses ──",
-        _SECTION_BY_PATH["/ip address"][0], addresses)
+        _SECTION_BY_PATH["/ip address"].fields, addresses)
 
     # ── Routes ──────────────────────────────────────────────────
     _emit_record_section(
         lines, "/ip route", "# ── Routes ──",
-        _SECTION_BY_PATH["/ip route"][0], routes)
+        _SECTION_BY_PATH["/ip route"].fields, routes)
 
     # ── DHCP relay ─────────────────────────────────────────────
     # Emitted after /ip address so the local-address it references is
     # already on the box.
     _emit_record_section(
         lines, "/ip dhcp-relay", "# ── DHCP relay ──",
-        _SECTION_BY_PATH["/ip dhcp-relay"][0], dhcp_relays)
+        _SECTION_BY_PATH["/ip dhcp-relay"].fields, dhcp_relays)
 
     # ── IPv6 addresses ─────────────────────────────────────────
     _emit_record_section(
         lines, "/ipv6 address", "# ── IPv6 addresses ──",
-        _SECTION_BY_PATH["/ipv6 address"][0], addresses6)
+        _SECTION_BY_PATH["/ipv6 address"].fields, addresses6)
 
     # ── IPv6 ND (per-interface RA overrides) ───────────────────
     # RouterOS defaults to advertising every SVI with a global v6
@@ -603,12 +727,12 @@ def generate(config):
     # stops the switch claiming to be a default router.
     _emit_record_section(
         lines, "/ipv6 nd", "# ── IPv6 ND ──",
-        _SECTION_BY_PATH["/ipv6 nd"][0], nd6)
+        _SECTION_BY_PATH["/ipv6 nd"].fields, nd6)
 
     # ── IPv6 routes ────────────────────────────────────────────
     _emit_record_section(
         lines, "/ipv6 route", "# ── IPv6 routes ──",
-        _SECTION_BY_PATH["/ipv6 route"][0], routes6)
+        _SECTION_BY_PATH["/ipv6 route"].fields, routes6)
 
     # ── Disable unused ports ────────────────────────────────────
     if disabled_ports:
@@ -633,297 +757,207 @@ def generate(config):
 
 # ── Diff machinery ────────────────────────────────────────────────────
 #
-# Pull current state via `/export terse` over SSH, parse into the same
-# shape we emit, compute the delta, push only the changed items.
-# Non-destructive — runs in safe-mode so a broken SSH session reverts.
+# Pull current state over SSH, compute the delta against the spec, push
+# only the changed items. Non-destructive; the apply arms a self-firing
+# revert before it touches anything.
 #
-# Scope: only sections where adding/removing items mid-flight is safe
-# (`/interface vlan`, `/ip address`, `/interface bridge vlan`). Other
-# sections (system, bridge ports, bonds, ssh keys) are deploy-once and
-# don't churn; if those differ between the spec and the switch we
-# print a warning and leave them.
+# Scope: only sections where adding/removing items mid-flight is safe.
+# Other sections (system, bridge ports, bonds, ssh keys) are deploy-once
+# and don't churn; if those differ between spec and switch we leave them.
+#
+# State comes from RouterOS's own JSON serializer rather than from
+# parsing `/export terse`, which is a display format and lies to us in
+# three ways that cost real outages:
+#
+#   - It omits anything sitting at its default, so a spec that states a
+#     default could never compare equal to a device that had it. Whole
+#     sections re-emitted on every apply, which destroys "zero
+#     operations" as the signal that we've converged.
+#   - It has no stable handle for a row, so edits had to be addressed by
+#     guessing a `[find key=value]` selector out of the fields we happened
+#     to know. `/interface ethernet switch` exports positionally, with no
+#     `name=` to find on, so its row was invisible and re-set forever.
+#   - Everything is a string, so `disabled=no` and absent-meaning-no had
+#     to be reconciled by a table of per-section defaults maintained by
+#     hand.
+#
+# The JSON form has none of those problems: every property is present,
+# typed, and carries a `.id` we can address it by.
 
 
-_KV_RE = None
-_QUOTED_RE = None
+# Rows RouterOS owns rather than us. A print — unlike `/export` — reports
+# them, and they must be dropped before diffing or the delta we compute
+# is one that dismantles the switch:
+#
+#   dynamic  every interface's link-local fe80::/64, the connected route
+#            for each subnet. Not ours; removing them is self-harm.
+#   default  the built-in row a menu ships with, e.g. the `/ipv6 nd`
+#            entry for interface=all that drives RA everywhere. The spec
+#            never declares it, so "in current, not desired" would take
+#            RA off the whole switch.
+_DEVICE_OWNED_FLAGS = ("dynamic", "default")
 
 
-def _kv_split(rest):
-    """Parse `key=value key2="quoted value" key3=a,b,c` into a dict."""
-    import re
-    out = {}
-    # Tokenize: handles unquoted, double-quoted, and bracketed [find ...] values.
-    pat = re.compile(
-        r'([a-zA-Z0-9_.-]+)='
-        r'(?:"([^"]*)"|\[([^\]]*)\]|(\S+))'
+def state_command():
+    """The single remote command that returns all current state as JSON.
+
+    One round trip: RouterOS builds an object keyed by section path and
+    serializes the lot, so we never have to correlate several replies or
+    pay latency per section.
+    """
+    parts = ";".join(
+        f'"{s.path}"={s.query}' for s in SECTIONS if s.diffable
     )
-    for m in pat.finditer(rest):
-        key = m.group(1)
-        val = m.group(2) if m.group(2) is not None else \
-              ("[" + m.group(3) + "]") if m.group(3) is not None else \
-              m.group(4)
-        out[key] = val
+    return ":put [:serialize to=json {" + parts + "}]"
+
+
+def parse_state(text):
+    """Parse the JSON state reply into {section path: [row, ...]}.
+
+    Singleton `get` replies come back as a bare object; wrap them so
+    every section is uniformly a list of rows.
+    """
+    raw = json.loads(text)
+    out = {}
+    for path, rows in raw.items():
+        if isinstance(rows, dict):
+            rows = [rows]
+        elif rows is None:
+            rows = []
+        out[path] = [
+            r for r in rows
+            if not any(r.get(f) is True for f in _DEVICE_OWNED_FLAGS)
+        ]
     return out
 
 
-def parse_export(text):
-    """Parse `/export terse` output into a dict keyed by section path.
-
-    Each section value is a list of `(action, params_dict)` tuples.
-    Lines beginning with `#` and blank lines are skipped.
-    """
-    sections = {}
-    current_section = None
-
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
-            continue
-
-        # Action keywords that appear at the start of a command line.
-        actions = ("add ", "set ", "remove ")
-
-        if line.startswith("/"):
-            # `/path action ...` form (single-line section + command), or
-            # `/path` form (section header only).
-            for kw in actions:
-                idx = line.find(" " + kw.strip() + " ")
-                # Don't match keyword as path component — only after a space.
-                if idx > 0:
-                    section = line[:idx]
-                    rest = line[idx + 1:]
-                    action_word, _, params = rest.partition(" ")
-                    sections.setdefault(section, []).append(
-                        (action_word, _kv_split(params))
-                    )
-                    current_section = section
-                    break
-            else:
-                # `/path` only — start of a multi-line section block.
-                current_section = line
-                sections.setdefault(current_section, [])
-        elif current_section is not None:
-            # Continuation within a section.
-            for kw in actions:
-                if line.startswith(kw):
-                    action_word = kw.strip()
-                    params = line[len(kw):]
-                    sections[current_section].append(
-                        (action_word, _kv_split(params))
-                    )
-                    break
-
-    return sections
-
-
-# Bridge VLAN table — structural in generate() (nested in the bridge
-# block), but diffed here, so its schema lives alongside the diff.
-_BRIDGE_VLAN_FIELDS = [
-    F("bridge", omit="req"), F("vlan_ids", "vlan-ids", omit="req"),
-    F("tagged", kind="list", omit="falsy"),
-    F("untagged", kind="list", omit="falsy"),
-]
-
-# Per-section identity + comparable fields for diffing. Record sections
-# derive straight from the schema (identity is None → generate-only, not
-# diffed, e.g. routes). Switch-chip / singleton rows are hardware-rooted
-# `set [find …]` sections handled specially in diff_state.
-_IDENTITY = {}
-_COMPARE_FIELDS = {}
-for _key, _path, _c, _ident, _fields in RECORD_SECTIONS:
-    if _ident is None:
-        continue
-    _IDENTITY[_path] = _ident
-    _COMPARE_FIELDS[_path] = tuple(f.ros for f in _fields if f.diffable)
-
-_IDENTITY["/interface bridge vlan"] = ("vlan-ids",)
-_COMPARE_FIELDS["/interface bridge vlan"] = tuple(
-    f.ros for f in _BRIDGE_VLAN_FIELDS if f.diffable)
-
-_IDENTITY.update({
-    "/interface ethernet switch": ("name",),
-    "/interface ethernet switch l3hw-settings": ("_singleton",),
-    "/ipv6 settings": ("_singleton",),
-})
-_COMPARE_FIELDS.update({
-    "/interface ethernet switch": ("name", "l3-hw-offloading", "qos-hw-offloading"),
-    "/interface ethernet switch l3hw-settings": (
-        "_singleton", "ipv6-hw", "icmp-reply-on-error",
-    ),
-    "/ipv6 settings": (
-        "_singleton", "forward", "accept-redirects", "accept-source-route",
-    ),
-})
-
-# Sections that are configured via `set [find ...]` against existing
-# entries (the hardware row already exists; we can't `add` or `remove`
-# it, only `set`). Diff still computes deltas but emits a `set` op
-# instead of add/remove.
-_SET_ONLY = {
-    "/interface ethernet switch",
-    "/interface ethernet switch l3hw-settings",
-    "/ipv6 settings",
+# Everything the diff needs, derived from SECTIONS. These used to be six
+# hand-maintained tables that had to agree with the schema and with each
+# other; a menu that drifted between them was invisible until an apply
+# did the wrong thing on a live switch.
+_DIFFABLE = [s for s in SECTIONS if s.diffable]
+_IDENTITY = {s.path: s.identity for s in _DIFFABLE}
+_COMPARE_FIELDS = {
+    s.path: tuple(f.ros for f in s.fields if f.diffable) for s in _DIFFABLE
 }
-
-# Singleton sections render as plain `set ipv6-hw=yes ...` (no
-# [find ...] selector — the row is implicit / chip-rooted).
-_SINGLETON = {
-    "/interface ethernet switch l3hw-settings",
-    "/ipv6 settings",
+# ros-key → schema kind, so the diff can tell a boolean field from a
+# string one. RouterOS prints boolean *flags* only when true, so knowing
+# the kind is what lets an absent `disabled` read as "no", not "unset".
+_COMPARE_KINDS = {
+    s.path: {f.ros: f.kind for f in s.fields if f.diffable} for s in _DIFFABLE
 }
+# Rows the device defines and we may only reconfigure: no add, no remove.
+_SET_ONLY = {s.path for s in _DIFFABLE if s.mode in ("hardware", "settings")}
+# Menus with one implicit row, written as a bare `set` — there is no
+# selector because there is nothing to select between.
+_SINGLETON = {s.path for s in _DIFFABLE if s.mode == "settings"}
+
+
+def _sort_parts(parts):
+    """Sort list members numerically when they all look like numbers, so
+    vlan-ids 9 and 10 don't order as "10,9"."""
+    parts = list(parts)
+    if parts and all(p.lstrip("-").isdigit() for p in parts):
+        return sorted(parts, key=int)
+    return sorted(parts)
 
 
 def _normalize_list(s):
-    """Normalize comma-separated lists for comparison (sort, dedupe)."""
+    """Normalize a comma-separated list for comparison (sort, dedupe)."""
     if s is None or s == "":
         return ""
-    parts = sorted(set(p.strip() for p in s.split(",") if p.strip()))
-    return ",".join(parts)
+    return ",".join(_sort_parts(set(p.strip() for p in s.split(",") if p.strip())))
 
 
-_DEFAULT_VALUES = {
-    "/interface vlan": {
-        # RouterOS omits these from /export when they equal the default.
-        "mtu": "1500",
-    },
-    # An enabled route exports no `disabled=`, but the spec states it
-    # explicitly (see _ROUTE_FIELDS). Without this the two never compare
-    # equal and every apply re-sets every enabled route.
-    "/ip route": {"disabled": "no"},
-    "/ipv6 route": {"disabled": "no"},
-}
+def _canon(val):
+    """Render a device-side JSON value in the same form the spec side
+    produces, so the two can be compared as strings.
 
+    The spec side is built by Field.diff_value, which emits RouterOS's
+    own wire spellings ("yes"/"no", comma-joined lists, stringified
+    numbers). Meeting it here — rather than parsing the spec into native
+    types — keeps every field declaration in the schema table honest and
+    confines the JSON API's encoding quirks to this one function.
 
-def _canon_field(section, key, val):
-    """Canonicalize a field value so the spec form and the `/export
-    terse` form compare equal. RouterOS omits the default /64 prefix on
-    `/ipv6 address` export (`.../64` → bare address), so strip it from
-    the spec side — otherwise every SVI address diffs as changed and the
-    apply churns (remove + re-add) all of them."""
+    Those quirks: booleans are real booleans, and a list of numbers
+    serializes its members as floats (`vlan-ids: [10.000000]`), which
+    have to come back to `10` before anything will match.
+    """
     if val is None:
         return None
-    if section == "/ipv6 address" and key == "address" and val.endswith("/64"):
-        return val[:-len("/64")]
-    return val
+    if isinstance(val, bool):
+        return "yes" if val else "no"
+    if isinstance(val, float):
+        return str(int(val)) if val.is_integer() else str(val)
+    if isinstance(val, int):
+        return str(val)
+    if isinstance(val, (list, tuple)):
+        return ",".join(_sort_parts(_canon(v) for v in val))
+    return str(val)
 
 
 def _normalize_entry(section, entry):
-    """Project an entry down to comparable fields, normalize list values.
+    """Project a row down to its comparable fields, canonicalized.
 
-    Missing field treated as field's RouterOS default (see _DEFAULT_VALUES)
-    so a spec that explicitly states the default doesn't diff against an
-    exported state that omits it.
+    No per-section default table any more: the JSON API reports every
+    property, including the ones sitting at their default, so a field
+    that's absent here is genuinely absent rather than merely unexported.
     """
-    fields = _COMPARE_FIELDS.get(section, ())
-    defaults = _DEFAULT_VALUES.get(section, {})
     out = {}
-    for f in fields:
-        v = entry.get(f)
-        if v is None and f in defaults:
-            v = defaults[f]
-        if f in ("tagged", "untagged") and v is not None:
+    for f in _COMPARE_FIELDS.get(section, ()):
+        v = _canon(entry.get(f))
+        if f in ("tagged", "untagged"):
             v = _normalize_list(v)
-        out[f] = _canon_field(section, f, v)
+        out[f] = v
     return out
 
 
-def _index_section(section, entries):
-    """Map identity-tuple → normalized entry for one section's entries.
-    For sections in _SET_ONLY, both `set` and pre-existing rows count;
-    everywhere else we only index `add` lines (they create new objects).
+def _index_section(section, rows):
+    """Map identity-tuple → (row id, normalized entry) for one section.
+
+    The row id is RouterOS's `.id`, present on printed rows and absent on
+    singleton `get` replies (and on the spec side, which has no rows on a
+    device yet). Where we have one, edits address it directly instead of
+    reconstructing a `[find ...]` selector.
     """
     keys = _IDENTITY.get(section)
     if keys is None:
         return {}
-    valid_actions = {"add", "set"} if section in _SET_ONLY else {"add"}
     out = {}
-    for action, params in entries:
-        if action not in valid_actions:
-            continue
-        # Singleton rows carry no identity column on the device, so an
-        # exported `set forward=yes` has nothing to key on. Synthesize the
-        # same sentinel the spec side uses; without this the current-state
-        # index stays empty and every apply re-emits the section forever,
-        # which destroys "zero operations" as a converged signal.
-        if section in _SINGLETON:
-            params = dict(params, _singleton="*")
-        ident = tuple(_canon_field(section, k, params.get(k)) for k in keys)
+    for row in rows:
+        # A settings menu declares identity `()`: there is exactly one
+        # row, so both sides key on the empty tuple and always match.
+        ident = tuple(_canon(row.get(k)) for k in keys)
         if any(v is None for v in ident):
             continue
-        out[ident] = _normalize_entry(section, params)
+        out[ident] = (row.get(".id"), _normalize_entry(section, row))
     return out
 
 
 def _desired_diffable(config):
-    """Extract diffable sections from JSON spec into the same shape as
-    parse_export's output (a dict of section→list of (action, params))."""
-    bridge = config.get("bridge", {})
-    bridge_name = bridge.get("name", "bridge1")
-    system = config.get("system", {})
+    """The spec, in the same shape parse_state returns: section → rows,
+    keyed by RouterOS property name.
 
-    sections = {path: [] for path in _IDENTITY}
-
-    # Switch chip — l3-hw-offloading lives here. CRS3xx has a Marvell
-    # "switch1" plus auxiliary chips; the L3 setting goes on the
-    # primary (Marvell). We can't know the name without reading export
-    # state, so default to "switch1" matching what the platform names
-    # the primary. Operators can override via system.switches.
-    sections["/interface ethernet switch l3hw-settings"] = []
-    if system.get("l3_hw_offload"):
-        sections["/interface ethernet switch"].append(("set", {
-            "name": "switch1",
-            "l3-hw-offloading": "yes",
-        }))
-
-    # Per-chip L3 hw sub-settings (ipv6-hw, icmp-reply-on-error).
-    # Singleton row — no identity column on the device.
-    l3hw = config.get("l3hw_settings", {})
-    if l3hw:
-        params = {"_singleton": "*"}
-        if l3hw.get("ipv6_hw") is not None:
-            params["ipv6-hw"] = "yes" if l3hw["ipv6_hw"] else "no"
-        if l3hw.get("icmp_reply_on_error") is not None:
-            params["icmp-reply-on-error"] = (
-                "yes" if l3hw["icmp_reply_on_error"] else "no"
-            )
-        sections["/interface ethernet switch l3hw-settings"].append(
-            ("set", params)
-        )
-
-    # /ipv6 settings — singleton software-level v6 stack config.
-    ipv6 = config.get("ipv6_settings", {})
-    if ipv6:
-        params = {"_singleton": "*"}
-        if ipv6.get("forwarding") is not None:
-            params["forward"] = "yes" if ipv6["forwarding"] else "no"
-        if ipv6.get("accept_redirects") is not None:
-            params["accept-redirects"] = (
-                "yes" if ipv6["accept_redirects"] else "no"
-            )
-        if ipv6.get("accept_source_route") is not None:
-            params["accept-source-route"] = (
-                "yes" if ipv6["accept_source_route"] else "no"
-            )
-        sections["/ipv6 settings"].append(("set", params))
-
-    # Record sections → ("add", {ros-key: value}) straight from the
-    # schema. Sections with identity=None (routes) are generate-only.
-    for key, path, _c, ident, fields in RECORD_SECTIONS:
-        if ident is None:
-            continue
-        for entry in config.get(key, []):
-            sections[path].append(("add", _diff_params(fields, entry)))
-
-    for bv in bridge.get("vlans", []):
-        entry = dict(bv, bridge=bridge_name)
-        sections["/interface bridge vlan"].append(
-            ("add", _diff_params(_BRIDGE_VLAN_FIELDS, entry)))
-
-    return sections
+    Spec rows carry no `.id` — they don't exist on the device yet, which
+    is the whole point of the diff. Every menu goes through the same
+    path; nothing here knows what a route or a switch chip is.
+    """
+    return {s.path: s.spec_rows(config) for s in _DIFFABLE}
 
 
-def _format_find(section, ident):
-    """RouterOS `[find <key>=<value> ...]` selector for an entry."""
+def _format_find(section, ident, row_id):
+    """RouterOS selector for a row we intend to edit or remove.
+
+    Prefer `.id`: it comes straight from the state we just read, names
+    exactly one row, and can't be fooled by a menu whose rows have no
+    findable key. Reconstructing a `[find key=value]` from the identity
+    fields is the fallback for rows we somehow lack an id for, and it was
+    the old failure mode — `/interface ethernet switch` exports
+    positionally, so `[find name=switch1]` matched nothing and the same
+    `set` was re-emitted on every apply, forever.
+    """
+    if row_id:
+        return f'[find where .id="{row_id}"]'
     keys = _IDENTITY[section]
     parts = [f"{k}={v}" for k, v in zip(keys, ident)]
     return "[find " + " ".join(parts) + "]"
@@ -943,19 +977,19 @@ def _format_add(params):
     return "add " + " ".join(f"{k}={_fmt_val(v)}" for k, v in params.items())
 
 
-def _format_set(section, ident, changed):
+def _format_set(section, ident, changed, row_id=None):
     if section in _SINGLETON:
-        # No selector — settings are chip-rooted singletons.
+        # No selector — a settings menu has exactly one implicit row.
         return "set " + " ".join(
             f"{k}={_fmt_val(v)}" for k, v in changed.items()
         )
-    return f"set {_format_find(section, ident)} " + " ".join(
+    return f"set {_format_find(section, ident, row_id)} " + " ".join(
         f"{k}={_fmt_val(v)}" for k, v in changed.items()
     )
 
 
-def _format_remove(section, ident):
-    return f"remove {_format_find(section, ident)}"
+def _format_remove(section, ident, row_id=None):
+    return f"remove {_format_find(section, ident, row_id)}"
 
 
 def diff_state(current, desired):
@@ -980,7 +1014,7 @@ def diff_state(current, desired):
         # any present-in-desired-only as a set operation that imports
         # all comparable fields.
         for ident in sorted(des_keys - cur_keys):
-            entry = des_idx[ident]
+            _, entry = des_idx[ident]
             if section in _SET_ONLY:
                 changed = {
                     k: (v if v is not None else "")
@@ -993,25 +1027,42 @@ def diff_state(current, desired):
                 cleaned = {k: v for k, v in entry.items() if v is not None}
                 section_ops.append(_format_add(cleaned))
 
-        # Sets: in both but content differs. Only emit changed fields.
+        # Sets: in both but content differs. Only emit changed fields,
+        # addressed by the `.id` we read off the device.
+        kinds = _COMPARE_KINDS.get(section, {})
         for ident in sorted(cur_keys & des_keys):
-            cur_entry = cur_idx[ident]
-            des_entry = des_idx[ident]
+            row_id, cur_entry = cur_idx[ident]
+            _, des_entry = des_idx[ident]
             changed = {}
             for k in _COMPARE_FIELDS[section]:
                 if k in _IDENTITY[section]:
                     continue
-                if cur_entry.get(k) != des_entry.get(k):
-                    new_val = des_entry.get(k) or ""
-                    changed[k] = new_val
+                want = des_entry.get(k)
+                # The spec is a partial specification, not a full desired
+                # state. A field it doesn't mention is one it doesn't
+                # manage — leave whatever the device has. Diffing silence
+                # against a dense state reply would clear half of every
+                # row (`advertise=""`, `scope=""`) on the first apply.
+                if want is None:
+                    continue
+                have = cur_entry.get(k)
+                # A boolean flag is printed only when true, so absent
+                # means false. Without this every enabled route reads as
+                # "disabled unset" and gets re-set on every apply.
+                if have is None and kinds.get(k) in ("bool", "flag"):
+                    have = "no"
+                if have != want:
+                    changed[k] = want
             if changed:
-                section_ops.append(_format_set(section, ident, changed))
+                section_ops.append(
+                    _format_set(section, ident, changed, row_id))
 
         # Removes: in current, not desired. Skipped for set-only
         # sections (hardware-rooted rows can't be removed).
         if section not in _SET_ONLY:
             for ident in sorted(cur_keys - des_keys):
-                section_ops.append(_format_remove(section, ident))
+                row_id, _ = cur_idx[ident]
+                section_ops.append(_format_remove(section, ident, row_id))
 
         if section_ops:
             ops[section] = section_ops
@@ -1040,11 +1091,11 @@ def format_diff_script(ops, identity=None):
 
 
 def cmd_diff(args):
-    """Emit an .rsc diff: spec from stdin, current-state .rsc from a file."""
+    """Emit an .rsc diff: spec from stdin, current state (JSON) from a file."""
     config = json.load(sys.stdin)
     with open(args.current) as f:
         current_text = f.read()
-    current = parse_export(current_text)
+    current = parse_state(current_text)
     desired = _desired_diffable(config)
     ops = diff_state(current, desired)
 
@@ -1137,17 +1188,29 @@ def cmd_apply(args):
     ssh_endpoint = args.ssh
     ssh_extra = shlex.split(args.ssh_args) if args.ssh_args else []
 
-    # 1. Pull current state via /export terse.
+    # 1. Pull current state as JSON — one round trip for every section.
     sys.stderr.write(f"Pulling current state from {ssh_endpoint}...\n")
     pull = subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint, "/export terse"],
+        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint,
+         state_command()],
         capture_output=True, text=True, timeout=30,
     )
     if pull.returncode != 0:
         sys.stderr.write(f"ssh failed: {pull.stderr}\n")
         return pull.returncode
 
-    current = parse_export(pull.stdout)
+    try:
+        current = parse_state(pull.stdout)
+    except json.JSONDecodeError as e:
+        # A device too old for `:serialize` answers with a CLI error, so
+        # say which switch and what it actually said rather than dying on
+        # a bare "Expecting value: line 1 column 1".
+        sys.stderr.write(
+            f"{ssh_endpoint}: could not parse state as JSON ({e}).\n"
+            f"Requires RouterOS 7 (`:serialize to=json`). Device said:\n"
+            f"{pull.stdout[:500]}\n"
+        )
+        return 1
     desired = _desired_diffable(config)
     ops = diff_state(current, desired)
 
@@ -1233,12 +1296,20 @@ def main():
 
     sub.add_parser("generate", help="JSON stdin -> .rsc stdout")
 
+    sub.add_parser(
+        "state-command",
+        help="Print the remote command that dumps current state as JSON. "
+             "Pipe its output through ssh to capture state by hand, then "
+             "feed the result to `diff --current`.",
+    )
+
     sp_diff = sub.add_parser(
         "diff",
         help="JSON stdin + current-state file -> diff .rsc stdout"
     )
     sp_diff.add_argument("--current", required=True,
-                         help="Path to current-state file (output of `/export terse`).")
+                         help="Path to a current-state file (the JSON that "
+                              "`routeros-config state-command` returns).")
 
     sp_apply = sub.add_parser(
         "apply",
@@ -1271,6 +1342,8 @@ def main():
     if args.command == "generate":
         config = json.load(sys.stdin)
         sys.stdout.write(generate(config))
+    elif args.command == "state-command":
+        sys.stdout.write(state_command() + "\n")
     elif args.command == "diff":
         return cmd_diff(args)
     elif args.command == "apply":

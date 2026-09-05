@@ -38,9 +38,9 @@ def run_generate(cfg_name, golden_name):
     return got == want, want, got
 
 
-def run_diff(cfg_name, export_name, golden_name):
+def run_diff(cfg_name, state_name, golden_name):
     cfg = _load(cfg_name)
-    current = rc.parse_export(_read(os.path.join(FIX, export_name)))
+    current = rc.parse_state(_read(os.path.join(FIX, state_name)))
     desired = rc._desired_diffable(cfg)
     ops = rc.diff_state(current, desired)
     got = rc.format_diff_script(
@@ -55,7 +55,11 @@ GEN_CASES = [
     ("mdf-brk01.json", "brk.generate.rsc"),
 ]
 DIFF_CASES = [
-    ("mdf-agg01.json", "mdf-agg01.export", "agg.diff.rsc"),
+    # State fixture is a verbatim capture from the live mdf-agg01 via
+    # `routeros-config state-command`, so the diff is exercised against
+    # what the device actually reports — defaults, types, `.id`s and all
+    # — rather than against a hand-written idea of it.
+    ("mdf-agg01.json", "mdf-agg01.state.json", "agg.diff.rsc"),
 ]
 
 
@@ -87,22 +91,19 @@ def main():
 
 # pytest entry points ------------------------------------------------------
 
-def test_generate_agg():
-    ok, want, got = run_generate("mdf-agg01.json", "agg.generate.rsc")
-    assert ok, "\n" + "\n".join(difflib.unified_diff(
+def _assert(ok, want, got, label):
+    assert ok, f"{label}\n" + "\n".join(difflib.unified_diff(
         want.splitlines(), got.splitlines(), "golden", "got", lineterm=""))
 
 
-def test_generate_brk():
-    ok, want, got = run_generate("mdf-brk01.json", "brk.generate.rsc")
-    assert ok
+def test_generate():
+    for cfg, gold in GEN_CASES:
+        _assert(*run_generate(cfg, gold), f"generate {cfg}")
 
 
-def test_diff_agg():
-    ok, want, got = run_diff(
-        "mdf-agg01.json", "mdf-agg01.export", "agg.diff.rsc")
-    assert ok, "\n" + "\n".join(difflib.unified_diff(
-        want.splitlines(), got.splitlines(), "golden", "got", lineterm=""))
+def test_diff():
+    for cfg, state, gold in DIFF_CASES:
+        _assert(*run_diff(cfg, state, gold), f"diff {cfg}")
 
 
 def test_rollback_arm_shape():

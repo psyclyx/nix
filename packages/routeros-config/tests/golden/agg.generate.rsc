@@ -84,7 +84,7 @@ add interface=bridge1 name=vlan240 vlan-id=240 mtu=1500
 add interface=bridge1 name=vlan200 vlan-id=200 mtu=9000
 
 # ── Switch chip L3 hardware offloading ──
-/interface ethernet switch set 0 l3-hw-offloading=yes
+/interface ethernet switch set [find name=switch1] l3-hw-offloading=yes
 
 # ── L3HW chip settings ──
 /interface ethernet switch l3hw-settings set ipv6-hw=yes

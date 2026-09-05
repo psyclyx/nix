@@ -191,6 +191,27 @@ SECTIONS = [
                 F("name", omit="req"),
                 F("l3_hw_offload", "l3-hw-offloading", kind="bool"),
                 F("qos_hw_offload", "qos-hw-offloading", kind="bool")]),
+    # Switch-chip ACLs. The only place policy can be applied to
+    # hardware-forwarded traffic: once the chip routes a packet it never
+    # reaches /ip firewall, so a rule there is not merely unenforced, it
+    # is unenforceable. Rules are first-match-wins, and an empty
+    # new-dst-ports is how RouterOS spells "drop".
+    #
+    # Matching on vlan-id rather than on addresses is what makes this
+    # survive an ISP renumber: the segment a packet entered on is a fact
+    # about the fabric, not about whatever prefix the delegation
+    # currently carries.
+    Section("/interface ethernet switch rule", [
+                F("switch", omit="req"),
+                F("vlan_id", "vlan-id", kind="int", omit="none"),
+                F("src_address", "src-address", omit="none"),
+                F("dst_address", "dst-address", omit="none"),
+                F("src_address6", "src-address6", omit="none"),
+                F("dst_address6", "dst-address6", omit="none"),
+                F("protocol", omit="none"),
+                F("dst_port", "dst-port", omit="none"),
+                F("new_dst_ports", "new-dst-ports", kind="qstr", omit="none"),
+                F("comment", kind="qstr", omit="falsy")]),
     Section("/interface ethernet switch l3hw-settings",
             [
                 F("ipv6_hw", "ipv6-hw", kind="bool"),
@@ -630,6 +651,16 @@ def generate(config):
         lines, "/ipv6 route", "# ── IPv6 routes ──",
         _SECTION_BY_PATH["/ipv6 route"].fields, routes6)
 
+    # ── Switch ACLs ─────────────────────────────────────────────
+    # Emitted after the VLANs and addresses they reference exist, and
+    # before VLAN filtering goes on. Order within the section is the
+    # order given: RouterOS stops at the first match, so a permit has to
+    # precede the drop it is an exception to.
+    _emit_record_section(
+        lines, "/interface ethernet switch rule", "# ── Switch ACLs ──",
+        _SECTION_BY_PATH["/interface ethernet switch rule"].fields,
+        config.get("switch_rules", []))
+
     # ── Disable unused ports ────────────────────────────────────
     if disabled_ports:
         lines.append("# ── Disable unused ports ──")
@@ -810,6 +841,10 @@ def main():
                 sys.stderr.write(f"  {p}\n")
             return 1
         sys.stdout.write(generate(config))
+    elif args.command == "learn-schema":
+        return cmd_learn_schema(args)
+    else:
+        raise SystemExit(f"unhandled command {args.command!r}")
 
 
 if __name__ == "__main__":

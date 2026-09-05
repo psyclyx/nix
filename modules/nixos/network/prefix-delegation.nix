@@ -100,8 +100,6 @@
         wantedBy = [ "multi-user.target" "kea-dhcp6-server.service" ];
         path = [ pkgs.iproute2 ];
         serviceConfig = {
-          Type = "notify";
-          NotifyAccess = "main";
           ExecStart = "${binder}/bin/prefix-delegation-bind ${plan}";
           Restart = "always";
           RestartSec = "5s";

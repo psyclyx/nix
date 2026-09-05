@@ -766,6 +766,29 @@
             "name": "relay-storage"
         }
     ],
+    "/ip dns": {
+        "address-list-extra-time": "00:00:00",
+        "allow-remote-requests": false,
+        "cache-max-ttl": "1970-01-08 00:00:00",
+        "cache-size": 2048,
+        "cache-used": 35,
+        "doh-max-concurrent-queries": 50,
+        "doh-max-server-connections": 5,
+        "doh-timeout": "00:00:05",
+        "dynamic-servers": [],
+        "max-concurrent-queries": 100,
+        "max-concurrent-tcp-sessions": 20,
+        "max-udp-packet-size": 4096,
+        "mdns-repeat-ifaces": [],
+        "query-server-timeout": "00:00:02",
+        "query-total-timeout": "00:00:10",
+        "servers": [
+            "10.0.240.1"
+        ],
+        "use-doh-server": "",
+        "verify-doh-cert": false,
+        "vrf": "main"
+    },
     "/ip route": [
         {
             ".id": "*80000001",
@@ -956,6 +979,17 @@
             "target-scope": 5
         }
     ],
+    "/ip ssh": {
+        "ciphers": [
+            "auto"
+        ],
+        "forwarding-enabled": "no",
+        "host-key-size": 2048.0,
+        "host-key-type": "ed25519",
+        "password-authentication": "yes-if-no-key",
+        "publickey-authentication-options": "none",
+        "strong-crypto": false
+    },
     "/ipv6 address": [
         {
             ".id": "*1",
@@ -1708,5 +1742,31 @@
         "soft-max-neighbor-entries": 1024,
         "stale-neighbor-detect-interval": 30,
         "stale-neighbor-timeout": 60
+    },
+    "/snmp": {
+        "contact": "",
+        "enabled": true,
+        "engine-id": "80003a8c04",
+        "engine-id-suffix": "",
+        "location": "",
+        "src-address": "::",
+        "trap-community": "public",
+        "trap-generators": [
+            "temp-exception"
+        ],
+        "trap-target": [],
+        "trap-version": 1.0,
+        "vrf": "main"
+    },
+    "/system clock": {
+        "date": "2026-09-05",
+        "dst-active": true,
+        "gmt-offset": -25200,
+        "time": "00:31:35",
+        "time-zone-autodetect": true,
+        "time-zone-name": "America/Los_Angeles"
+    },
+    "/system identity": {
+        "name": "mdf-agg01"
     }
 }

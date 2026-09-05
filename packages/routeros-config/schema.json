@@ -61,6 +61,25 @@
     "name",
     "relay-info-remote-id"
   ],
+  "/ip dns": [
+    "address-list-extra-time",
+    "allow-remote-requests",
+    "cache-max-ttl",
+    "cache-size",
+    "doh-max-concurrent-queries",
+    "doh-max-server-connections",
+    "doh-timeout",
+    "max-concurrent-queries",
+    "max-concurrent-tcp-sessions",
+    "max-udp-packet-size",
+    "mdns-repeat-ifaces",
+    "query-server-timeout",
+    "query-total-timeout",
+    "servers",
+    "use-doh-server",
+    "verify-doh-cert",
+    "vrf"
+  ],
   "/ip route": [
     "blackhole",
     "check-gateway",
@@ -75,6 +94,15 @@
     "suppress-hw-offload",
     "target-scope",
     "vrf-interface"
+  ],
+  "/ip ssh": [
+    "ciphers",
+    "forwarding-enabled",
+    "host-key-size",
+    "host-key-type",
+    "password-authentication",
+    "publickey-authentication-options",
+    "strong-crypto"
   ],
   "/ipv6 address": [
     "address",
@@ -135,5 +163,27 @@
     "soft-max-neighbor-entries",
     "stale-neighbor-detect-interval",
     "stale-neighbor-timeout"
+  ],
+  "/snmp": [
+    "contact",
+    "enabled",
+    "engine-id-suffix",
+    "location",
+    "src-address",
+    "trap-community",
+    "trap-generators",
+    "trap-interfaces",
+    "trap-target",
+    "trap-version",
+    "vrf"
+  ],
+  "/system clock": [
+    "date",
+    "time",
+    "time-zone-autodetect",
+    "time-zone-name"
+  ],
+  "/system identity": [
+    "name"
   ]
 }

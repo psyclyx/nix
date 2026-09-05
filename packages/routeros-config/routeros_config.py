@@ -301,6 +301,28 @@ SECTIONS = [
                 # Enums here ("yes-if-forwarding-disabled"), not booleans.
                 F("accept_redirects", "accept-redirects")],
             mode="settings"),
+    # Device-level settings menus. Each is one implicit row, and each was
+    # previously emitted by generate() and then never checked again —
+    # changing the timezone or an SNMP community meant a destructive
+    # redeploy, which is a reboot, which is the thing we're avoiding.
+    Section("system", "/system identity", "# ── Identity ──",
+            (), [F("identity", "name", kind="qstr", omit="falsy")],
+            mode="settings"),
+    Section("system", "/system clock", "# ── Clock ──",
+            (), [F("timezone", "time-zone-name", omit="falsy")],
+            mode="settings"),
+    Section("system", "/ip dns", "# ── DNS ──",
+            (), [F("dns_servers", "servers", kind="list", omit="falsy")],
+            mode="settings"),
+    Section("system.ssh", "/ip ssh", "# ── SSH ──",
+            (), [F("host_key_type", "host-key-type", omit="falsy")],
+            mode="settings"),
+    Section("system.snmp", "/snmp", "# ── SNMP ──",
+            (), [
+                F("enabled", kind="bool"),
+                F("contact", kind="qstr", omit="falsy"),
+                F("location", kind="qstr", omit="falsy")],
+            mode="settings"),
 ]
 
 _SECTION_BY_PATH = {s.path: s for s in SECTIONS}
@@ -470,8 +492,6 @@ def generate(config):
     snmp = system.get("snmp", {})
     if snmp.get("enabled"):
         parts = ["/snmp set enabled=yes"]
-        if snmp.get("community"):
-            parts.append(f'community={snmp["community"]}')
         if snmp.get("contact"):
             parts.append(f'contact="{snmp["contact"]}"')
         if snmp.get("location"):

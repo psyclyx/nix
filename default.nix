@@ -3,7 +3,7 @@
   # superproject passes the shared lib/nixpkgs.
   nixpkgs ? (import ./npins).nixpkgs,
   # Sibling sources for the internal producers (river/shoal/tidepool/
-  # base24-gen/emacs/pi-nix). Default {} => use nixclyx's own npins pins
+  # base24-gen/emacs). Default {} => use nixclyx's own npins pins
   # (standalone). The monorepo superproject overrides these with the sibling
   # checkouts, so BOTH the producer overlays and the home-manager module
   # imports track the monorepo versions.

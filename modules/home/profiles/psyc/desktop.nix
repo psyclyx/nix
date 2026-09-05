@@ -18,7 +18,7 @@
       pkgs.llm-agents.codex
       pkgs.llm-agents.kimi-code
       pkgs.llm-agents.omp
-      pkgs.llm-agents.pi
+      pkgs.psyclyx.pi
     ];
 
     psyclyx.home = {

@@ -15,6 +15,7 @@ let
     routeros-config = ./routeros-config;
     ilo-config = ./ilo-config;
     commit-confirm = ./commit-confirm;
+    pi = ./pi-agent;
   };
 in
   packages // {

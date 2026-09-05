@@ -154,10 +154,10 @@
       in
       {
         # sshd needs the initrd network stack up. lab-4 configures the
-        # interface via the kernel's ip=dhcp (see derived/pxe.nix — it
-        # deliberately avoids initrd networkd to not race clevis-tang),
-        # so this doesn't manage any interface; it just gates the ssh
-        # module on.
+        # interface via the kernel's ip=dhcp — deliberately not initrd
+        # networkd, which raced clevis-tang reaching the tang server
+        # before ZFS wanted the key — so this doesn't manage any
+        # interface; it just gates the ssh module on.
         boot.initrd.network.enable = true;
 
         boot.initrd.network.ssh = {

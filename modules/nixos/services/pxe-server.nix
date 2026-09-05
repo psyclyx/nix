@@ -8,9 +8,12 @@
 #   http://$host/boot/$client/kernel  — per-host kernel image
 #   http://$host/boot/$client/initrd  — per-host initramfs
 #
-# Clients are declared as data (no upstream config). The PXE projection
-# at topology/pxe.nix is what populates `clients` from egregore hosts
-# whose boot.mode == "pxe".
+# Clients are declared as data (no upstream config). Nothing populates
+# `clients` at the moment: the projection that did was removed along
+# with lab PXE booting, because it read netboot artifacts out of
+# colmena's cross-host `nodes`, which made every host that served PXE
+# unevaluatable outside a hive. Whatever brings PXE back has to source
+# those artifacts without reaching into another host's evaluated config.
 {
   path = ["psyclyx" "nixos" "services" "pxe-server"];
   description = "TFTP + HTTP for iPXE chainload and per-host netboot bundles";

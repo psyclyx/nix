@@ -20,7 +20,6 @@
     ./ingress.nix
     ./iscsi.nix
     ./nfs.nix
-    ./pxe.nix
     ./storage.nix
     ./bootstrap.nix
     ./gateway.nix

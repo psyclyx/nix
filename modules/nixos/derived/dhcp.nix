@@ -6,18 +6,19 @@
   hosts = lib.filterAttrs (_: e: e.type == "host") eg.entities;
 
   # Hosts with MAC addresses that have an interface on a given network.
-  # PXE-mode hosts whose boot.pxeInterfaces contains this network are
-  # skipped: the PXE projection emits their reservation separately, with
-  # boot-file-name and next-server. Emitting both here would duplicate
-  # the reservation by MAC, which Kea rejects.
+  #
+  # This used to skip PXE-mode hosts on their boot.pxeInterfaces, because
+  # the PXE projection emitted those reservations itself (carrying
+  # next-server and boot-file-name) and two reservations for one MAC is
+  # something Kea rejects. That projection is gone, so the exception goes
+  # with it: a PXE-mode host is just a host, and gets the ordinary
+  # reservation that keeps it addressable.
   managedHostsOnNetwork = network:
     lib.sort builtins.lessThan
       (builtins.attrNames (lib.filterAttrs (_: e:
         e.host.mac != {}
         && e.host.interfaces ? ${network}
         && e.host.addresses ? ${network}
-        && !((e.host.boot.mode or "local") == "pxe"
-             && builtins.elem network (e.host.boot.pxeInterfaces or []))
       ) hosts));
 
   # MAC address for a host's interface on a network. VLAN sub-ifaces

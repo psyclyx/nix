@@ -23,6 +23,7 @@
     ./storage.nix
     ./bootstrap.nix
     ./gateway.nix
+    ./prefix-delegation.nix
     ./vms.nix
     ./dhcp-ddns.nix
     ./distributed-builds.nix

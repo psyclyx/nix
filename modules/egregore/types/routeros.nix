@@ -243,6 +243,24 @@
       # the switch route it.
       addressedNetworks = lib.attrNames sw.addresses;
 
+      # A slice of someone else's delegation, if one is offered to us.
+      # Both ends read the same entity: the delegating router derives
+      # the pool and the route, we derive the client and the addresses.
+      myDelegation = lib.findFirst
+        (d: (d.refs.to or null) == name) null
+        (builtins.filter (e: e.type == "prefix-delegation")
+          (builtins.attrValues (top.entities or {})));
+
+      pdPool = "delegated";
+
+      # SVIs that draw a /64 from it: the ones we route v6 for. Not the
+      # ones we merely hold an address on — whoever sends the RAs owns
+      # the prefix, and advertising one we don't route would point hosts
+      # at a router that can't carry their traffic.
+      pdNetworks = builtins.filter
+        (n: ((top.entities.${n}).attrs.gateway6Ref or null) == name)
+        addressedNetworks;
+
       # Switch-chip ACLs, derived from the forward policy rather than
       # written twice. A network this switch routes whose zone has no
       # `wan = "accept"` must not reach the internet — and iyr cannot
@@ -449,10 +467,22 @@
         "ipv6_addresses" = lib.flip lib.concatMap addressedNetworks (netName: let
           net = top.entities.${netName};
           v6 = sw.addresses.${netName}.ipv6 or null;
-        in lib.optional (v6 != null) {
-          address   = "${v6}/64";
-          interface = "vlan${toString net.network.vlan}";
-        });
+          iface = "vlan${toString net.network.vlan}";
+        in
+          # The ULA, written down and stable.
+          lib.optional (v6 != null) {
+            address   = "${v6}/64";
+            interface = iface;
+          }
+          # …and a global /64 drawn from the delegation, on the SVIs we
+          # route v6 for. Advertised, so hosts SLAAC from it; RouterOS
+          # re-derives the address when the upstream prefix moves, so
+          # nothing here needs to know what it currently is.
+          ++ lib.optional (myDelegation != null && builtins.elem netName pdNetworks) {
+            from_pool = pdPool;
+            interface = iface;
+            advertise = true;
+          });
 
         # DHCP relay, for networks that ask for it. The switch relays from
         # the SVI it already holds on that network to the network's DHCP
@@ -505,6 +535,17 @@
           }) (builtins.filter
             (n: (sw.addresses.${n}.ipv6 or null) != null)
             addressedNetworks));
+
+        "ipv6_dhcp_clients" = lib.optional (myDelegation != null) {
+          interface = "vlan${toString (top.entities.${myDelegation.refs.over}).network.vlan}";
+          request = "prefix";
+          pool_name = pdPool;
+          pool_prefix_length = 64;
+          # No add-default-route: the v6 default is a route entity like
+          # any other, so it stays visible in the fleet data rather than
+          # appearing as a side effect of a DHCP option.
+          add_default_route = false;
+        };
 
         "switch_rules" = switchRules;
         routes        = map mkRouteRow (routesFor "ipv4");

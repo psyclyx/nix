@@ -191,6 +191,26 @@
 
   ipv6Pools = lib.filterAttrs (_: pool: pool.ipv6) cfg.pools;
 
+  # A subnet per delegation, holding the pool the binder maintains. The
+  # prefix is a placeholder: it is replaced at runtime with a slice of
+  # whatever the upstream delegation currently is, and writing a real
+  # one here would be the hardcoding this whole mechanism exists to
+  # avoid. `::/64` is unroutable and obviously not an answer, which is
+  # the point — if the binder never runs, nothing is delegated.
+  delegationSubnets = lib.mapAttrsToList (name: d: let
+    net = eg.entities.${d.network};
+  in {
+    id = 900 + net.network.vlan;
+    subnet = net.attrs.subnet6;
+    interface = me.interfaces.${d.network}.device;
+    pd-pools = [{
+      prefix = "::";
+      prefix-len = d.prefixLength;
+      delegated-len = d.prefixLength;
+      user-context = { psyclyx-delegation = name; };
+    }];
+  }) cfg.delegations;
+
   # Interfaces Kea listens on: wherever a pool's traffic actually
   # arrives. For a segment this host sits on, that's its own interface
   # there. For a segment reached only through a relay, it's the link the
@@ -249,6 +269,38 @@ in {
       description = "Trunk parent carrying this host's VLAN sub-interfaces.";
     };
 
+    delegations = lib.mkOption {
+      default = {};
+      description = ''
+        Prefix delegations this server hands downstream, keyed by the
+        receiving router. Declares the pool; the prefix inside it is
+        maintained at runtime by the prefix-delegation binder, because
+        the upstream delegation is dynamic and Kea's pools are not.
+
+        The pool carries a `user-context` marker naming the receiver,
+        which is how the binder finds the one it owns without depending
+        on subnet ids or ordering.
+      '';
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          network = lib.mkOption {
+            type = lib.types.str;
+            description = "Network the receiving router is reached over.";
+          };
+          prefixLength = lib.mkOption {
+            type = lib.types.int;
+            description = "Size of the delegated slice.";
+          };
+        };
+      });
+    };
+
+    controlSocket = lib.mkOption {
+      type = lib.types.path;
+      default = "/run/kea/kea-dhcp6-ctrl.sock";
+      description = "Kea DHCPv6 control socket, for runtime pool updates.";
+    };
+
     relayInterface = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -278,7 +330,7 @@ in {
       } // cfg.extraDhcp4;
     };
 
-    services.kea.dhcp6 = lib.mkIf (ipv6Pools != {}) {
+    services.kea.dhcp6 = lib.mkIf (ipv6Pools != {} || cfg.delegations != {}) {
       enable = true;
       settings = {
         interfaces-config.interfaces = interfaces;
@@ -286,7 +338,13 @@ in {
         valid-lifetime = 43200;
         renew-timer = 10800;
         rebind-timer = 21600;
-        subnet6 = lib.mapAttrsToList mkSubnet6 ipv6Pools;
+        subnet6 = lib.mapAttrsToList mkSubnet6 ipv6Pools ++ delegationSubnets;
+        # The binder replaces the delegation pool's prefix at runtime;
+        # config-set needs somewhere to say so.
+        control-socket = {
+          socket-type = "unix";
+          socket-name = cfg.controlSocket;
+        };
         host-reservation-identifiers = ["hw-address" "duid"];
         mac-sources = ["ipv6-link-local"];
       } // cfg.extraDhcp6;

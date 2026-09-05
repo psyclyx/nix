@@ -126,9 +126,11 @@ add name=relay-storage interface=vlan200 dhcp-server=10.0.252.1 local-address=10
 add address=fd9a:e830:4b1e:fc::2/64 interface=vlan252
 add address=fd9a:e830:4b1e:19::2/64 interface=vlan25
 add address=fd9a:e830:4b1e:d2::1/64 interface=vlan210
+add interface=vlan210 from-pool=delegated advertise=yes
 add address=fd9a:e830:4b1e:a::2/64 interface=vlan10
 add address=fd9a:e830:4b1e:f0::2/64 interface=vlan240
 add address=fd9a:e830:4b1e:c8::1/64 interface=vlan200
+add interface=vlan200 from-pool=delegated advertise=yes
 
 # ── IPv6 ND ──
 /ipv6 nd
@@ -138,6 +140,10 @@ add interface=vlan210 ra-lifetime=none
 add interface=vlan10 ra-lifetime=none
 add interface=vlan240 ra-lifetime=none
 add interface=vlan200 ra-lifetime=none
+
+# ── DHCPv6-PD client ──
+/ipv6 dhcp-client
+add interface=vlan252 request=prefix pool-name=delegated pool-prefix-length=64 add-default-route=no
 
 # ── Switch ACLs ──
 /interface ethernet switch rule

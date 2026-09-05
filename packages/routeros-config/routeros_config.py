@@ -170,10 +170,26 @@ SECTIONS = [
                 F("disabled", kind="bool")]),
     Section("/ipv6 address",
             [
-                F("address", omit="req"), F("interface", omit="req"),
+                # Either a literal address or a draw from a delegated
+                # pool — never both. The pool case is how a segment gets
+                # a global prefix without anyone writing one down.
+                F("address", omit="falsy"), F("interface", omit="req"),
+                F("from_pool", "from-pool", omit="falsy"),
                 F("advertise", kind="bool"),
                 F("eui64", "eui-64", kind="bool"),
                 F("no_dad", "no-dad", kind="bool"),
+                F("comment", kind="qstr", omit="falsy")]),
+    # DHCPv6-PD client. What the switch runs to receive a slice of the
+    # upstream delegation: the prefix lands in a named pool and SVI
+    # addresses draw /64s from it. RouterOS re-derives both when the
+    # prefix changes, which is what makes a renumber a non-event here.
+    Section("/ipv6 dhcp-client",
+            [
+                F("interface", omit="req"),
+                F("request", omit="req"),
+                F("pool_name", "pool-name", omit="falsy"),
+                F("pool_prefix_length", "pool-prefix-length", kind="int"),
+                F("add_default_route", "add-default-route", kind="bool"),
                 F("comment", kind="qstr", omit="falsy")]),
     Section("/ipv6 nd",
             [
@@ -650,6 +666,11 @@ def generate(config):
     _emit_record_section(
         lines, "/ipv6 route", "# ── IPv6 routes ──",
         _SECTION_BY_PATH["/ipv6 route"].fields, routes6)
+
+    _emit_record_section(
+        lines, "/ipv6 dhcp-client", "# ── DHCPv6-PD client ──",
+        _SECTION_BY_PATH["/ipv6 dhcp-client"].fields,
+        config.get("ipv6_dhcp_clients", []))
 
     # ── Switch ACLs ─────────────────────────────────────────────
     # Emitted after the VLANs and addresses they reference exist, and

@@ -3,6 +3,9 @@
 
   cfg = config.psyclyx.nixos.services.dhcp;
 
+  hostname = config.psyclyx.nixos.host or null;
+  me = if hostname == null then null else eg.entities.${hostname}.host or null;
+
   hosts = lib.filterAttrs (_: e: e.type == "host") eg.entities;
 
   # Hosts with MAC addresses that have an interface on a given network.
@@ -85,25 +88,32 @@
   in
     lib.concatMapStringsSep ", " (r: "${r.dst}-${r.via}") routes;
 
-  # DNS server pushed to clients on a network, per family. The resolver is
-  # the network's `dnsRef` host (honouring the site-level ref). Its address
-  # on this network is the gateway IP when the resolver *is* the gateway,
-  # otherwise the host's own declared address on this network; it falls back
-  # to the gateway IP. Pinning to the resolver host — not blindly the
-  # gateway — keeps DNS correct when inter-VLAN routing is offloaded off the
-  # gateway onto a switch (e.g. mdf-agg01), since the gateway address is then
-  # no longer where the resolver (unbound) listens. iyr already anchors the
-  # switch-routed lab/storage VLANs this way.
+  # DNS server pushed to clients on a network, per family: the address of
+  # the network's resolver (`dnsRef`, honouring the site-level ref).
+  #
+  # There is deliberately no fall back to the gateway address. That was
+  # only ever right while the resolver and the gateway were the same box,
+  # and moving routing onto the switch is exactly the change that makes
+  # them different — the fallback would have quietly handed every client
+  # a switch as its nameserver. A resolver we can't find an address for
+  # is a configuration error, and saying so at eval time is better than
+  # shipping a lie in a DHCP option.
   dnsServerForNetwork = family: netName: net: let
     na = net.attrs;
-    gwFallback = if family == "ipv4" then na.gateway4 else na.gateway6;
     resolverHost = na.dnsRef or null;
-    fromHost =
-      if resolverHost == null || resolverHost == (na.gatewayRef or null)
-      then null
-      else (eg.entities.${resolverHost}.host.addresses.${netName} or {}).${family} or null;
+    resolver =
+      if resolverHost == null then null
+      else eg.entities.${resolverHost} or null;
+    onLink =
+      if resolver == null then null
+      else ((resolver.attrs.addresses or {}).${netName} or {}).${family} or null;
   in
-    if fromHost != null then fromHost else gwFallback;
+    if onLink != null then onLink
+    else if resolverHost != null && resolverHost == (na.gatewayRef or null)
+    then (if family == "ipv4" then na.gateway4 else na.gateway6)
+    else throw ("network '${netName}': resolver '${toString resolverHost}' has no "
+      + "${family} address there, and isn't its gateway — nothing valid to "
+      + "advertise as a nameserver");
 
   mkSubnet4 = _poolName: pool: let
     net = eg.entities.${pool.network};
@@ -151,7 +161,7 @@
   in {
     id = na.vlan;
     subnet = na.subnet6;
-    interface = "${cfg.interface}.${toString na.vlan}";
+    interface = poolInterface pool;
     pools = [{pool = "${prefix6}::${pool.ipv6Suffix.start} - ${prefix6}::${pool.ipv6Suffix.end}";}];
     "option-data" = [
       { name = "dns-servers"; data = dnsServerForNetwork "ipv6" pool.network net; }
@@ -175,10 +185,23 @@
 
   ipv6Pools = lib.filterAttrs (_: pool: pool.ipv6) cfg.pools;
 
-  poolVlans = lib.sort builtins.lessThan
-    (lib.mapAttrsToList (_: pool: eg.entities.${pool.network}.network.vlan) cfg.pools);
+  # Interfaces Kea listens on: wherever a pool's traffic actually
+  # arrives. For a segment this host sits on, that's its own interface
+  # there. For a segment reached only through a relay, it's the link the
+  # relay sends over — the relayed request carries giaddr, so the server
+  # picks the subnet from that rather than from the arrival interface.
+  #
+  # Derived from declared interfaces rather than assuming one VLAN
+  # sub-interface per pool. That assumption holds only while the server
+  # is L2-present on every segment it serves, which is the arrangement
+  # relaying exists to end.
+  poolInterface = pool:
+    if me != null && me.interfaces ? ${pool.network}
+    then me.interfaces.${pool.network}.device
+    else cfg.relayInterface;
 
-  interfaces = map (id: "${cfg.interface}.${toString id}") poolVlans;
+  interfaces = lib.sort builtins.lessThan (lib.unique
+    (lib.mapAttrsToList (_: poolInterface) cfg.pools));
 in {
   options.psyclyx.nixos.services.dhcp = {
     enable = lib.mkEnableOption "DHCP server derived from egregore entities";
@@ -217,6 +240,19 @@ in {
     interface = lib.mkOption {
       type = lib.types.str;
       default = "bond0";
+      description = "Trunk parent carrying this host's VLAN sub-interfaces.";
+    };
+
+    relayInterface = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = ''
+        Link that relayed requests arrive over, for pools on segments
+        this host has no interface on. A relayed request carries giaddr,
+        so the subnet is chosen from that rather than from the arrival
+        interface — the server only has to be listening somewhere the
+        relay can reach it.
+      '';
     };
 
     extraDhcp4 = lib.mkOption { type = lib.types.attrs; default = {}; };

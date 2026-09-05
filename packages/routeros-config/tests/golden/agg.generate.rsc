@@ -83,8 +83,8 @@ add interface=bridge1 name=vlan10 vlan-id=10 mtu=1500
 add interface=bridge1 name=vlan240 vlan-id=240 mtu=1500
 add interface=bridge1 name=vlan200 vlan-id=200 mtu=9000
 
-# ── Bridge L3 hardware offloading ──
-/interface bridge settings set l3-hw-offloading=yes
+# ── Switch chip L3 hardware offloading ──
+/interface ethernet switch set 0 l3-hw-offloading=yes
 
 # ── L3HW chip settings ──
 /interface ethernet switch l3hw-settings set ipv6-hw=yes
@@ -106,7 +106,7 @@ add address=10.0.200.1/24 interface=vlan200 network=10.0.200.0
 
 # ── Routes ──
 /ip route
-add dst-address=0.0.0.0/0 gateway=10.0.10.1
+add disabled=no dst-address=0.0.0.0/0 gateway=10.0.10.1
 
 # ── DHCP relay ──
 /ip dhcp-relay

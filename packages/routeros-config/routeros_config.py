@@ -131,7 +131,11 @@ F = Field
 # tuple (None = not diffed), field list). Order of fields is the emit
 # order and must match `/export` field order for a clean diff.
 _ROUTE_FIELDS = [
-    F("disabled", kind="flag"),
+    # Explicit yes/no rather than a bare `disabled=yes` flag: the diff
+    # compares desired against exported state, and a flag that vanishes
+    # when false has no value to compare, so an enable/disable
+    # transition would emit `disabled=""`.
+    F("disabled", kind="bool"),
     F("dst", "dst-address", omit="req"), F("gateway", omit="req"),
     F("distance", kind="int"), F("routing_table", "routing-table", omit="falsy"),
     F("scope", kind="int"), F("target_scope", "target-scope", kind="int"),
@@ -149,7 +153,14 @@ RECORD_SECTIONS = [
      ("address",), [
         F("address", omit="req"), F("interface", omit="req"),
         F("network", omit="falsy"), F("comment", kind="qstr", omit="falsy")]),
-    ("routes", "/ip route", "# ── Routes ──", None, _ROUTE_FIELDS),
+    # Identity is (dst, gateway) — not (dst, table): `routing-table` is
+    # omitted from export for main-table routes, and _index_section drops
+    # any entry whose identity has a None component, which would silently
+    # skip every main-table route. Changing a route's gateway is therefore
+    # add-then-remove, which is the safe order: the section never passes
+    # through a state with no route for that destination.
+    ("routes", "/ip route", "# ── Routes ──",
+     ("dst-address", "gateway"), _ROUTE_FIELDS),
     # DHCP relay. Diffable (identity = name) so relays can be added to a
     # live switch without a reboot: the relay only adds a unicast path to
     # the server, it never removes the existing broadcast one, so a client
@@ -173,7 +184,8 @@ RECORD_SECTIONS = [
      ("interface",), [
         F("interface", omit="req"), F("ra_lifetime", "ra-lifetime"),
         F("comment", kind="qstr", omit="falsy")]),
-    ("ipv6_routes", "/ipv6 route", "# ── IPv6 routes ──", None, _ROUTE_FIELDS),
+    ("ipv6_routes", "/ipv6 route", "# ── IPv6 routes ──",
+     ("dst-address", "gateway"), _ROUTE_FIELDS),
 ]
 
 _SECTION_BY_PATH = {path: (fields, ident) for _, path, _, ident, fields
@@ -482,16 +494,23 @@ def generate(config):
 
     # ── L3 hardware offloading ─────────────────────────────────
     # Two distinct knobs land here:
-    #   system.l3_hw_offload (bool) — enables bridge-level inter-VLAN
-    #     routing offload on Marvell Prestera chipsets (CRS3xx, RouterOS
-    #     7.6+). Maps to `/interface bridge settings set l3-hw-offloading=yes`.
+    #   system.l3_hw_offload (bool) — enables inter-VLAN routing offload
+    #     on Marvell Prestera chipsets (CRS3xx, RouterOS 7.6+). Maps to
+    #     `/interface ethernet switch set 0 l3-hw-offloading=yes`.
     #   l3hw_settings.* (dict) — fine-grained switch-chip L3 knobs
     #     (IPv6 hardware path, ICMP reply behavior). Maps to
     #     `/interface ethernet switch l3hw-settings set ...`.
+    #
+    # NOT `/interface bridge settings` — that menu has no
+    # `l3-hw-offloading` property (only use-ip-firewall*, allow-fast-path).
+    # `/import` halts on the first error and `deploy` runs the script via
+    # `reset-configuration no-defaults=yes`, so emitting it there aborted
+    # the script partway and left the switch with no addresses at all.
+    # Positional `set 0` matches how the device itself exports this row.
     if system.get("l3_hw_offload"):
-        lines.append("# ── Bridge L3 hardware offloading ──")
+        lines.append("# ── Switch chip L3 hardware offloading ──")
         lines.append(
-            "/interface bridge settings set l3-hw-offloading=yes"
+            "/interface ethernet switch set 0 l3-hw-offloading=yes"
         )
         lines.append("")
 
@@ -767,6 +786,11 @@ _DEFAULT_VALUES = {
         # RouterOS omits these from /export when they equal the default.
         "mtu": "1500",
     },
+    # An enabled route exports no `disabled=`, but the spec states it
+    # explicitly (see _ROUTE_FIELDS). Without this the two never compare
+    # equal and every apply re-sets every enabled route.
+    "/ip route": {"disabled": "no"},
+    "/ipv6 route": {"disabled": "no"},
 }
 
 
@@ -816,6 +840,13 @@ def _index_section(section, entries):
     for action, params in entries:
         if action not in valid_actions:
             continue
+        # Singleton rows carry no identity column on the device, so an
+        # exported `set forward=yes` has nothing to key on. Synthesize the
+        # same sentinel the spec side uses; without this the current-state
+        # index stays empty and every apply re-emits the section forever,
+        # which destroys "zero operations" as a converged signal.
+        if section in _SINGLETON:
+            params = dict(params, _singleton="*")
         ident = tuple(_canon_field(section, k, params.get(k)) for k in keys)
         if any(v is None for v in ident):
             continue

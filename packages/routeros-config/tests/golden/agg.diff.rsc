@@ -14,9 +14,6 @@ set [find vlan-ids=252] tagged=bridge1,sfp-sfpplus24
 /interface ethernet switch
 set [find name=switch1] l3-hw-offloading=yes
 
-/interface ethernet switch l3hw-settings
-set ipv6-hw=yes
-
 /ip dhcp-relay
 add name=relay-cluster-orch interface=vlan223 dhcp-server=10.0.10.1 local-address=10.0.223.1 disabled=no
 add name=relay-cluster-prod interface=vlan220 dhcp-server=10.0.10.1 local-address=10.0.220.1 disabled=no
@@ -25,6 +22,10 @@ add name=relay-cluster-stage interface=vlan221 dhcp-server=10.0.10.1 local-addre
 add name=relay-lab interface=vlan210 dhcp-server=10.0.10.1 local-address=10.0.210.1 disabled=no
 add name=relay-main interface=vlan10 dhcp-server=10.0.10.1 local-address=10.0.10.2 disabled=no
 add name=relay-storage interface=vlan200 dhcp-server=10.0.10.1 local-address=10.0.200.1 disabled=no
+
+/ip route
+set [find dst-address=0.0.0.0/0 gateway=10.0.10.1] comment=""
+remove [find dst-address=0.0.0.0/0 gateway=10.0.240.1]
 
 /ipv6 settings
 set forward=yes

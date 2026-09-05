@@ -424,10 +424,9 @@
         # as an equal-cost default and blackhole internet v6 through it,
         # since the switch has no v6 default of its own. Only relevant
         # when the switch actually holds a v6 address on the uplink SVI.
-        # (No comment emitted: RouterOS `/ipv6 nd` accepts `comment=` but
-        # never stores/exports it, so a comment would make the incremental
-        # apply perpetually think it's out of sync. The rationale lives
-        # here in source, which is where operators read it.)
+        # (No comment emitted: RouterOS `/ipv6 nd` accepts `comment=`
+        # but never stores it, so it would be write-only noise. The
+        # rationale lives here in source, where operators read it.)
         ipv6_nd = lib.optional
           ((sw.addresses.${uplinkName}.ipv6 or null) != null)
           {
@@ -500,33 +499,6 @@ EGREGORE_EOF
           echo "If it comes back wrong, restore with:" >&2
           echo "  scp /tmp/$backup.backup admin@${mgmtIp}:/" >&2
           echo "  ssh admin@${mgmtIp} '/system backup load name=$backup'" >&2'';
-      };
-      apply = {
-        description = "Incremental apply via /export terse diff. Non-destructive: pulls current state, computes diff against desired, pushes only changed items. Diffs only the sections that safely tolerate live add/remove (/interface vlan, /ip address, /interface bridge vlan). Use --dry-run to preview. Extra ssh args pass through as `-- -J jumphost`.";
-        impl = ''
-          dry_run=""
-          while [[ $# -gt 0 && "$1" != "--" ]]; do
-            case "$1" in
-              --dry-run|-n) dry_run="--dry-run"; shift ;;
-              *) echo "unknown arg: $1" >&2; exit 1 ;;
-            esac
-          done
-          [[ "$1" == "--" ]] && shift
-
-          ssh_args=""
-          if [[ $# -gt 0 ]]; then
-            ssh_args="--ssh-args"
-            for a in "$@"; do ssh_args="$ssh_args $a"; done
-          fi
-
-          session_id=$(date +%s)-$$
-          echo "Applying to ${mgmtIp} (session $session_id)..." >&2
-          routeros-config apply $dry_run \
-            --session-id "$session_id" \
-            "admin@${mgmtIp}" $ssh_args <<'EGREGORE_EOF'
-${json}
-EGREGORE_EOF
-        '';
       };
     };
   };

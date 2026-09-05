@@ -57,13 +57,12 @@ def _comma_list(items):
 
 # ── Field schema ─────────────────────────────────────────────────────
 #
-# One declarative table per record section drives what used to be three
-# hand-written, must-stay-in-lockstep encodings of every field: the full
-# emitter (generate), the spec→diff projection (_desired_diffable), and
-# the diff comparison metadata (_IDENTITY / _COMPARE_FIELDS). Add a field
-# once, here, and it flows to all three.
+# One declarative table per menu: how a spec key is named on the device
+# and how its value is spelled in an .rsc script. Adding a property is
+# one entry here, and `learn-schema` checks the name against what the
+# device says it accepts.
 #
-#   omit:  "req"    always emit (identity / mandatory)
+#   omit:  "req"    always emit (mandatory)
 #          "none"   skip when the python value is None (0 / "" still emit)
 #          "falsy"  skip when the python value is falsy
 #   kind:  "raw"    value verbatim
@@ -72,19 +71,16 @@ def _comma_list(items):
 #          "flag"   emit `key=yes` when truthy, else skip entirely
 #          "qstr"   always double-quoted (comments)
 #          "list"   comma-joined
-#   diffable=False  emitted by generate() but ignored by the diff (e.g.
-#                   RouterOS never exports it, so comparing churns).
 
 
 class Field:
-    __slots__ = ("py", "ros", "kind", "omit", "diffable")
+    __slots__ = ("py", "ros", "kind", "omit")
 
-    def __init__(self, py, ros=None, kind="raw", omit="none", diffable=True):
+    def __init__(self, py, ros=None, kind="raw", omit="none"):
         self.py = py
         self.ros = ros if ros is not None else py.replace("_", "-")
         self.kind = kind
         self.omit = omit
-        self.diffable = diffable
 
     def _skip(self, v):
         if self.kind == "flag":
@@ -110,114 +106,32 @@ class Field:
             return f"{self.ros}={_comma_list(v)}"
         return f"{self.ros}={v}"
 
-    def diff_value(self, entry):
-        """py-keyed entry → canonical string for the diff params dict
-        (ros-keyed, unquoted — the diff formatter re-quotes), or None."""
-        v = entry.get(self.py)
-        if self._skip(v):
-            return None
-        if self.kind == "bool":
-            return "yes" if v else "no"
-        if self.kind == "flag":
-            return "yes"
-        if self.kind == "list":
-            return _comma_list(v)
-        return str(v)
-
 
 F = Field
 
 
 class Section:
-    """One RouterOS menu we manage, declared once.
+    """A RouterOS menu and the properties we write to it.
 
-    Everything the tool needs about a menu is derived from this entry:
-    the generator's emit order, the spec→row projection, the remote
-    query that reads current state, the identity the diff matches rows
-    on, and the field kinds it compares by. Adding a menu means adding
-    an entry here and nothing else — there is deliberately no second
-    place that names a menu, a property, or a value.
-
-    key       dotted path into the spec JSON holding this menu's rows
-              ("routes", "bridge.vlans"). A dict there is read as a
-              single row, which is what settings menus look like.
-    identity  properties that name a row, or None for menus that are
-              emitted by generate() but never diffed.
-    mode      "record"    rows we create and destroy: add / set / remove
-              "hardware"  rows the device owns and we only reconfigure
-                          (a switch chip); set, never add or remove
-              "settings"  one implicit row, read with `get` and written
-                          with a bare `set` — no selector, none exists
+    Two jobs: it gives the generator its field list, and it tells
+    `learn-schema` which menus to ask the device about — so every
+    property named here is checked against the device's own schema
+    before a script that mentions it is ever emitted.
     """
 
-    __slots__ = ("key", "path", "comment", "identity", "fields", "mode",
-                 "inject")
+    __slots__ = ("path", "fields")
 
-    def __init__(self, key, path, comment, identity, fields, mode="record",
-                 inject=None):
-        self.key = key
+    def __init__(self, path, fields):
         self.path = path
-        self.comment = comment
-        self.identity = identity
         self.fields = fields
-        self.mode = mode
-        # Properties that live once in the spec but belong on every row
-        # of this menu: py-key → dotted spec path. The bridge VLAN table
-        # is nested under the bridge it belongs to, so the rows don't
-        # repeat its name; the device's rows do.
-        self.inject = inject or {}
-
-    @property
-    def menu(self):
-        """Command form of the path: `/ip route` → `/ip/route`."""
-        return self.path.replace(" ", "/")
-
-    @property
-    def query(self):
-        """Expression returning this menu's current state.
-
-        Always bracketed. A bare `/ipv6/settings/get` inside an array
-        constructor is not evaluated as a command — the reply comes back
-        `null`, the section reads as empty, and every apply re-emits it.
-        """
-        if self.mode == "settings":
-            return f"[{self.menu}/get]"
-        # `detail` is what adds the configured `tagged`/`untagged` to
-        # bridge VLANs; without it only the effective `current-*` come
-        # back and every VLAN looks changed.
-        return f"[{self.menu}/print detail as-value]"
-
-    @property
-    def diffable(self):
-        return self.identity is not None
-
-    @staticmethod
-    def _at(config, dotted):
-        node = config
-        for part in dotted.split("."):
-            if not isinstance(node, dict):
-                return None
-            node = node.get(part)
-        return node
-
-    def spec_rows(self, config):
-        """This menu's rows from the spec, keyed by RouterOS property."""
-        node = self._at(config, self.key)
-        if node is None:
-            return []
-        rows = [node] if isinstance(node, dict) else node
-        extra = {k: self._at(config, path) for k, path in self.inject.items()}
-        return [_diff_params(self.fields, dict(r, **extra)) for r in rows]
 
 
 # Order is the generator's emit order, and for record sections the field
 # order must match RouterOS's own so a generated script reads like an
 # export.
 _ROUTE_FIELDS = [
-    # Explicit yes/no rather than a bare `disabled=yes` flag: the diff
-    # compares desired against exported state, and a flag that vanishes
-    # when false has no value to compare, so an enable/disable
-    # transition would emit `disabled=""`.
+    # Explicit yes/no rather than a bare `disabled=yes` flag, so a route
+    # that is meant to be disabled says so instead of going silent.
     F("disabled", kind="bool"),
     F("dst", "dst-address", omit="req"), F("gateway", omit="req"),
     F("distance", kind="int"), F("routing_table", "routing-table", omit="falsy"),
@@ -227,102 +141,79 @@ _ROUTE_FIELDS = [
 ]
 
 SECTIONS = [
-    Section("vlan_interfaces", "/interface vlan", "# ── VLAN interfaces ──",
-            ("name",), [
+    Section("/interface vlan",
+            [
                 F("interface", omit="req"), F("name", omit="req"),
                 F("vlan_id", "vlan-id", kind="int", omit="req"),
                 F("mtu", kind="int"),
                 F("comment", kind="qstr", omit="falsy")]),
     # Bridge VLAN table — structurally nested under the bridge in the
     # spec, its own menu on the device.
-    Section("bridge.vlans", "/interface bridge vlan", "# ── VLAN table ──",
-            ("vlan-ids",), [
+    Section("/interface bridge vlan",
+            [
                 F("bridge", omit="req"),
                 F("vlan_ids", "vlan-ids", omit="req"),
                 F("tagged", kind="list", omit="falsy"),
-                F("untagged", kind="list", omit="falsy")],
-            inject={"bridge": "bridge.name"}),
-    Section("addresses", "/ip address", "# ── IP addresses ──",
-            ("address",), [
+                F("untagged", kind="list", omit="falsy")]),
+    Section("/ip address",
+            [
                 F("address", omit="req"), F("interface", omit="req"),
                 F("network", omit="falsy"),
                 F("comment", kind="qstr", omit="falsy")]),
-    # Identity is (dst, gateway) — not (dst, table): `routing-table` is
-    # absent for main-table routes, and a None identity component drops
-    # the row, which would silently skip every main-table route.
-    # Changing a route's gateway is therefore add-then-remove, which is
-    # the safe order: the section never passes through a state with no
-    # route for that destination.
-    Section("routes", "/ip route", "# ── Routes ──",
-            ("dst-address", "gateway"), _ROUTE_FIELDS),
-    # DHCP relay. Diffable so relays can be added to a live switch
-    # without a reboot: the relay only adds a unicast path to the
-    # server, it never removes the existing broadcast one, so a client
-    # that already reaches DHCP by flooding is unaffected while one that
-    # doesn't starts working.
-    Section("dhcp_relays", "/ip dhcp-relay", "# ── DHCP relay ──",
-            ("name",), [
+    Section("/ip route",
+            _ROUTE_FIELDS),
+    Section("/ip dhcp-relay",
+            [
                 F("name", omit="req"), F("interface", omit="req"),
                 F("dhcp_server", "dhcp-server", kind="list", omit="req"),
                 F("local_address", "local-address", omit="falsy"),
                 F("disabled", kind="bool")]),
-    Section("ipv6_addresses", "/ipv6 address", "# ── IPv6 addresses ──",
-            ("address",), [
+    Section("/ipv6 address",
+            [
                 F("address", omit="req"), F("interface", omit="req"),
                 F("advertise", kind="bool"),
-                F("eui64", "eui-64", kind="bool", diffable=False),
+                F("eui64", "eui-64", kind="bool"),
                 F("no_dad", "no-dad", kind="bool"),
                 F("comment", kind="qstr", omit="falsy")]),
-    Section("ipv6_nd", "/ipv6 nd", "# ── IPv6 ND ──",
-            ("interface",), [
+    Section("/ipv6 nd",
+            [
                 F("interface", omit="req"),
                 F("ra_lifetime", "ra-lifetime"),
                 F("comment", kind="qstr", omit="falsy")]),
-    Section("ipv6_routes", "/ipv6 route", "# ── IPv6 routes ──",
-            ("dst-address", "gateway"), _ROUTE_FIELDS),
+    Section("/ipv6 route",
+            _ROUTE_FIELDS),
     # Switch chips. Rows the hardware defines — a CRS326 has a Marvell
     # primary plus an Atheros secondary — so we reconfigure them and
     # never add or remove. Which chip gets which setting is the spec's
     # business, not ours; nothing here knows the name "switch1".
-    Section("ethernet_switches", "/interface ethernet switch",
-            "# ── Switch chip ──", ("name",), [
+    Section("/interface ethernet switch",
+            [
                 F("name", omit="req"),
                 F("l3_hw_offload", "l3-hw-offloading", kind="bool"),
-                F("qos_hw_offload", "qos-hw-offloading", kind="bool")],
-            mode="hardware"),
-    Section("l3hw_settings", "/interface ethernet switch l3hw-settings",
-            "# ── L3HW chip settings ──", (), [
+                F("qos_hw_offload", "qos-hw-offloading", kind="bool")]),
+    Section("/interface ethernet switch l3hw-settings",
+            [
                 F("ipv6_hw", "ipv6-hw", kind="bool"),
-                F("icmp_reply_on_error", "icmp-reply-on-error", kind="bool")],
-            mode="settings"),
-    Section("ipv6_settings", "/ipv6 settings", "# ── IPv6 settings ──",
-            (), [
+                F("icmp_reply_on_error", "icmp-reply-on-error", kind="bool")]),
+    Section("/ipv6 settings",
+            [
                 F("forwarding", "forward", kind="bool"),
                 # Enums here ("yes-if-forwarding-disabled"), not booleans.
-                F("accept_redirects", "accept-redirects")],
-            mode="settings"),
-    # Device-level settings menus. Each is one implicit row, and each was
-    # previously emitted by generate() and then never checked again —
-    # changing the timezone or an SNMP community meant a destructive
-    # redeploy, which is a reboot, which is the thing we're avoiding.
-    Section("system", "/system identity", "# ── Identity ──",
-            (), [F("identity", "name", kind="qstr", omit="falsy")],
-            mode="settings"),
-    Section("system", "/system clock", "# ── Clock ──",
-            (), [F("timezone", "time-zone-name", omit="falsy")],
-            mode="settings"),
-    Section("system", "/ip dns", "# ── DNS ──",
-            (), [F("dns_servers", "servers", kind="list", omit="falsy")],
-            mode="settings"),
-    Section("system.ssh", "/ip ssh", "# ── SSH ──",
-            (), [F("host_key_type", "host-key-type", omit="falsy")],
-            mode="settings"),
-    Section("system.snmp", "/snmp", "# ── SNMP ──",
-            (), [
+                F("accept_redirects", "accept-redirects")]),
+    # Device-level settings menus — one implicit row each.
+    Section("/system identity",
+            [F("identity", "name", kind="qstr", omit="falsy")]),
+    Section("/system clock",
+            [F("timezone", "time-zone-name", omit="falsy")]),
+    Section("/ip dns",
+            [F("dns_servers", "servers", kind="list", omit="falsy")]),
+    Section("/ip ssh",
+            [F("host_key_type", "host-key-type", omit="falsy")]),
+    Section("/snmp",
+            [
                 F("enabled", kind="bool"),
                 F("contact", kind="qstr", omit="falsy"),
-                F("location", kind="qstr", omit="falsy")],
-            mode="settings"),
+                F("location", kind="qstr", omit="falsy")]),
 ]
 
 _SECTION_BY_PATH = {s.path: s for s in SECTIONS}
@@ -346,19 +237,6 @@ def _emit_record_section(lines, header, comment, fields, entries):
     for e in entries:
         lines.append(_emit_add(fields, e))
     lines.append("")
-
-
-def _diff_params(fields, entry):
-    """py-keyed entry + schema → the ros-keyed params dict the diff
-    machinery compares (skips non-diffable and omitted fields)."""
-    out = {}
-    for f in fields:
-        if not f.diffable:
-            continue
-        v = f.diff_value(entry)
-        if v is not None:
-            out[f.ros] = v
-    return out
 
 
 # ── Generator ────────────────────────────────────────────────────────
@@ -773,62 +651,6 @@ def generate(config):
     return "\n".join(lines)
 
 
-# ── Diff machinery ────────────────────────────────────────────────────
-#
-# Pull current state over SSH, compute the delta against the spec, push
-# only the changed items. Non-destructive; the apply arms a self-firing
-# revert before it touches anything.
-#
-# Scope: only sections where adding/removing items mid-flight is safe.
-# Other sections (system, bridge ports, bonds, ssh keys) are deploy-once
-# and don't churn; if those differ between spec and switch we leave them.
-#
-# State comes from RouterOS's own JSON serializer rather than from
-# parsing `/export terse`, which is a display format and lies to us in
-# three ways that cost real outages:
-#
-#   - It omits anything sitting at its default, so a spec that states a
-#     default could never compare equal to a device that had it. Whole
-#     sections re-emitted on every apply, which destroys "zero
-#     operations" as the signal that we've converged.
-#   - It has no stable handle for a row, so edits had to be addressed by
-#     guessing a `[find key=value]` selector out of the fields we happened
-#     to know. `/interface ethernet switch` exports positionally, with no
-#     `name=` to find on, so its row was invisible and re-set forever.
-#   - Everything is a string, so `disabled=no` and absent-meaning-no had
-#     to be reconciled by a table of per-section defaults maintained by
-#     hand.
-#
-# The JSON form has none of those problems: every property is present,
-# typed, and carries a `.id` we can address it by.
-
-
-# Rows RouterOS owns rather than us. A print — unlike `/export` — reports
-# them, and they must be dropped before diffing or the delta we compute
-# is one that dismantles the switch:
-#
-#   dynamic  every interface's link-local fe80::/64, the connected route
-#            for each subnet. Not ours; removing them is self-harm.
-#   default  the built-in row a menu ships with, e.g. the `/ipv6 nd`
-#            entry for interface=all that drives RA everywhere. The spec
-#            never declares it, so "in current, not desired" would take
-#            RA off the whole switch.
-_DEVICE_OWNED_FLAGS = ("dynamic", "default")
-
-
-def state_command():
-    """The single remote command that returns all current state as JSON.
-
-    One round trip: RouterOS builds an object keyed by section path and
-    serializes the lot, so we never have to correlate several replies or
-    pay latency per section.
-    """
-    parts = ";".join(
-        f'"{s.path}"={s.query}' for s in SECTIONS if s.diffable
-    )
-    return ":put [:serialize to=json {" + parts + "}]"
-
-
 # ── The device's own schema ───────────────────────────────────────────
 #
 # RouterOS will describe itself. `/console/inspect request=child` on a
@@ -898,15 +720,14 @@ def load_schema(path=None):
 def schema_violations(schema, sections=None):
     """Properties our sections name that the device's schema doesn't have.
 
-    Runs against the committed schema at import time and against the
-    live one at apply time. A property we're wrong about is a line the
-    device rejects, and `/import` stops at the first error — so this is
-    the difference between a clean refusal and a half-applied config.
+    A property we're wrong about is a line the device rejects, and the
+    deploy script runs after a wipe — so catching it here is the
+    difference between a clean refusal and a half-configured switch.
     """
     if not schema:
         return []
     out = []
-    for s in sections or _DIFFABLE:
+    for s in sections or SECTIONS:
         known = schema.get(s.path)
         if known is None:
             continue
@@ -914,299 +735,6 @@ def schema_violations(schema, sections=None):
             if f.ros not in known:
                 out.append(f"{s.path}: no property '{f.ros}'")
     return out
-
-
-def schema_drift(committed, live):
-    """Menus where the device disagrees with the schema we shipped."""
-    out = []
-    for path, props in sorted(live.items()):
-        was = committed.get(path)
-        if was is None:
-            out.append(f"{path}: not in the committed schema")
-            continue
-        gone = sorted(set(was) - set(props))
-        added = sorted(set(props) - set(was))
-        if gone:
-            out.append(f"{path}: device no longer has {', '.join(gone)}")
-        if added:
-            out.append(f"{path}: device also has {', '.join(added)}")
-    return out
-
-
-def parse_state(text):
-    """Parse the JSON state reply into {section path: [row, ...]}.
-
-    Singleton `get` replies come back as a bare object; wrap them so
-    every section is uniformly a list of rows.
-    """
-    raw = json.loads(text)
-    out = {}
-    for path, rows in raw.items():
-        if isinstance(rows, dict):
-            rows = [rows]
-        elif rows is None:
-            rows = []
-        out[path] = [
-            r for r in rows
-            if not any(r.get(f) is True for f in _DEVICE_OWNED_FLAGS)
-        ]
-    return out
-
-
-# Everything the diff needs, derived from SECTIONS. These used to be six
-# hand-maintained tables that had to agree with the schema and with each
-# other; a menu that drifted between them was invisible until an apply
-# did the wrong thing on a live switch.
-_DIFFABLE = [s for s in SECTIONS if s.diffable]
-_IDENTITY = {s.path: s.identity for s in _DIFFABLE}
-_COMPARE_FIELDS = {
-    s.path: tuple(f.ros for f in s.fields if f.diffable) for s in _DIFFABLE
-}
-# ros-key → schema kind, so the diff can tell a boolean field from a
-# string one. RouterOS prints boolean *flags* only when true, so knowing
-# the kind is what lets an absent `disabled` read as "no", not "unset".
-_COMPARE_KINDS = {
-    s.path: {f.ros: f.kind for f in s.fields if f.diffable} for s in _DIFFABLE
-}
-# Rows the device defines and we may only reconfigure: no add, no remove.
-_SET_ONLY = {s.path for s in _DIFFABLE if s.mode in ("hardware", "settings")}
-# Menus with one implicit row, written as a bare `set` — there is no
-# selector because there is nothing to select between.
-_SINGLETON = {s.path for s in _DIFFABLE if s.mode == "settings"}
-
-
-def _sort_parts(parts):
-    """Sort list members numerically when they all look like numbers, so
-    vlan-ids 9 and 10 don't order as "10,9"."""
-    parts = list(parts)
-    if parts and all(p.lstrip("-").isdigit() for p in parts):
-        return sorted(parts, key=int)
-    return sorted(parts)
-
-
-def _normalize_list(s):
-    """Normalize a comma-separated list for comparison (sort, dedupe)."""
-    if s is None or s == "":
-        return ""
-    return ",".join(_sort_parts(set(p.strip() for p in s.split(",") if p.strip())))
-
-
-def _canon(val):
-    """Render a device-side JSON value in the same form the spec side
-    produces, so the two can be compared as strings.
-
-    The spec side is built by Field.diff_value, which emits RouterOS's
-    own wire spellings ("yes"/"no", comma-joined lists, stringified
-    numbers). Meeting it here — rather than parsing the spec into native
-    types — keeps every field declaration in the schema table honest and
-    confines the JSON API's encoding quirks to this one function.
-
-    Those quirks: booleans are real booleans, and a list of numbers
-    serializes its members as floats (`vlan-ids: [10.000000]`), which
-    have to come back to `10` before anything will match.
-    """
-    if val is None:
-        return None
-    if isinstance(val, bool):
-        return "yes" if val else "no"
-    if isinstance(val, float):
-        return str(int(val)) if val.is_integer() else str(val)
-    if isinstance(val, int):
-        return str(val)
-    if isinstance(val, (list, tuple)):
-        return ",".join(_sort_parts(_canon(v) for v in val))
-    return str(val)
-
-
-def _normalize_entry(section, entry):
-    """Project a row down to its comparable fields, canonicalized.
-
-    No per-section default table any more: the JSON API reports every
-    property, including the ones sitting at their default, so a field
-    that's absent here is genuinely absent rather than merely unexported.
-    """
-    out = {}
-    for f in _COMPARE_FIELDS.get(section, ()):
-        v = _canon(entry.get(f))
-        if f in ("tagged", "untagged"):
-            v = _normalize_list(v)
-        out[f] = v
-    return out
-
-
-def _index_section(section, rows):
-    """Map identity-tuple → (row id, normalized entry) for one section.
-
-    The row id is RouterOS's `.id`, present on printed rows and absent on
-    singleton `get` replies (and on the spec side, which has no rows on a
-    device yet). Where we have one, edits address it directly instead of
-    reconstructing a `[find ...]` selector.
-    """
-    keys = _IDENTITY.get(section)
-    if keys is None:
-        return {}
-    out = {}
-    for row in rows:
-        # A settings menu declares identity `()`: there is exactly one
-        # row, so both sides key on the empty tuple and always match.
-        ident = tuple(_canon(row.get(k)) for k in keys)
-        if any(v is None for v in ident):
-            continue
-        out[ident] = (row.get(".id"), _normalize_entry(section, row))
-    return out
-
-
-def _desired_diffable(config):
-    """The spec, in the same shape parse_state returns: section → rows,
-    keyed by RouterOS property name.
-
-    Spec rows carry no `.id` — they don't exist on the device yet, which
-    is the whole point of the diff. Every menu goes through the same
-    path; nothing here knows what a route or a switch chip is.
-    """
-    return {s.path: s.spec_rows(config) for s in _DIFFABLE}
-
-
-def _format_find(section, ident, row_id):
-    """RouterOS selector for a row we intend to edit or remove.
-
-    Prefer `.id`: it comes straight from the state we just read, names
-    exactly one row, and can't be fooled by a menu whose rows have no
-    findable key. Reconstructing a `[find key=value]` from the identity
-    fields is the fallback for rows we somehow lack an id for, and it was
-    the old failure mode — `/interface ethernet switch` exports
-    positionally, so `[find name=switch1]` matched nothing and the same
-    `set` was re-emitted on every apply, forever.
-    """
-    if row_id:
-        return f'[find where .id="{row_id}"]'
-    keys = _IDENTITY[section]
-    parts = [f"{k}={v}" for k, v in zip(keys, ident)]
-    return "[find " + " ".join(parts) + "]"
-
-
-def _fmt_val(v):
-    """Render an rsc `key=value` value token. Quote when the value is
-    empty or contains whitespace (e.g. `comment="a b"`); leave bare
-    tokens like `ra-lifetime=none` unquoted."""
-    s = "" if v is None else str(v)
-    if s == "" or any(c.isspace() for c in s):
-        return f'"{s}"'
-    return s
-
-
-def _format_add(params):
-    return "add " + " ".join(f"{k}={_fmt_val(v)}" for k, v in params.items())
-
-
-def _format_set(section, ident, changed, row_id=None):
-    if section in _SINGLETON:
-        # No selector — a settings menu has exactly one implicit row.
-        return "set " + " ".join(
-            f"{k}={_fmt_val(v)}" for k, v in changed.items()
-        )
-    return f"set {_format_find(section, ident, row_id)} " + " ".join(
-        f"{k}={_fmt_val(v)}" for k, v in changed.items()
-    )
-
-
-def _format_remove(section, ident, row_id=None):
-    return f"remove {_format_find(section, ident, row_id)}"
-
-
-def diff_state(current, desired):
-    """Compute add/set/remove operations per diffable section.
-
-    Returns dict: section → list of rsc command strings (no section
-    header). Sections with no ops are omitted.
-    """
-    ops = {}
-    for section in _IDENTITY:
-        cur_idx = _index_section(section, current.get(section, []))
-        des_idx = _index_section(section, desired.get(section, []))
-
-        cur_keys = set(cur_idx.keys())
-        des_keys = set(des_idx.keys())
-
-        section_ops = []
-
-        # Adds: in desired, not current.
-        # For set-only sections, the row already exists on the device
-        # (hardware-rooted), so we emit a `set` instead of `add`. Treat
-        # any present-in-desired-only as a set operation that imports
-        # all comparable fields.
-        for ident in sorted(des_keys - cur_keys):
-            _, entry = des_idx[ident]
-            if section in _SET_ONLY:
-                changed = {
-                    k: (v if v is not None else "")
-                    for k, v in entry.items()
-                    if k not in _IDENTITY[section] and v is not None
-                }
-                if changed:
-                    section_ops.append(_format_set(section, ident, changed))
-            else:
-                cleaned = {k: v for k, v in entry.items() if v is not None}
-                section_ops.append(_format_add(cleaned))
-
-        # Sets: in both but content differs. Only emit changed fields,
-        # addressed by the `.id` we read off the device.
-        kinds = _COMPARE_KINDS.get(section, {})
-        for ident in sorted(cur_keys & des_keys):
-            row_id, cur_entry = cur_idx[ident]
-            _, des_entry = des_idx[ident]
-            changed = {}
-            for k in _COMPARE_FIELDS[section]:
-                if k in _IDENTITY[section]:
-                    continue
-                want = des_entry.get(k)
-                # The spec is a partial specification, not a full desired
-                # state. A field it doesn't mention is one it doesn't
-                # manage — leave whatever the device has. Diffing silence
-                # against a dense state reply would clear half of every
-                # row (`advertise=""`, `scope=""`) on the first apply.
-                if want is None:
-                    continue
-                have = cur_entry.get(k)
-                # A boolean flag is printed only when true, so absent
-                # means false. Without this every enabled route reads as
-                # "disabled unset" and gets re-set on every apply.
-                if have is None and kinds.get(k) in ("bool", "flag"):
-                    have = "no"
-                if have != want:
-                    changed[k] = want
-            if changed:
-                section_ops.append(
-                    _format_set(section, ident, changed, row_id))
-
-        # Removes: in current, not desired. Skipped for set-only
-        # sections (hardware-rooted rows can't be removed).
-        if section not in _SET_ONLY:
-            for ident in sorted(cur_keys - des_keys):
-                row_id, _ = cur_idx[ident]
-                section_ops.append(_format_remove(section, ident, row_id))
-
-        if section_ops:
-            ops[section] = section_ops
-
-    return ops
-
-
-def format_diff_script(ops, identity=None):
-    """Render an ops dict (as returned by diff_state) as an rsc script."""
-    if not ops:
-        return ""
-    lines = []
-    if identity:
-        lines.append(f"# Incremental diff for {identity}")
-        lines.append("# Generated from spec → current-state delta.")
-        lines.append("")
-    for section in sorted(ops.keys()):
-        lines.append(section)
-        for cmd in ops[section]:
-            lines.append(cmd)
-        lines.append("")
-    return "\n".join(lines)
 
 
 # ── CLI ──────────────────────────────────────────────────────────────
@@ -1218,7 +746,7 @@ def cmd_learn_schema(args):
     import subprocess
 
     ssh_extra = shlex.split(args.ssh_args) if args.ssh_args else []
-    paths = [s.path for s in _DIFFABLE]
+    paths = [s.path for s in SECTIONS]
     proc = subprocess.run(
         ["ssh", "-o", "BatchMode=yes", *ssh_extra, args.ssh,
          schema_command(paths)],
@@ -1245,231 +773,6 @@ def cmd_learn_schema(args):
     return 0
 
 
-def cmd_diff(args):
-    """Emit an .rsc diff: spec from stdin, current state (JSON) from a file."""
-    config = json.load(sys.stdin)
-    with open(args.current) as f:
-        current_text = f.read()
-    current = parse_state(current_text)
-    desired = _desired_diffable(config)
-    ops = diff_state(current, desired)
-
-    if not ops:
-        sys.stderr.write("# already in sync; no operations.\n")
-        return 0
-
-    script = format_diff_script(
-        ops, identity=config.get("system", {}).get("identity")
-    )
-    sys.stdout.write(script)
-    return 0
-
-
-# ── Commit-confirm rollback ────────────────────────────────────────────
-#
-# A live apply can strand the operator (the SSH path may ride the very
-# switch being changed). So the apply ARMS a self-firing revert on the
-# device before touching anything: it snapshots the current config to a
-# backup and schedules `backup load` (a reboot-to-revert) after N minutes.
-# Silence → revert. Only an explicit `confirm` (run after verifying the
-# change is good) cancels the timer. The arming runs at the TOP of the
-# imported script, so even a change that kills SSH mid-import is covered.
-
-
-def _rollback_names(session_id):
-    return f"preflight-{session_id}", f"rollback-{session_id}"
-
-
-def _arm_preamble(session_id, minutes):
-    """rsc preamble that snapshots config and arms the timed revert."""
-    backup, sched = _rollback_names(session_id)
-    return "\n".join([
-        f"# ── commit-confirm: auto-revert in {minutes}m unless confirmed ──",
-        f"/system backup save name={backup} dont-encrypt=yes",
-        f":do {{ /system scheduler remove [find name={sched}] }} on-error={{}}",
-        (f"/system scheduler add name={sched} interval={minutes}m "
-         f'on-event="/system backup load name={backup}"'),
-        "",
-        "",
-    ])
-
-
-def _ssh(args, remote_cmd, **kw):
-    import shlex
-    import subprocess
-    ssh_extra = shlex.split(args.ssh_args) if args.ssh_args else []
-    return subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", *ssh_extra, args.ssh, remote_cmd],
-        capture_output=True, text=True, **kw,
-    )
-
-
-def cmd_confirm(args):
-    """Cancel the armed rollback — the commit half of commit-confirm."""
-    backup, sched = _rollback_names(args.session_id)
-    cmd = (f":do {{ /system scheduler remove [find name={sched}] }} on-error={{}}; "
-           f":do {{ /file remove [find name={backup}.backup] }} on-error={{}}")
-    r = _ssh(args, cmd, timeout=30)
-    sys.stderr.write(r.stderr)
-    sys.stdout.write(r.stdout)
-    if r.returncode != 0:
-        sys.stderr.write("confirm FAILED — rollback still armed (will fire!).\n")
-        return r.returncode
-    sys.stderr.write(f"Committed: cancelled {sched}, removed {backup}.backup.\n")
-    return 0
-
-
-def cmd_rollback(args):
-    """Trigger the revert now (reboots the switch to the preflight backup)."""
-    backup, _ = _rollback_names(args.session_id)
-    sys.stderr.write(f"Reverting to {backup} (switch will reboot)...\n")
-    # `backup load` reboots, so the SSH session drops — a nonzero exit here
-    # is expected and not an error.
-    _ssh(args, f"/system backup load name={backup}", timeout=30)
-    sys.stderr.write("Revert triggered; switch rebooting.\n")
-    return 0
-
-
-def cmd_apply(args):
-    """Pull state via SSH, compute diff, push it back.
-
-    SSH options are passed through after `--` (e.g. `-J jumphost`).
-    """
-    import subprocess
-    import tempfile
-
-    import shlex
-    config = json.load(sys.stdin)
-    ssh_endpoint = args.ssh
-    ssh_extra = shlex.split(args.ssh_args) if args.ssh_args else []
-
-    # 1. Pull current state as JSON — one round trip for every section.
-    sys.stderr.write(f"Pulling current state from {ssh_endpoint}...\n")
-    pull = subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint,
-         state_command()],
-        capture_output=True, text=True, timeout=30,
-    )
-    if pull.returncode != 0:
-        sys.stderr.write(f"ssh failed: {pull.stderr}\n")
-        return pull.returncode
-
-    # 1a. Read the device's schema and refuse to proceed if it disagrees
-    # with the one we shipped, or if we name a property it doesn't have.
-    # `/import` halts at the first bad line and leaves everything after
-    # it unapplied, so a wrong property name is a half-configured switch.
-    # Better to stop before writing anything.
-    schema_pull = subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint,
-         schema_command([s.path for s in _DIFFABLE])],
-        capture_output=True, text=True, timeout=30,
-    )
-    if schema_pull.returncode == 0:
-        try:
-            live_schema = parse_schema(schema_pull.stdout)
-        except json.JSONDecodeError:
-            live_schema = {}
-        problems = (schema_drift(load_schema(), live_schema)
-                    + schema_violations(live_schema))
-        if problems:
-            sys.stderr.write(
-                f"{ssh_endpoint}: device schema disagrees with ours — "
-                "refusing to apply.\n")
-            for p in problems:
-                sys.stderr.write(f"  {p}\n")
-            sys.stderr.write(
-                "Re-capture with `routeros-config learn-schema "
-                f"{ssh_endpoint}` and review the diff.\n")
-            return 1
-
-    try:
-        current = parse_state(pull.stdout)
-    except json.JSONDecodeError as e:
-        # A device too old for `:serialize` answers with a CLI error, so
-        # say which switch and what it actually said rather than dying on
-        # a bare "Expecting value: line 1 column 1".
-        sys.stderr.write(
-            f"{ssh_endpoint}: could not parse state as JSON ({e}).\n"
-            f"Requires RouterOS 7 (`:serialize to=json`). Device said:\n"
-            f"{pull.stdout[:500]}\n"
-        )
-        return 1
-    desired = _desired_diffable(config)
-    ops = diff_state(current, desired)
-
-    if not ops:
-        sys.stderr.write("Already in sync; nothing to apply.\n")
-        return 0
-
-    script = format_diff_script(
-        ops, identity=config.get("system", {}).get("identity")
-    )
-
-    # Arm the self-firing revert at the TOP of the script, before any change
-    # — so even a change that severs SSH mid-import is still covered.
-    arm = args.rollback_timeout > 0
-    if arm:
-        script = _arm_preamble(args.session_id, args.rollback_timeout) + script
-
-    op_count = sum(len(v) for v in ops.values())
-    sys.stderr.write(f"Computed {op_count} operation(s) across "
-                     f"{len(ops)} section(s):\n")
-    for section, cmds in ops.items():
-        sys.stderr.write(f"  {section}: {len(cmds)}\n")
-
-    if args.dry_run:
-        sys.stderr.write("\n--- dry-run: would apply ---\n")
-        sys.stdout.write(script)
-        return 0
-
-    # 2. SCP the diff script.
-    fname = f"diff-{args.session_id}.rsc"
-    with tempfile.NamedTemporaryFile("w", suffix=".rsc", delete=False) as tf:
-        tf.write(script)
-        tmp_path = tf.name
-
-    sys.stderr.write(f"\nUploading {fname}...\n")
-    scp = subprocess.run(
-        ["scp", "-o", "BatchMode=yes", *ssh_extra, tmp_path,
-         f"{ssh_endpoint}:/{fname}"],
-        timeout=30,
-    )
-    if scp.returncode != 0:
-        sys.stderr.write("scp failed.\n")
-        return scp.returncode
-
-    # 3. Run /import. Failure on any command logs an error but RouterOS
-    # carries on; we check the system log afterwards.
-    sys.stderr.write(f"Importing {fname}...\n")
-    imp = subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", *ssh_extra, ssh_endpoint,
-         f"/import file={fname}"],
-        capture_output=True, text=True, timeout=60,
-    )
-    sys.stdout.write(imp.stdout)
-    sys.stderr.write(imp.stderr)
-    if imp.returncode != 0:
-        sys.stderr.write("/import failed.\n")
-        return imp.returncode
-
-    if arm:
-        _, sched = _rollback_names(args.session_id)
-        ssh_args_flag = f' --ssh-args "{args.ssh_args}"' if args.ssh_args else ""
-        sys.stderr.write(
-            f"\n⚠  ROLLBACK ARMED — {args.ssh} auto-reverts (reboots) in "
-            f"{args.rollback_timeout}m unless confirmed.\n"
-            f"   Verify connectivity/health, THEN commit:\n"
-            f"     routeros-config confirm {args.ssh}{ssh_args_flag} "
-            f"--session-id {args.session_id}\n"
-            f"   Or revert now:\n"
-            f"     routeros-config rollback {args.ssh}{ssh_args_flag} "
-            f"--session-id {args.session_id}\n"
-        )
-    else:
-        sys.stderr.write("Done (no rollback armed).\n")
-    return 0
-
-
 def main():
     ap = argparse.ArgumentParser(
         description="Generate RouterOS switch configuration scripts."
@@ -1482,53 +785,12 @@ def main():
     sp_learn = sub.add_parser(
         "learn-schema",
         help="Read the device's own property schema and print it as JSON. "
-             "Commit the result; apply re-reads it live and refuses to "
-             "run if the device disagrees.",
+             "Commit the result; `generate` refuses to emit a script "
+             "naming a property the schema doesn't have.",
     )
     sp_learn.add_argument("ssh", help="SSH endpoint (user@host).")
     sp_learn.add_argument("--ssh-args", default="",
                           help="Extra SSH options as one string.")
-
-    sub.add_parser(
-        "state-command",
-        help="Print the remote command that dumps current state as JSON. "
-             "Pipe its output through ssh to capture state by hand, then "
-             "feed the result to `diff --current`.",
-    )
-
-    sp_diff = sub.add_parser(
-        "diff",
-        help="JSON stdin + current-state file -> diff .rsc stdout"
-    )
-    sp_diff.add_argument("--current", required=True,
-                         help="Path to a current-state file (the JSON that "
-                              "`routeros-config state-command` returns).")
-
-    sp_apply = sub.add_parser(
-        "apply",
-        help="JSON stdin + SSH endpoint -> pull current, diff, push."
-    )
-    sp_apply.add_argument("ssh", help="SSH endpoint (user@host).")
-    sp_apply.add_argument("--ssh-args", default="",
-                          help="Extra SSH options as one string (e.g. \"-J jumphost\").")
-    sp_apply.add_argument("--dry-run", action="store_true",
-                          help="Print the diff script instead of applying it.")
-    sp_apply.add_argument("--session-id", default="cli",
-                          help="Session identifier for the uploaded filename + rollback names.")
-    sp_apply.add_argument("--rollback-timeout", type=int, default=3, metavar="MIN",
-                          help="Arm a self-firing revert that reboots to the pre-apply "
-                               "config after MIN minutes unless `confirm`ed. 0 disables.")
-
-    for name, helptext in [
-        ("confirm", "Cancel the armed rollback (commit the last apply)."),
-        ("rollback", "Trigger the revert now (reboots to the preflight backup)."),
-    ]:
-        sp = sub.add_parser(name, help=helptext)
-        sp.add_argument("ssh", help="SSH endpoint (user@host).")
-        sp.add_argument("--ssh-args", default="",
-                        help="Extra SSH options as one string (e.g. \"-J jumphost\").")
-        sp.add_argument("--session-id", default="cli",
-                        help="Session identifier matching the apply to confirm/revert.")
 
     args = ap.parse_args()
 
@@ -1548,18 +810,6 @@ def main():
                 sys.stderr.write(f"  {p}\n")
             return 1
         sys.stdout.write(generate(config))
-    elif args.command == "state-command":
-        sys.stdout.write(state_command() + "\n")
-    elif args.command == "learn-schema":
-        return cmd_learn_schema(args)
-    elif args.command == "diff":
-        return cmd_diff(args)
-    elif args.command == "apply":
-        return cmd_apply(args)
-    elif args.command == "confirm":
-        return cmd_confirm(args)
-    elif args.command == "rollback":
-        return cmd_rollback(args)
 
 
 if __name__ == "__main__":

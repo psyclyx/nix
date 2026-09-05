@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Golden regression tests for routeros_config.
 
-Freezes generate() and diff() output for real switch fixtures
-(mdf-agg01 = L3 aggregation, mdf-brk01 = L2 media converter) so the
-schema refactor is provably behaviour-preserving — and so the no-reboot
-diff/apply flow can't silently drift.
+Freezes generate() output for real switch fixtures (mdf-agg01 = L3
+aggregation, mdf-brk01 = L2 media converter). This script is what
+`deploy` feeds to run-after-reset, so it runs against a switch that has
+already been wiped — the goldens are the only place a change to it can
+be reviewed before that happens.
 
     python3 tests/test_golden.py     # standalone (prints unified diffs)
     pytest tests/test_golden.py      # or via pytest
@@ -38,31 +39,10 @@ def run_generate(cfg_name, golden_name):
     return got == want, want, got
 
 
-def run_diff(cfg_name, state_name, golden_name):
-    cfg = _load(cfg_name)
-    current = rc.parse_state(_read(os.path.join(FIX, state_name)))
-    desired = rc._desired_diffable(cfg)
-    ops = rc.diff_state(current, desired)
-    got = rc.format_diff_script(
-        ops, identity=cfg.get("system", {}).get("identity")
-    )
-    want = _read(os.path.join(GOLD, golden_name))
-    return got == want, want, got
-
-
 GEN_CASES = [
     ("mdf-agg01.json", "agg.generate.rsc"),
     ("mdf-brk01.json", "brk.generate.rsc"),
 ]
-DIFF_CASES = [
-    # State fixture is a verbatim capture from the live mdf-agg01 via
-    # `routeros-config state-command`, so the diff is exercised against
-    # what the device actually reports — defaults, types, `.id`s and all
-    # — rather than against a hand-written idea of it.
-    ("mdf-agg01.json", "mdf-agg01.state.json", "agg.diff.rsc"),
-]
-
-
 def _print_diff(want, got):
     for line in difflib.unified_diff(
         want.splitlines(), got.splitlines(),
@@ -76,12 +56,6 @@ def main():
     for cfg, gold in GEN_CASES:
         ok, want, got = run_generate(cfg, gold)
         print(f"generate {cfg:20s} -> {gold:20s} {'OK' if ok else 'FAIL'}")
-        if not ok:
-            failures += 1
-            _print_diff(want, got)
-    for cfg, exp, gold in DIFF_CASES:
-        ok, want, got = run_diff(cfg, exp, gold)
-        print(f"diff     {cfg:20s} -> {gold:20s} {'OK' if ok else 'FAIL'}")
         if not ok:
             failures += 1
             _print_diff(want, got)
@@ -99,23 +73,6 @@ def _assert(ok, want, got, label):
 def test_generate():
     for cfg, gold in GEN_CASES:
         _assert(*run_generate(cfg, gold), f"generate {cfg}")
-
-
-def test_diff():
-    for cfg, state, gold in DIFF_CASES:
-        _assert(*run_diff(cfg, state, gold), f"diff {cfg}")
-
-
-def test_rollback_arm_shape():
-    """Commit-confirm preamble snapshots config and arms a timed revert."""
-    backup, sched = rc._rollback_names("sid1")
-    assert (backup, sched) == ("preflight-sid1", "rollback-sid1")
-    p = rc._arm_preamble("sid1", 5)
-    assert f"/system backup save name={backup}" in p
-    assert f"/system scheduler add name={sched} interval=5m" in p
-    assert f"on-event=\"/system backup load name={backup}\"" in p
-    # arming must precede changes: preamble ends before any diff section.
-    assert p.rstrip().splitlines()[-1].startswith("/system scheduler add")
 
 
 def test_schema_conformance():

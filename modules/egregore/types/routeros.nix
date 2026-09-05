@@ -1,7 +1,7 @@
 # Entity type: MikroTik RouterOS switch.
 {
-  egregoreType = { lib, ... }: let
-    portDef = import ../lib/switch-port.nix { inherit lib; };
+  egregoreType = { lib, egregorLib, ... }: let
+    portDef = import ../lib/switch-port.nix { inherit lib egregorLib; };
     portType = portDef.portType;
     portLabel = portDef.portLabel;
 
@@ -167,6 +167,11 @@
       model = r.model;
       portCount = builtins.length (builtins.attrNames r.ports);
       activePortCount = builtins.length (builtins.attrNames active);
+      # Every port the hardware has, so the far end of a link can be
+      # checked against it.
+      portNames = modelPorts.${r.model} or (builtins.attrNames r.ports);
+      # Physical topology: one entry per port ref, as a normalized edge.
+      links = portDef.links r.ports;
       # Networks this switch is the canonical gateway for, derived solely
       # from the network's own `refs.gateway`. This is a statement about
       # policy — who other hosts should route to — NOT about what the
@@ -176,6 +181,9 @@
         lib.filterAttrs (_: net: (net.attrs.gatewayRef or null) == name) networkEntities
       );
     };
+
+    assertions = name: entity: top:
+      portDef.linkAssertions name entity.routeros.ports top;
 
     verbs = name: entity: top: let
       sw = entity.routeros;
@@ -216,9 +224,7 @@
       addressedNetworks = lib.attrNames sw.addresses;
 
       # Port config lookup with default for unassigned hardware ports.
-      portCfg = pname: sw.ports.${pname} or {
-        vlan = null; vlans = []; meta = { host = null; peer = null; description = null; };
-      };
+      portCfg = pname: sw.ports.${pname} or portDef.empty;
 
       # Bond slave → bond name lookup.
       bondSlaveMap = lib.foldlAttrs (acc: bondName: bond:

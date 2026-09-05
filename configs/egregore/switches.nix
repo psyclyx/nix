@@ -40,10 +40,11 @@ in {
           identity = "mdf-agg01";
           bridge.multicast.querier = true;
 
-          # L3 routing — the switch is the gateway for storage (200),
-          # lab (210), and the cluster-* envs (220-223). Its main-VLAN
-          # IP is a transit-only address so the default route to iyr
-          # (10.0.10.1) avoids hairpinning through the mgmt VLAN.
+          # L3 routing — with l3-hw-offloading on, the chip routes every
+          # VLAN below that this switch holds an address on. Which of
+          # them it is the *canonical* gateway for is a separate fact,
+          # stated by each network's own refs.gateway: storage (200),
+          # lab (210), and the cluster-* envs (220-223).
           #
           # Cluster SVIs are seated for phase 2 of the lab-v3 rework;
           # access ports for them come online when lab hosts get NICs
@@ -66,9 +67,9 @@ in {
             mgmt.ipv6    = "fd9a:e830:4b1e:f0::2";
             main.ipv4    = "10.0.10.2";
             main.ipv6    = "fd9a:e830:4b1e:a::2";
-            # LAN core transit (/30) — iyr .1, agg .2. Transit-only (not a
-            # routedNetwork): the switch's default route still exits via main
-            # to iyr until the gateway migration flips it here.
+            # LAN core transit (/30) — iyr .1, agg .2. The switch's default
+            # route still exits via main to iyr until the gateway migration
+            # flips it here.
             core-transit.ipv4 = "10.0.252.2";
             core-transit.ipv6 = "fd9a:e830:4b1e:fc::2";
             storage.ipv4 = "10.0.200.1";   # convention gateway (.1)
@@ -104,18 +105,18 @@ in {
           # the host's sfpDataDev → storage (VLAN 200) and sfpProdDev →
           # lab (VLAN 210).
           ports = {
-            "sfp-sfpplus1"  = { vlan = 200; meta = { host = "lab-1"; description = "storage"; }; };
-            "sfp-sfpplus2"  = { vlan = 210; meta = { host = "lab-1"; description = "lab"; }; };
-            "sfp-sfpplus3"  = { vlan = 200; meta = { host = "lab-2"; description = "storage"; }; };
-            "sfp-sfpplus4"  = { vlan = 210; meta = { host = "lab-2"; description = "lab"; }; };
-            "sfp-sfpplus5"  = { vlan = 200; meta = { host = "lab-3"; description = "storage"; }; };
-            "sfp-sfpplus6"  = { vlan = 210; meta = { host = "lab-3"; description = "lab"; }; };
-            "sfp-sfpplus7"  = { vlan = 200; meta = { host = "lab-4"; description = "storage"; }; };
-            "sfp-sfpplus8"  = { vlan = 210; meta = { host = "lab-4"; description = "lab"; }; };
-            "sfp-sfpplus9"  = { vlans = internal; meta.peer = "mdf-acc01"; };
-            "sfp-sfpplus10" = { vlans = internal; meta.peer = "mdf-acc01"; };
-            "sfp-sfpplus11" = { vlan = 10; meta.host = "sigil"; };
-            "sfp-sfpplus12" = { vlan = 10; meta.host = "sigil"; };
+            "sfp-sfpplus1"  = { vlan = 200; refs.host = { target = "lab-1"; nic = "storage"; }; };
+            "sfp-sfpplus2"  = { vlan = 210; refs.host = { target = "lab-1"; nic = "lab"; }; };
+            "sfp-sfpplus3"  = { vlan = 200; refs.host = { target = "lab-2"; nic = "storage"; }; };
+            "sfp-sfpplus4"  = { vlan = 210; refs.host = { target = "lab-2"; nic = "lab"; }; };
+            "sfp-sfpplus5"  = { vlan = 200; refs.host = { target = "lab-3"; nic = "storage"; }; };
+            "sfp-sfpplus6"  = { vlan = 210; refs.host = { target = "lab-3"; nic = "lab"; }; };
+            "sfp-sfpplus7"  = { vlan = 200; refs.host = { target = "lab-4"; nic = "storage"; }; };
+            "sfp-sfpplus8"  = { vlan = 210; refs.host = { target = "lab-4"; nic = "lab"; }; };
+            "sfp-sfpplus9"  = { vlans = internal; refs.peer = { target = "mdf-acc01"; port = "sfp-sfpplus1"; }; };
+            "sfp-sfpplus10" = { vlans = internal; refs.peer = { target = "mdf-acc01"; port = "sfp-sfpplus2"; }; };
+            "sfp-sfpplus11" = { vlan = 10; refs.host = "sigil"; };
+            "sfp-sfpplus12" = { vlan = 10; refs.host = "sigil"; };
             "sfp-sfpplus13" = {};
             "sfp-sfpplus14" = {};
             "sfp-sfpplus15" = {};
@@ -123,11 +124,11 @@ in {
             "sfp-sfpplus17" = {};
             "sfp-sfpplus18" = {};
             "sfp-sfpplus19" = {};
-            "sfp-sfpplus20" = { vlans = all; meta.peer = "idf-dist01"; };
+            "sfp-sfpplus20" = { vlans = all; refs.peer = { target = "idf-dist01"; port = "sfp-sfpplus1"; }; };
             "sfp-sfpplus21" = {};
             "sfp-sfpplus22" = {};
             "sfp-sfpplus23" = {};
-            "sfp-sfpplus24" = { vlans = all ++ core; meta.peer = "mdf-brk01"; };
+            "sfp-sfpplus24" = { vlans = all ++ core; refs.peer = { target = "mdf-brk01"; port = "port9"; }; };
           };
         };
       };
@@ -147,32 +148,32 @@ in {
           # as an access port — PXE, SSH, and tang reach travel here.
           # The remaining 1G ports (eno2-4) stay disabled.
           ports = {
-            ether1  = { vlan = 240; meta = { host = "lab-1"; description = "BMC/iLO"; }; };
-            ether2  = { vlan = 10;  meta = { host = "lab-1"; description = "eno1 (1G fallback)"; }; };
+            ether1  = { vlan = 240; refs.host = "lab-1-ilo"; };
+            ether2  = { vlan = 10;  refs.host = { target = "lab-1"; nic = "main"; }; description = "1G fallback"; };
             ether3  = {};
             ether4  = {};
             ether5  = {};
-            ether6  = { vlan = 240; meta = { host = "lab-2"; description = "BMC/iLO"; }; };
-            ether7  = { vlan = 10;  meta = { host = "lab-2"; description = "eno1 (1G fallback)"; }; };
+            ether6  = { vlan = 240; refs.host = "lab-2-ilo"; };
+            ether7  = { vlan = 10;  refs.host = { target = "lab-2"; nic = "main"; }; description = "1G fallback"; };
             ether8  = {};
             ether9  = {};
             ether10 = {};
-            ether11 = { vlan = 240; meta = { host = "lab-3"; description = "BMC/iLO"; }; };
-            ether12 = { vlan = 10;  meta = { host = "lab-3"; description = "eno1 (1G fallback)"; }; };
+            ether11 = { vlan = 240; refs.host = "lab-3-ilo"; };
+            ether12 = { vlan = 10;  refs.host = { target = "lab-3"; nic = "main"; }; description = "1G fallback"; };
             ether13 = {};
             ether14 = {};
             ether15 = {};
-            ether16 = { vlan = 240; meta = { host = "lab-4"; description = "BMC/iLO"; }; };
-            ether17 = { vlan = 10;  meta = { host = "lab-4"; description = "eno1 (1G fallback)"; }; };
+            ether16 = { vlan = 240; refs.host = "lab-4-ilo"; };
+            ether17 = { vlan = 10;  refs.host = { target = "lab-4"; nic = "main"; }; description = "1G fallback"; };
             ether18 = {};
             ether19 = {};
             ether20 = {};
             ether21 = {};
             ether22 = {};
             ether23 = {};
-            ether24 = { vlan = 240; meta.description = "admin access"; };
-            "sfp-sfpplus1" = { vlans = internal; meta.peer = "mdf-agg01"; };
-            "sfp-sfpplus2" = { vlans = internal; meta.peer = "mdf-agg01"; };
+            ether24 = { vlan = 240; description = "admin access"; };
+            "sfp-sfpplus1" = { vlans = internal; refs.peer = { target = "mdf-agg01"; port = "sfp-sfpplus9"; }; };
+            "sfp-sfpplus2" = { vlans = internal; refs.peer = { target = "mdf-agg01"; port = "sfp-sfpplus10"; }; };
           };
         };
       };
@@ -191,11 +192,16 @@ in {
             port2 = {};
             port3 = {};
             port4 = {};
-            port5 = { vlans = wan; meta = { peer = "iyr"; description = "iyr WAN (enp3s0, transit VLANs 250/251)"; }; };
-            port6 = { vlans = internal ++ core; meta = { peer = "iyr"; description = "iyr LAN (enp1s0, internal VLANs + core transit 252)"; }; };
+            # iyr's two NICs are trunk parents, not logical interfaces —
+            # enp1s0 carries every internal VLAN as enp1s0.<vlan>, and
+            # enp3s0 carries the WAN transits. Neither is a key in
+            # host.interfaces, so these edges name the entity only and
+            # say the rest in prose.
+            port5 = { vlans = wan; refs.peer = "iyr"; description = "iyr WAN (enp3s0, transit VLANs 250/251)"; };
+            port6 = { vlans = internal ++ core; refs.peer = "iyr"; description = "iyr LAN (enp1s0, internal VLANs + core transit 252)"; };
             port7 = {};
             port8 = {};
-            port9 = { vlans = all ++ core; meta = { peer = "mdf-agg01"; description = "uplink to CRS326 sfp-sfpplus24 (+ core transit 252)"; }; };
+            port9 = { vlans = all ++ core; refs.peer = { target = "mdf-agg01"; port = "sfp-sfpplus24"; }; };
           };
         };
       };
@@ -210,10 +216,10 @@ in {
 
           ports = {
             ether1         = {};
-            "sfp-sfpplus1" = { vlans = all; meta.peer = "mdf-agg01"; };
-            "sfp-sfpplus2" = { vlan = 250; meta.description = "Xfinity modem (WAN, IPv6 + IPv4 fallback)"; };
-            "sfp-sfpplus3" = { vlans = all; meta.peer = "idf-poe01"; };
-            "sfp-sfpplus4" = { vlan = 251; meta.description = "Google Fiber ONT (primary IPv4 WAN)"; };
+            "sfp-sfpplus1" = { vlans = all; refs.peer = { target = "mdf-agg01"; port = "sfp-sfpplus20"; }; };
+            "sfp-sfpplus2" = { vlan = 250; description = "Xfinity modem (WAN, IPv6 + IPv4 fallback)"; };
+            "sfp-sfpplus3" = { vlans = all; refs.peer = "idf-poe01"; };
+            "sfp-sfpplus4" = { vlan = 251; description = "Google Fiber ONT (primary IPv4 WAN)"; };
           };
         };
       };

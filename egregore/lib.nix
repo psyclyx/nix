@@ -69,6 +69,56 @@ in rec {
       };
     };
 
+  # ── Refs ────────────────────────────────────────────────────────────
+  #
+  # A ref is an edge to another entity. Two spellings, one meaning:
+  #
+  #   refs.gateway = "mdf-agg01";
+  #   refs.peer    = { target = "mdf-brk01"; port = "port9"; };
+  #
+  # The plain form names the far entity and nothing else. The rich form
+  # additionally names *where* on the far entity the edge lands — a
+  # switch port, a host NIC — which is what lets an edge be checked
+  # rather than merely described. Both are the same edge; `refTarget`
+  # answers "who" for either, so a reader that only cares about the
+  # target never has to know which spelling was used.
+  #
+  # Rich refs are strictly additive: every existing `refs.x = "name"`
+  # keeps reading back as that same string.
+  refType = types.either types.str (types.submodule {
+    options = {
+      target = mkOption {
+        type = types.str;
+        description = "Name of the entity this edge points at.";
+      };
+      port = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = ''
+          Port on the target this edge lands on, when the target is a
+          switch. Names a key in the target's `ports` attrset.
+        '';
+      };
+      nic = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = ''
+          Interface on the target this edge lands on, when the target is
+          a host. Names a key in the target's `host.interfaces`.
+        '';
+      };
+    };
+  });
+
+  # The far entity's name, whichever spelling the ref used.
+  refTarget = ref: if builtins.isString ref then ref else ref.target;
+
+  # Rich form for either spelling — for consumers that want one shape.
+  refNorm = ref:
+    if builtins.isString ref
+    then { target = ref; port = null; nic = null; }
+    else ref;
+
   # ── Querying ────────────────────────────────────────────────────────
 
   ofType = typeName: entities:
@@ -84,11 +134,11 @@ in rec {
     lib.mapAttrs (_: e: e.attrs.${attrName}) (withAttr attrName entities);
 
   refsOf = entity: allEntities:
-    lib.mapAttrs (_: target: allEntities.${target}) entity.refs;
+    lib.mapAttrs (_: ref: allEntities.${refTarget ref}) entity.refs;
 
   referencedBy = targetName: entities:
     lib.filterAttrs (_: e:
-      builtins.any (t: t == targetName) (builtins.attrValues e.refs)
+      builtins.any (ref: refTarget ref == targetName) (builtins.attrValues e.refs)
     ) entities;
 
   withVerb = verbName: entities:

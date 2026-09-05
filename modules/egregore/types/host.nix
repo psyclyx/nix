@@ -696,6 +696,9 @@
         isVm = (entity.refs.hypervisor or null) != null;
         label = builtins.concatStringsSep ", " h.roles;
         resolvedExporters = lib.recursiveUpdate computedExporters h.exporters;
+        # Logical interface names, so a switch port that says it's cabled
+        # to one of them can be checked against reality.
+        interfaceNames = builtins.attrNames h.interfaces;
       };
 
     assertions =

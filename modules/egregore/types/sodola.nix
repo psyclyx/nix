@@ -1,8 +1,11 @@
 # Entity type: Sodola web-managed switch.
 {
-  egregoreType = { lib, ... }: let
-    portDef = import ../lib/switch-port.nix { inherit lib; };
+  egregoreType = { lib, egregorLib, ... }: let
+    portDef = import ../lib/switch-port.nix { inherit lib egregorLib; };
     portType = portDef.portType;
+
+    # 8 copper + 1 SFP.
+    hwPortNames = map (n: "port${toString n}") (lib.range 1 9);
 
     pow2 = n: if n == 0 then 1 else 2 * pow2 (n - 1);
   in {
@@ -54,7 +57,12 @@
       model = s.model;
       portCount = builtins.length (builtins.attrNames s.ports);
       activePortCount = builtins.length (builtins.attrNames active);
+      portNames = hwPortNames;
+      links = portDef.links s.ports;
     };
+
+    assertions = name: entity: top:
+      portDef.linkAssertions name entity.sodola.ports top;
 
     verbs = name: entity: top: let
       sw = entity.sodola;
@@ -72,12 +80,10 @@
       mgmtMask = let p = mgmtPLen; in
         "${toString (maskOctet (lib.min p 8))}.${toString (maskOctet (lib.min (lib.max (p - 8) 0) 8))}.${toString (maskOctet (lib.min (lib.max (p - 16) 0) 8))}.${toString (maskOctet (lib.min (lib.max (p - 24) 0) 8))}";
 
-      totalPorts = 9;
+      totalPorts = builtins.length hwPortNames;
       allPortNums = lib.range 1 totalPorts;
 
-      portCfgN = n: sw.ports.${"port${toString n}"} or {
-        vlan = null; vlans = []; meta = { host = null; peer = null; description = null; };
-      };
+      portCfgN = n: sw.ports.${"port${toString n}"} or portDef.empty;
 
       # Collect all VLANs used by any port + management.
       switchVlans = let

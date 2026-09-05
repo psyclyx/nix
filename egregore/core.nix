@@ -12,14 +12,20 @@
 # instance sees all type modules' options, but only the matching type's
 # attrs/verbs are active (via mkIf).
 #
+# A ref value is either a bare entity name or `{ target; port; nic; }`
+# naming the attachment point on the far side. attrs.refs carries the
+# rich shape for both spellings; refs itself is left as written, so a
+# reader that just wants the name reads it the same way it always did.
+#
 # Every entity also gets an automatic attrs.refsIn — the inverse of
 # refs. If `foo.refs.bar = "baz"`, then `baz.attrs.refsIn.bar` contains
 # `"foo"`. Lets target entities answer "who refs me?" without scattering
 # filter queries across type modules.
 #
-{ config, lib, ... }:
+{ config, lib, egregorLib, ... }:
 let
   inherit (lib) mkOption types;
+  inherit (egregorLib) refType refTarget refNorm;
   topConfig = config;
 in {
   options = {
@@ -57,10 +63,16 @@ in {
           };
 
           refs = mkOption {
-            type = types.attrsOf types.str;
+            type = types.attrsOf refType;
             default = {};
             description = ''
-              Named references to other entities. Values are entity names.
+              Named references to other entities — the graph's edges.
+
+              A value is either an entity name, or an attrset naming the
+              entity plus the attachment point on the far side
+              (`{ target; port; nic; }`). Both spellings mean the same
+              edge; `attrs.refs` gives the rich shape for either.
+
               Validated: every target must exist in the registry.
             '';
           };
@@ -115,12 +127,18 @@ in {
         # Every entity knows its own name.
         config.attrs.name = name;
 
-        # Inverse-ref index: for each (src, refName) with src.refs.refName
-        # == name, append srcName to attrs.refsIn.refName. Reads only
+        # This entity's own refs in rich form, so a consumer reading an
+        # edge's attachment point never has to branch on the spelling.
+        # `refs.<n>` itself is left exactly as written — the plain form
+        # still reads back as a bare name.
+        config.attrs.refs = lib.mapAttrs (_: refNorm) config.refs;
+
+        # Inverse-ref index: for each (src, refName) whose ref targets
+        # this entity, append srcName to attrs.refsIn.refName. Reads only
         # entities.*.refs (plain user data) — no cycle with attrs setters.
         config.attrs.refsIn = lib.foldlAttrs (acc: srcName: src:
-          lib.foldlAttrs (acc2: refName: target:
-            if target == name
+          lib.foldlAttrs (acc2: refName: ref:
+            if refTarget ref == name
             then acc2 // { ${refName} = (acc2.${refName} or []) ++ [srcName]; }
             else acc2
           ) acc src.refs
@@ -139,7 +157,7 @@ in {
 
     # All refs must resolve to existing entities.
     ++ lib.concatLists (lib.mapAttrsToList (name: entity:
-      lib.mapAttrsToList (refName: target: {
+      lib.mapAttrsToList (refName: ref: let target = refTarget ref; in {
         assertion = config.entities ? ${target};
         message = "entity '${name}' ref '${refName}' → '${target}' does not exist";
       }) entity.refs

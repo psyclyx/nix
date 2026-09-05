@@ -1,9 +1,15 @@
 # Entity type: MikroTik SwOS switch.
 {
-  egregoreType = { lib, ... }: let
-    portDef = import ../lib/switch-port.nix { inherit lib; };
+  egregoreType = { lib, egregorLib, ... }: let
+    portDef = import ../lib/switch-port.nix { inherit lib egregorLib; };
     portType = portDef.portType;
     portLabel = portDef.portLabel;
+
+    # CSS326: 24 copper + 2 SFP+. Port order is the SwOS index order,
+    # so this doubles as the index → name map the generator needs.
+    hwPortNames =
+      (map (i: "ether${toString i}") (lib.range 1 24))
+      ++ ["sfp-sfpplus1" "sfp-sfpplus2"];
   in {
     name = "swos";
     description = "MikroTik SwOS managed switch.";
@@ -53,7 +59,12 @@
       model = s.model;
       portCount = builtins.length (builtins.attrNames s.ports);
       activePortCount = builtins.length (builtins.attrNames active);
+      portNames = hwPortNames;
+      links = portDef.links s.ports;
     };
+
+    assertions = name: entity: top:
+      portDef.linkAssertions name entity.swos.ports top;
 
     verbs = name: entity: top: let
       sw = entity.swos;
@@ -62,18 +73,14 @@
       mgmtVlan = top.entities.${sw.mgmtNetwork}.network.vlan;
       mgmtIp   = sw.addresses.mgmt.ipv4;
 
-      # CSS326: 24 copper + 2 SFP+ = 26 ports.
-      totalPorts = 26;
+      totalPorts = builtins.length hwPortNames;
       allIndices = lib.range 0 (totalPorts - 1);
       allPorts1  = lib.range 1 totalPorts;
 
-      portName = idx:
-        if idx < 24 then "ether${toString (idx + 1)}"
-        else if idx == 24 then "sfp-sfpplus1"
-        else "sfp-sfpplus2";
+      portName = idx: builtins.elemAt hwPortNames idx;
 
       cfgAt = idx: let n = portName idx; in
-        sw.ports.${n} or { vlan = null; vlans = []; meta = { host = null; peer = null; description = null; }; };
+        sw.ports.${n} or portDef.empty;
       modeAt = idx: portType (cfgAt idx);
 
       # Collect all VLANs used across all ports + management.
